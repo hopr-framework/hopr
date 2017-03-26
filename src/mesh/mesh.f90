@@ -239,6 +239,14 @@ IF(useCurveds) THEN
       CALL abort(__STAMP__,&
         'Specified curving method does not exist. =1: NormalVectors, =3: SplitElemFile, =4: SpecElemFile')
     END SELECT
+
+    ! Volume curving by radial basis functions
+    useRBF = GETLOGICAL('useRBF','.FALSE.')
+    IF (useRBF) THEN
+      SupportRadius = GETREAL('SupportRadius')
+      RBFType = GETINT('RBFType')
+    END IF
+
   END IF
   doExactSurfProjection=GETLOGICAL('doExactSurfProjection','.FALSE.')
   IF(doExactSurfProjection)THEN
@@ -420,6 +428,7 @@ USE MOD_Mesh_Tools,       ONLY: CountSplines,Netvisu,BCvisu,chkspl_surf,chkspl_v
 USE MOD_Mesh_PostDeform,  ONLY: PostDeform
 USE MOD_Output_HDF5,      ONLY: WriteMeshToHDF5
 USE MOD_Mesh_Jacobians,   ONLY: CheckJacobians
+USE MOD_RBF,              ONLY: RBFVolumeCurving
 USE MOD_Readin_ANSA
 USE MOD_Readin_CGNS
 USE MOD_Readin_Gambit
@@ -613,6 +622,8 @@ END IF ! useCurveds
 
 ! make all nodes unique
 CALL GlobalUniqueNodes(.TRUE.)
+! Call RBF curving after GlobalUniqueNodes, since no double entries in the RBF nodes are allowed
+IF (useCurveds.AND.useRBF) CALL RBFVolumeCurving()
 
 IF(doExactSurfProjection) CALL ProjectToExactSurfaces()
 ! get element types

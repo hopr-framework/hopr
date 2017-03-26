@@ -251,6 +251,10 @@ LOGICAL                        :: useCurveds             ! switch .TRUE.= we wan
 LOGICAL                        :: rebuildCurveds         ! switch .TRUE.= if curveds are already present in the mesh, delete them
                                                          ! and rebuild them using our methods
 LOGICAL                        :: meshIsAlreadyCurved    ! flag: mesh is already curved (GMSH, HDF5, block CGNS)
+LOGICAL                        :: useRBF                 ! Volume curving using interpolation of surface curving by 
+                                                         ! radial basis functions
+REAL                           :: SupportRadius          ! Support radius of radial basis functions
+INTEGER                        :: RBFType                ! Type of radial basis function
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! CURVE GRID GENERATOR
 !-----------------------------------------------------------------------------------------------------------------------------------
