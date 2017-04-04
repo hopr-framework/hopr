@@ -312,7 +312,7 @@ END SUBROUTINE RBFVolumeCurving
 
 FUNCTION EvaluateRBF(dist)
 !===================================================================================================================================
-! Evaluates the choosen RBF at distance dist with support radius supportRadius (only applicable for compact support RBFs).
+! Evaluates the choosen RBF at distance dist with support radius supportRadius
 ! Numbering and choice of RBFs is taken from: A. de Boer et al. / Computers and Structures 85 (2007) 784–795
 ! The multiquadratic biharmonic RBFs (type 10 and 11) take an additional parameter (a) which controls the shape of the function.
 ! Typical values for this parameter are in the range 10E-5 - 10E-3.
@@ -329,7 +329,7 @@ REAL            :: EvaluateRBF
 REAL             :: xi
 REAL,PARAMETER   :: a=10E-3
 !===================================================================================================================================
-! normalized distance, input variable for local support RBFs
+! normalized distance
 xi = dist/supportRadius
 
 SELECT CASE(RBFType)
@@ -350,13 +350,13 @@ CASE(3)
   IF (xi.GT.1.) THEN
     EvaluateRBF = 0.
   ELSE
-    EvaluateRBF = (1.-xi)**6.*(35./3.*xi**2.+6.*xi+1.)
+    EvaluateRBF = (1.-xi)**6.*((35./3.)*(xi**2.)+6.*xi+1.)
   END IF
 CASE(4)
   IF (xi.GT.1.) THEN
     EvaluateRBF = 0.
   ELSE
-    EvaluateRBF = (1.-xi)**8.*(32.*xi**3.+25.*xi**2.+8.*xi+1.)
+    EvaluateRBF = (1.-xi)**8.*(32.*(xi**3.)+25.*(xi**2.)+8.*xi+1.)
   END IF
 CASE(5)
   IF (xi.GT.1.) THEN
@@ -364,25 +364,37 @@ CASE(5)
   ELSE
     EvaluateRBF = (1.-xi)**5.
   END IF
+CASE(6)
+  IF (xi.GT.1.) THEN
+    EvaluateRBF = 0.
+  ELSE
+    EvaluateRBF = 1.+(80./3.)*(xi**2.)-40.*(xi**3.)+15.*(xi**4.)-(8./3.)*(xi**5.)+20.*(xi**2.)*LOG(xi)
+  END IF
+CASE(7)
+  IF (xi.GT.1.) THEN
+    EvaluateRBF = 0.
+  ELSE
+    EvaluateRBF = 1.-30.*(xi**2.)-10.*(xi**3.)+45.*(xi**4.)-6.*(xi**5.)-60.*(xi**3.)*LOG(xi)
+  END IF
 CASE(8)
   IF (xi.GT.1.) THEN
     EvaluateRBF = 0.
   ELSE
-    EvaluateRBF = 1.-20.*xi**2.+80.*xi**3.-45.*xi**4.-16.*xi**5.+60.*xi**4.*LOG(xi)
+    EvaluateRBF = 1.-20.*(xi**2.)+80.*(xi**3.)-45.*(xi**4.)-16.*(xi**5.)+60.*(xi**4.)*LOG(xi)
   END IF
 ! Global support RBFs
 CASE(9)
-    EvaluateRBF = dist**2.*LOG(dist)
+    EvaluateRBF = (xi**2.)*LOG(xi)
 CASE(10)
-    EvaluateRBF = SQRT(a**2.+dist**2.)
+    EvaluateRBF = SQRT((a**2.)+(xi**2.))
 CASE(11)
-    EvaluateRBF = SQRT(1./(a**2.+dist**2.))
+    EvaluateRBF = SQRT(1./((a**2.)+(xi**2.)))
 CASE(12)
-    EvaluateRBF = 1.+dist**2.
+    EvaluateRBF = 1.+(xi**2.)
 CASE(13)
-    EvaluateRBF = 1./(dist**2.)
+    EvaluateRBF = 1./(1.+(xi**2.))
 CASE(14)
-    EvaluateRBF = EXP(-dist**2.)
+    EvaluateRBF = EXP(-(xi**2.))
 CASE DEFAULT
   CALL Abort(__STAMP__,'RBF Type is unknown')
 END SELECT
