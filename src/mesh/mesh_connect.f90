@@ -188,7 +188,7 @@ DO i=1,10
   ELSE
     EXIT
   END IF
-  CALL NonconformConnectMesh()
+  CALL NonconformConnectMesh(reconnect)
   IF(nNonConformingSides.EQ.0) EXIT
   connectedSides=connectedSides+nNonConformingSides
   WRITE(UNIT_StdOut,*)'   --> ',connectedSides,' sides of ', nInnerSides,'  sides connected.'
@@ -470,7 +470,7 @@ END SUBROUTINE ConnectMesh
 
 
 
-SUBROUTINE NonconformConnectMesh()
+SUBROUTINE NonconformConnectMesh(reconnect)
 !===================================================================================================================================
 ! Connect all non-conforming sides. 
 ! This routine assumes that all conforming sides have already been connected and that all nodes in the mesh are unique.
@@ -484,6 +484,7 @@ USE MOD_SortingTools,ONLY:Qsort1Int,Qsort4Int,MSortNInt
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT VARIABLES
+LOGICAL,INTENT(IN)        :: reconnect
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -520,8 +521,12 @@ DO WHILE(ASSOCIATED(Elem))
   Side=>Elem%firstSide
   DO WHILE(ASSOCIATED(Side))
     IF(ASSOCIATED(Side%MortarSide))THEN
-      Side=>Side%nextElemSide
-      CYCLE
+      IF(.NOT.reconnect)THEN
+        Side=>Side%nextElemSide
+        CYCLE
+      ELSE
+        NULLIFY(Side%MortarSide)
+      END IF
     END IF
     IF(.NOT.ASSOCIATED(Side%BC))THEN
       IF(.NOT.ASSOCIATED(Side%Connection))THEN
