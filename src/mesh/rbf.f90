@@ -96,18 +96,23 @@ Elem=>FirstElem
 DO WHILE(ASSOCIATED(Elem))
   Side=>Elem%firstSide
   DO WHILE(ASSOCIATED(Side))
-    ! Cycle for non-bc sides
     IF(.NOT.ASSOCIATED(Side%BC)) THEN
-      Side=>Side%nextElemSide
-      CYCLE
+      ! Go through all 4 corner nodes
+      Side%CurvedNode(QuadMapInv(0,0))%np%tmp = 0
+      Side%CurvedNode(QuadMapInv(0,N))%np%tmp = 0
+      Side%CurvedNode(QuadMapInv(N,0))%np%tmp = 0
+      Side%CurvedNode(QuadMapInv(N,N))%np%tmp = 0
+    ELSE IF(Side%BC%BCType.EQ.1) THEN
+      ! Go through all 4 corner nodes
+      Side%CurvedNode(QuadMapInv(0,0))%np%tmp = 0
+      Side%CurvedNode(QuadMapInv(0,N))%np%tmp = 0
+      Side%CurvedNode(QuadMapInv(N,0))%np%tmp = 0
+      Side%CurvedNode(QuadMapInv(N,N))%np%tmp = 0
+    ELSE
+      DO i=1,Side%nCurvedNodes
+        Side%CurvedNode(i)%np%tmp = 0
+      END DO
     END IF
-    IF(Side%BC%BCType.EQ.1) THEN
-      Side=>Side%nextElemSide
-      CYCLE
-    END IF
-    DO i=1,Side%nCurvedNodes
-      Side%CurvedNode(i)%np%tmp = 0
-    END DO
     Side=>Side%nextElemSide
   END DO
   Elem=>Elem%nextElem
@@ -118,23 +123,68 @@ Elem=>FirstElem
 DO WHILE(ASSOCIATED(Elem))
   Side=>Elem%firstSide
   DO WHILE(ASSOCIATED(Side))
-    ! Cycle for non-bc sides
     IF(.NOT.ASSOCIATED(Side%BC)) THEN
-      Side=>Side%nextElemSide
-      CYCLE
+      ! Go through all 4 corner nodes
+      IF (.NOT.(Side%CurvedNode(QuadMapInv(0,0))%np%tmp.EQ.1)) THEN
+        ! Increase count of boundary points
+        nBP = nBP + 1
+        ! Mark this side node as done
+        Side%CurvedNode(QuadMapInv(0,0))%np%tmp = 1
+      END IF
+      IF (.NOT.(Side%CurvedNode(QuadMapInv(0,N))%np%tmp.EQ.1)) THEN
+        ! Increase count of boundary points
+        nBP = nBP + 1
+        ! Mark this side node as done
+        Side%CurvedNode(QuadMapInv(0,N))%np%tmp = 1
+      END IF
+      IF (.NOT.(Side%CurvedNode(QuadMapInv(N,0))%np%tmp.EQ.1)) THEN
+        ! Increase count of boundary points
+        nBP = nBP + 1
+        ! Mark this side node as done
+        Side%CurvedNode(QuadMapInv(N,0))%np%tmp = 1
+      END IF
+      IF (.NOT.(Side%CurvedNode(QuadMapInv(N,N))%np%tmp.EQ.1)) THEN
+        ! Increase count of boundary points
+        nBP = nBP + 1
+        ! Mark this side node as done
+        Side%CurvedNode(QuadMapInv(N,N))%np%tmp = 1
+      END IF
+    ELSE IF(Side%BC%BCType.EQ.1) THEN
+      ! Go through all 4 corner nodes
+      IF (.NOT.(Side%CurvedNode(QuadMapInv(0,0))%np%tmp.EQ.1)) THEN
+        ! Increase count of boundary points
+        nBP = nBP + 1
+        ! Mark this side node as done
+        Side%CurvedNode(QuadMapInv(0,0))%np%tmp = 1
+      END IF
+      IF (.NOT.(Side%CurvedNode(QuadMapInv(0,N))%np%tmp.EQ.1)) THEN
+        ! Increase count of boundary points
+        nBP = nBP + 1
+        ! Mark this side node as done
+        Side%CurvedNode(QuadMapInv(0,N))%np%tmp = 1
+      END IF
+      IF (.NOT.(Side%CurvedNode(QuadMapInv(N,0))%np%tmp.EQ.1)) THEN
+        ! Increase count of boundary points
+        nBP = nBP + 1
+        ! Mark this side node as done
+        Side%CurvedNode(QuadMapInv(N,0))%np%tmp = 1
+      END IF
+      IF (.NOT.(Side%CurvedNode(QuadMapInv(N,N))%np%tmp.EQ.1)) THEN
+        ! Increase count of boundary points
+        nBP = nBP + 1
+        ! Mark this side node as done
+        Side%CurvedNode(QuadMapInv(N,N))%np%tmp = 1
+      END IF
+    ELSE
+      DO i=1,Side%nCurvedNodes
+        ! Skip already marked boundary points
+        IF (Side%CurvedNode(i)%np%tmp.EQ.1) CYCLE
+        ! Increase count of boundary points
+        nBP = nBP + 1
+        ! Mark this side node as included in the unique list of boundary points
+        Side%CurvedNode(i)%np%tmp = 1
+      END DO
     END IF
-    IF(Side%BC%BCType.EQ.1) THEN
-      Side=>Side%nextElemSide
-      CYCLE
-    END IF
-    DO i=1,Side%nCurvedNodes
-      ! Skip already marked boundary points
-      IF (Side%CurvedNode(i)%np%tmp.EQ.1) CYCLE
-      ! Increase count of boundary points
-      nBP = nBP + 1
-      ! Mark this side node as included in the unique list of boundary points
-      Side%CurvedNode(i)%np%tmp = 1
-    END DO
     Side=>Side%nextElemSide
   END DO
   Elem=>Elem%nextElem
@@ -155,18 +205,23 @@ Elem=>FirstElem
 DO WHILE(ASSOCIATED(Elem))
   Side=>Elem%firstSide
   DO WHILE(ASSOCIATED(Side))
-    ! Cycle for non-bc sides
     IF(.NOT.ASSOCIATED(Side%BC)) THEN
-      Side=>Side%nextElemSide
-      CYCLE
+      ! Go through all 4 corner nodes
+      Side%CurvedNode(QuadMapInv(0,0))%np%tmp = 0
+      Side%CurvedNode(QuadMapInv(0,N))%np%tmp = 0
+      Side%CurvedNode(QuadMapInv(N,0))%np%tmp = 0
+      Side%CurvedNode(QuadMapInv(N,N))%np%tmp = 0
+    ELSE IF(Side%BC%BCType.EQ.1) THEN
+      ! Go through all 4 corner nodes
+      Side%CurvedNode(QuadMapInv(0,0))%np%tmp = 0
+      Side%CurvedNode(QuadMapInv(0,N))%np%tmp = 0
+      Side%CurvedNode(QuadMapInv(N,0))%np%tmp = 0
+      Side%CurvedNode(QuadMapInv(N,N))%np%tmp = 0
+    ELSE
+      DO i=1,Side%nCurvedNodes
+        Side%CurvedNode(i)%np%tmp = 0
+      END DO
     END IF
-    IF(Side%BC%BCType.EQ.1) THEN
-      Side=>Side%nextElemSide
-      CYCLE
-    END IF
-    DO i=1,Side%nCurvedNodes
-      Side%CurvedNode(i)%np%tmp = 0
-    END DO
     Side=>Side%nextElemSide
   END DO
   Elem=>Elem%nextElem
@@ -178,16 +233,95 @@ Elem=>FirstElem
 DO WHILE(ASSOCIATED(Elem))
   Side=>Elem%firstSide
   DO WHILE(ASSOCIATED(Side))
-    ! Cycle for non-bc sides
     IF(.NOT.ASSOCIATED(Side%BC)) THEN
-      Side=>Side%nextElemSide
-      CYCLE
-    END IF
-    IF(Side%BC%BCType.EQ.1) THEN
-      Side=>Side%nextElemSide
-      CYCLE
-    END IF
-    IF (Side%CurveIndex.LE.0) THEN
+      ! Not a BC Side. If not already in the list, add the corner nodes of this side to the RBF control points,
+      ! with 0 displacement. This means we do not deform the corners of the hexas.
+
+      ! Go through all 4 corner nodes
+      IF (.NOT.(Side%CurvedNode(QuadMapInv(0,0))%np%tmp.EQ.1)) THEN
+        ! Increase index of boundary points
+        iBP = iBP + 1
+        ! Store reference coordinates, which are the curved node coordinates for linear surfaces
+        RefCoordinates(1:3,iBP) = Side%CurvedNode(QuadMapInv(0,0))%np%x
+        ! Set displacement to zero
+        RBFRHS(iBP,1:3) = 0.
+        ! Mark this side node as done
+        Side%CurvedNode(QuadMapInv(0,0))%np%tmp = 1
+      END IF
+      IF (.NOT.(Side%CurvedNode(QuadMapInv(0,N))%np%tmp.EQ.1)) THEN
+        ! Increase index of boundary points
+        iBP = iBP + 1
+        ! Store reference coordinates, which are the curved node coordinates for linear surfaces
+        RefCoordinates(1:3,iBP) = Side%CurvedNode(QuadMapInv(0,N))%np%x
+        ! Set displacement to zero
+        RBFRHS(iBP,1:3) = 0.
+        ! Mark this side node as done
+        Side%CurvedNode(QuadMapInv(0,N))%np%tmp = 1
+      END IF
+      IF (.NOT.(Side%CurvedNode(QuadMapInv(N,0))%np%tmp.EQ.1)) THEN
+        ! Increase index of boundary points
+        iBP = iBP + 1
+        ! Store reference coordinates, which are the curved node coordinates for linear surfaces
+        RefCoordinates(1:3,iBP) = Side%CurvedNode(QuadMapInv(N,0))%np%x
+        ! Set displacement to zero
+        RBFRHS(iBP,1:3) = 0.
+        ! Mark this side node as done
+        Side%CurvedNode(QuadMapInv(N,0))%np%tmp = 1
+      END IF
+      IF (.NOT.(Side%CurvedNode(QuadMapInv(N,N))%np%tmp.EQ.1)) THEN
+        ! Increase index of boundary points
+        iBP = iBP + 1
+        ! Store reference coordinates, which are the curved node coordinates for linear surfaces
+        RefCoordinates(1:3,iBP) = Side%CurvedNode(QuadMapInv(N,N))%np%x
+        ! Set displacement to zero
+        RBFRHS(iBP,1:3) = 0.
+        ! Mark this side node as done
+        Side%CurvedNode(QuadMapInv(N,N))%np%tmp = 1
+      END IF
+    ELSE IF(Side%BC%BCType.EQ.1) THEN
+      ! Periodic side, also fix the corner nodes
+      ! Go through all 4 corner nodes
+      IF (.NOT.(Side%CurvedNode(QuadMapInv(0,0))%np%tmp.EQ.1)) THEN
+        ! Increase index of boundary points
+        iBP = iBP + 1
+        ! Store reference coordinates, which are the curved node coordinates for linear surfaces
+        RefCoordinates(1:3,iBP) = Side%CurvedNode(QuadMapInv(0,0))%np%x
+        ! Set displacement to zero
+        RBFRHS(iBP,1:3) = 0.
+        ! Mark this side node as done
+        Side%CurvedNode(QuadMapInv(0,0))%np%tmp = 1
+      END IF
+      IF (.NOT.(Side%CurvedNode(QuadMapInv(0,N))%np%tmp.EQ.1)) THEN
+        ! Increase index of boundary points
+        iBP = iBP + 1
+        ! Store reference coordinates, which are the curved node coordinates for linear surfaces
+        RefCoordinates(1:3,iBP) = Side%CurvedNode(QuadMapInv(0,N))%np%x
+        ! Set displacement to zero
+        RBFRHS(iBP,1:3) = 0.
+        ! Mark this side node as done
+        Side%CurvedNode(QuadMapInv(0,N))%np%tmp = 1
+      END IF
+      IF (.NOT.(Side%CurvedNode(QuadMapInv(N,0))%np%tmp.EQ.1)) THEN
+        ! Increase index of boundary points
+        iBP = iBP + 1
+        ! Store reference coordinates, which are the curved node coordinates for linear surfaces
+        RefCoordinates(1:3,iBP) = Side%CurvedNode(QuadMapInv(N,0))%np%x
+        ! Set displacement to zero
+        RBFRHS(iBP,1:3) = 0.
+        ! Mark this side node as done
+        Side%CurvedNode(QuadMapInv(N,0))%np%tmp = 1
+      END IF
+      IF (.NOT.(Side%CurvedNode(QuadMapInv(N,N))%np%tmp.EQ.1)) THEN
+        ! Increase index of boundary points
+        iBP = iBP + 1
+        ! Store reference coordinates, which are the curved node coordinates for linear surfaces
+        RefCoordinates(1:3,iBP) = Side%CurvedNode(QuadMapInv(N,N))%np%x
+        ! Set displacement to zero
+        RBFRHS(iBP,1:3) = 0.
+        ! Mark this side node as done
+        Side%CurvedNode(QuadMapInv(N,N))%np%tmp = 1
+      END IF
+    ELSE IF (Side%CurveIndex.LE.0) THEN
       ! Linear surfaces
       DO i=1,Side%nCurvedNodes
         ! Skip already marked boundary points
@@ -224,7 +358,7 @@ DO WHILE(ASSOCIATED(Elem))
         ! Mark this side node as done
         Side%CurvedNode(i)%np%tmp = 1
       END DO
-    END IF ! linear or curved side
+    END IF
     Side=>Side%nextElemSide
   END DO
   Elem=>Elem%nextElem
