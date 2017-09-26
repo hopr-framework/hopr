@@ -265,7 +265,7 @@ RBFMatrix = RBFMatrix_tmp
 DEALLOCATE(RBFMatrix_tmp)
 
 ! Evaluate the coefficients of the RBF interpolation by applying the inverse of the matrix to the R.H.S.
-RBFResult(1:nBP,1:nBP) = MATMUL(RBFMatrix(1:nBP,1:nBP),RBFRHS(1:nBP,:))
+RBFResult(1:nBP+4,1:3) = MATMUL(RBFMatrix(1:nBP+4,1:nBP+4),RBFRHS(1:nBP+4,1:3))
 
 Elem=>FirstElem
 DO WHILE(ASSOCIATED(Elem))
@@ -370,31 +370,35 @@ CASE(6)
   ELSE
     EvaluateRBF = 1.+(80./3.)*(xi**2.)-40.*(xi**3.)+15.*(xi**4.)-(8./3.)*(xi**5.)+20.*(xi**2.)*LOG(xi)
   END IF
+  IF (xi.LT.10E-13) EvaluateRBF=1.
 CASE(7)
   IF (xi.GT.1.) THEN
     EvaluateRBF = 0.
   ELSE
     EvaluateRBF = 1.-30.*(xi**2.)-10.*(xi**3.)+45.*(xi**4.)-6.*(xi**5.)-60.*(xi**3.)*LOG(xi)
   END IF
+  IF (xi.LT.10E-13) EvaluateRBF=1.
 CASE(8)
   IF (xi.GT.1.) THEN
     EvaluateRBF = 0.
   ELSE
     EvaluateRBF = 1.-20.*(xi**2.)+80.*(xi**3.)-45.*(xi**4.)-16.*(xi**5.)+60.*(xi**4.)*LOG(xi)
   END IF
+  IF (xi.LT.10E-13) EvaluateRBF=1.
 ! Global support RBFs
 CASE(9)
-    EvaluateRBF = (xi**2.)*LOG(xi)
+  EvaluateRBF = (xi**2.)*LOG(xi)
+  IF (xi.LT.10E-13) EvaluateRBF=0.
 CASE(10)
-    EvaluateRBF = SQRT((a**2.)+(xi**2.))
+  EvaluateRBF = SQRT((a**2.)+(xi**2.))
 CASE(11)
-    EvaluateRBF = SQRT(1./((a**2.)+(xi**2.)))
+  EvaluateRBF = SQRT(1./((a**2.)+(xi**2.)))
 CASE(12)
-    EvaluateRBF = 1.+(xi**2.)
+  EvaluateRBF = 1.+(xi**2.)
 CASE(13)
-    EvaluateRBF = 1./(1.+(xi**2.))
+  EvaluateRBF = 1./(1.+(xi**2.))
 CASE(14)
-    EvaluateRBF = EXP(-(xi**2.))
+  EvaluateRBF = EXP(-(xi**2.))
 CASE DEFAULT
   CALL Abort(__STAMP__,'RBF Type is unknown')
 END SELECT
