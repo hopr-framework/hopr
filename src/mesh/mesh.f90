@@ -620,16 +620,16 @@ IF(useCurveds)THEN
 
 END IF ! useCurveds
 
-! make all nodes unique
-CALL GlobalUniqueNodes(.TRUE.)
-! Call RBF curving after GlobalUniqueNodes, since no double entries in the RBF nodes are allowed
-IF (useCurveds.AND.useRBF) CALL RBFVolumeCurving()
-
 IF(doExactSurfProjection) CALL ProjectToExactSurfaces()
 ! get element types
 CALL FindElemTypes()
 ! correct displacement in z (e.g. for periodic/2.5D)
+CALL GlobalUniqueNodes(.TRUE.)
 IF(doZcorrection) CALL zCorrection()
+
+! make all nodes unique
+! Call RBF curving after GlobalUniqueNodes, since no double entries in the RBF nodes are allowed
+IF (useCurveds.AND.useRBF) CALL RBFVolumeCurving()
 
 CALL CheckNodeConnectivity()
 
