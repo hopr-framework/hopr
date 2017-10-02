@@ -433,6 +433,8 @@ DO WHILE(ASSOCIATED(Elem))
   DO i=1,Elem%nCurvedNodes
     ! Evaluate the RBF interpolation at each linear volume point
     x = xTriLinear(:,i)
+    ! Only evaluate for points inside the box
+    IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) CYCLE
     xTmp = x
     DO iBP=1,nBP
       dist = Distance(x,RefCoordinates(:,iBP))
