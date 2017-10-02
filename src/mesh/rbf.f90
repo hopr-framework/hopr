@@ -26,19 +26,22 @@ SUBROUTINE RBFVolumeCurving()
 !----------------------------------------------------------------------------------------------------------------------------------!
 ! Volume curving based on an radial basis function interpolation of the curved boundary surfaces.
 ! General structure:
-!  * Build RBF basis. We need to build a list of all boundary points (unique!), and save both the curved coordinates as well
-!    as the linear ones. To build the list we loop over all sides, which means we visit each boundary point multiple times.
+!  * Build RBF basis. We need to build a list of all control points (unique!), and save the uncurved coordinates.
+!    We take all boundary points as control points as well as the corner nodes of the inner cells.
+!    To build the list we loop over all sides, which means we visit each boundary point multiple times.
 !    To keep the list unique we use a temporary marker to mark all already visited points.
 !    Then the RBF equation system can be built: The matrix is built by evaluating each radial basis function at
-!    each control point (e.g. all uncurved boundary points). The right hand side is built by taking the difference between the linear
-!    and the curved coordinates of the control points - we interpolate the displacement.  Non-curved boundary points are included
-!    in the RBF system by setting the R.H.S. to zero.
-!    To get the coordinates of the uncurved high-order mesh points we perform a "manual" change basis (e.g. MATMUL with Vandermodne)
-!    matrix from the corner points of the curved element (which are of course equal to the uncurved points) to the boundary order.
+!    each control point . The right hand side is built by taking the difference between the linear
+!    and the curved coordinates of the control points - we interpolate the displacement.  Non-curved boundary points
+!    and corner nodes of inner cells are included in the RBF system by setting the R.H.S. to zero.
+!    To get the coordinates of the uncurved high-order mesh points we perform a "manual" change basis (e.g. MATMUL with Vandermonde
+!    matrix) from the corner points of the curved element (which are of course equal to the uncurved points) to the boundary order.
 !    We then invert the matrix to solve the system directly.
 !  * In another loop over all elements we evaluate the interpolation of the displacement for each volume point of the mesh.
 !    We add the interpolation to the uncurved mesh point coordinates to get the curved volume position. On the boundary points
 !    this will recover the curved coordinates which served as our input.
+!
+! The user can define a box which restricts the curving to reduce compuational effort and memory usage.
 !----------------------------------------------------------------------------------------------------------------------------------!
 ! MODULES                                                                                                                          !
 USE MOD_Globals
@@ -98,7 +101,12 @@ DEALLOCATE(QuadMapLinear)
 CALL getBasisMappingHexa(1,nAns,HexaMapLinear,HexaMapInvLinear)
 DEALLOCATE(HexaMapLinear)
 
-! Reset the tmp variable later used to mark the boundary point
+
+!--------------------------------------------------------------------------------------------------------!
+! Count number of control points, needed to allocate space etc.
+!--------------------------------------------------------------------------------------------------------!
+
+! Reset the tmp variable later used to mark already visited control points
 Elem=>FirstElem
 DO WHILE(ASSOCIATED(Elem))
   Side=>Elem%firstSide
@@ -124,18 +132,19 @@ DO WHILE(ASSOCIATED(Elem))
   END DO
   Elem=>Elem%nextElem
 END DO
-! Loop over all sides and count the number of unique boundary points
+
 nBP = 0
 Elem=>FirstElem
 DO WHILE(ASSOCIATED(Elem))
   Side=>Elem%firstSide
   DO WHILE(ASSOCIATED(Side))
     IF(.NOT.ASSOCIATED(Side%BC)) THEN
-      ! Go through all 4 corner nodes
+      ! Not a BC, include the corner nodes
       IF (.NOT.(Side%CurvedNode(QuadMapInv(0,0))%np%tmp.EQ.1)) THEN
+        ! Check if node is inside the box
         x = Side%CurvedNode(QuadMapInv(0,0))%np%x
         IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
-        ! Increase count of boundary points
+        ! Increase count of boundary points if inside the box
         nBP = nBP + 1
         ! Mark this side node as done
         Side%CurvedNode(QuadMapInv(0,0))%np%tmp = 1
@@ -143,70 +152,54 @@ DO WHILE(ASSOCIATED(Elem))
       IF (.NOT.(Side%CurvedNode(QuadMapInv(0,N))%np%tmp.EQ.1)) THEN
         x = Side%CurvedNode(QuadMapInv(0,0))%np%x
         IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
-        ! Increase count of boundary points
         nBP = nBP + 1
-        ! Mark this side node as done
         Side%CurvedNode(QuadMapInv(0,N))%np%tmp = 1
       END IF
       IF (.NOT.(Side%CurvedNode(QuadMapInv(N,0))%np%tmp.EQ.1)) THEN
         x = Side%CurvedNode(QuadMapInv(0,0))%np%x
         IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
-        ! Increase count of boundary points
         nBP = nBP + 1
-        ! Mark this side node as done
         Side%CurvedNode(QuadMapInv(N,0))%np%tmp = 1
       END IF
       IF (.NOT.(Side%CurvedNode(QuadMapInv(N,N))%np%tmp.EQ.1)) THEN
         x = Side%CurvedNode(QuadMapInv(0,0))%np%x
         IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
-        ! Increase count of boundary points
         nBP = nBP + 1
-        ! Mark this side node as done
         Side%CurvedNode(QuadMapInv(N,N))%np%tmp = 1
       END IF
     ELSE IF(Side%BC%BCType.EQ.1) THEN
-      ! Go through all 4 corner nodes
+      ! Periodic BC, threat like a normal (non-BC) side
       IF (.NOT.(Side%CurvedNode(QuadMapInv(0,0))%np%tmp.EQ.1)) THEN
         x = Side%CurvedNode(QuadMapInv(0,0))%np%x
         IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
-        ! Increase count of boundary points
         nBP = nBP + 1
-        ! Mark this side node as done
         Side%CurvedNode(QuadMapInv(0,0))%np%tmp = 1
       END IF
       IF (.NOT.(Side%CurvedNode(QuadMapInv(0,N))%np%tmp.EQ.1)) THEN
         x = Side%CurvedNode(QuadMapInv(0,0))%np%x
         IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
-        ! Increase count of boundary points
         nBP = nBP + 1
-        ! Mark this side node as done
         Side%CurvedNode(QuadMapInv(0,N))%np%tmp = 1
       END IF
       IF (.NOT.(Side%CurvedNode(QuadMapInv(N,0))%np%tmp.EQ.1)) THEN
         x = Side%CurvedNode(QuadMapInv(0,0))%np%x
         IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
-        ! Increase count of boundary points
         nBP = nBP + 1
-        ! Mark this side node as done
         Side%CurvedNode(QuadMapInv(N,0))%np%tmp = 1
       END IF
       IF (.NOT.(Side%CurvedNode(QuadMapInv(N,N))%np%tmp.EQ.1)) THEN
         x = Side%CurvedNode(QuadMapInv(0,0))%np%x
         IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
-        ! Increase count of boundary points
         nBP = nBP + 1
-        ! Mark this side node as done
         Side%CurvedNode(QuadMapInv(N,N))%np%tmp = 1
       END IF
     ELSE
+      ! BC side, include all nodes as control points
       DO i=1,Side%nCurvedNodes
         x = Side%CurvedNode(QuadMapInv(0,0))%np%x
         IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) CYCLE
-        ! Skip already marked boundary points
         IF (Side%CurvedNode(i)%np%tmp.EQ.1) CYCLE
-        ! Increase count of boundary points
         nBP = nBP + 1
-        ! Mark this side node as included in the unique list of boundary points
         Side%CurvedNode(i)%np%tmp = 1
       END DO
     END IF
@@ -225,6 +218,11 @@ ALLOCATE(RBFRHS(1:nBP+4,1:3))          ! Right hand side of RBF system, last ind
 ALLOCATE(RBFResult(1:nBP+4,3))         ! Coefficients of RBF interpolation = result of EQS, last index = component of coordinates
 
 
+!--------------------------------------------------------------------------------------------------------!
+! With memory allocated, store the uncurved coordinates of the control points
+! and calculate the displacement 
+!--------------------------------------------------------------------------------------------------------!
+
 ! Reset the tmp variable later used to mark the boundary point
 Elem=>FirstElem
 DO WHILE(ASSOCIATED(Elem))
@@ -252,25 +250,23 @@ DO WHILE(ASSOCIATED(Elem))
   Elem=>Elem%nextElem
 END DO
 
-! Store the RefCoordinates (uncurved) for the boundary points and the displacement between uncurved and curved coordinates
 iBP = 0
 Elem=>FirstElem
 DO WHILE(ASSOCIATED(Elem))
   Side=>Elem%firstSide
   DO WHILE(ASSOCIATED(Side))
     IF(.NOT.ASSOCIATED(Side%BC)) THEN
-      ! Not a BC Side. If not already in the list, add the corner nodes of this side to the RBF control points,
-      ! with 0 displacement. This means we do not deform the corners of the hexas.
-
-      ! Go through all 4 corner nodes
+      ! Inner side, the corner nodes are included with zero displacement
       IF (.NOT.(Side%CurvedNode(QuadMapInv(0,0))%np%tmp.EQ.1)) THEN
+        ! Check if inside of box
         x = Side%CurvedNode(QuadMapInv(0,0))%np%x
         IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
         ! Increase index of boundary points
         iBP = iBP + 1
-        ! Store reference coordinates, which are the curved node coordinates for linear surfaces
+        ! Store reference coordinates, which are the uncurved node coordinates
+        ! (= curved for linear surfaces)
         RefCoordinates(1:3,iBP) = Side%CurvedNode(QuadMapInv(0,0))%np%x
-        ! Set displacement to zero
+        ! Set displacement
         RBFRHS(iBP,1:3) = 0.
         ! Mark this side node as done
         Side%CurvedNode(QuadMapInv(0,0))%np%tmp = 1
@@ -278,104 +274,70 @@ DO WHILE(ASSOCIATED(Elem))
       IF (.NOT.(Side%CurvedNode(QuadMapInv(0,N))%np%tmp.EQ.1)) THEN
         x = Side%CurvedNode(QuadMapInv(0,0))%np%x
         IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
-        ! Increase index of boundary points
         iBP = iBP + 1
-        ! Store reference coordinates, which are the curved node coordinates for linear surfaces
         RefCoordinates(1:3,iBP) = Side%CurvedNode(QuadMapInv(0,N))%np%x
-        ! Set displacement to zero
         RBFRHS(iBP,1:3) = 0.
-        ! Mark this side node as done
         Side%CurvedNode(QuadMapInv(0,N))%np%tmp = 1
       END IF
       IF (.NOT.(Side%CurvedNode(QuadMapInv(N,0))%np%tmp.EQ.1)) THEN
         x = Side%CurvedNode(QuadMapInv(0,0))%np%x
         IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
-        ! Increase index of boundary points
         iBP = iBP + 1
-        ! Store reference coordinates, which are the curved node coordinates for linear surfaces
         RefCoordinates(1:3,iBP) = Side%CurvedNode(QuadMapInv(N,0))%np%x
-        ! Set displacement to zero
         RBFRHS(iBP,1:3) = 0.
-        ! Mark this side node as done
         Side%CurvedNode(QuadMapInv(N,0))%np%tmp = 1
       END IF
       IF (.NOT.(Side%CurvedNode(QuadMapInv(N,N))%np%tmp.EQ.1)) THEN
         x = Side%CurvedNode(QuadMapInv(0,0))%np%x
         IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
-        ! Increase index of boundary points
         iBP = iBP + 1
-        ! Store reference coordinates, which are the curved node coordinates for linear surfaces
         RefCoordinates(1:3,iBP) = Side%CurvedNode(QuadMapInv(N,N))%np%x
-        ! Set displacement to zero
         RBFRHS(iBP,1:3) = 0.
-        ! Mark this side node as done
         Side%CurvedNode(QuadMapInv(N,N))%np%tmp = 1
       END IF
     ELSE IF(Side%BC%BCType.EQ.1) THEN
       ! Periodic side, also fix the corner nodes
-      ! Go through all 4 corner nodes
       IF (.NOT.(Side%CurvedNode(QuadMapInv(0,0))%np%tmp.EQ.1)) THEN
         x = Side%CurvedNode(QuadMapInv(0,0))%np%x
         IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
-        ! Increase index of boundary points
         iBP = iBP + 1
-        ! Store reference coordinates, which are the curved node coordinates for linear surfaces
         RefCoordinates(1:3,iBP) = Side%CurvedNode(QuadMapInv(0,0))%np%x
-        ! Set displacement to zero
         RBFRHS(iBP,1:3) = 0.
-        ! Mark this side node as done
         Side%CurvedNode(QuadMapInv(0,0))%np%tmp = 1
       END IF
       IF (.NOT.(Side%CurvedNode(QuadMapInv(0,N))%np%tmp.EQ.1)) THEN
         x = Side%CurvedNode(QuadMapInv(0,0))%np%x
         IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
-        ! Increase index of boundary points
         iBP = iBP + 1
-        ! Store reference coordinates, which are the curved node coordinates for linear surfaces
         RefCoordinates(1:3,iBP) = Side%CurvedNode(QuadMapInv(0,N))%np%x
-        ! Set displacement to zero
         RBFRHS(iBP,1:3) = 0.
-        ! Mark this side node as done
         Side%CurvedNode(QuadMapInv(0,N))%np%tmp = 1
       END IF
       IF (.NOT.(Side%CurvedNode(QuadMapInv(N,0))%np%tmp.EQ.1)) THEN
         x = Side%CurvedNode(QuadMapInv(0,0))%np%x
         IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
-        ! Increase index of boundary points
         iBP = iBP + 1
-        ! Store reference coordinates, which are the curved node coordinates for linear surfaces
         RefCoordinates(1:3,iBP) = Side%CurvedNode(QuadMapInv(N,0))%np%x
-        ! Set displacement to zero
         RBFRHS(iBP,1:3) = 0.
-        ! Mark this side node as done
         Side%CurvedNode(QuadMapInv(N,0))%np%tmp = 1
       END IF
       IF (.NOT.(Side%CurvedNode(QuadMapInv(N,N))%np%tmp.EQ.1)) THEN
         x = Side%CurvedNode(QuadMapInv(0,0))%np%x
         IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
-        ! Increase index of boundary points
         iBP = iBP + 1
-        ! Store reference coordinates, which are the curved node coordinates for linear surfaces
         RefCoordinates(1:3,iBP) = Side%CurvedNode(QuadMapInv(N,N))%np%x
-        ! Set displacement to zero
         RBFRHS(iBP,1:3) = 0.
-        ! Mark this side node as done
         Side%CurvedNode(QuadMapInv(N,N))%np%tmp = 1
       END IF
     ELSE IF (Side%CurveIndex.LE.0) THEN
-      ! Linear surfaces
+      ! Boundaries, but uncurved - all nodes are fixed
       DO i=1,Side%nCurvedNodes
         x = Side%CurvedNode(QuadMapInv(0,0))%np%x
         IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) CYCLE
-        ! Skip already marked boundary points
         IF (Side%CurvedNode(i)%np%tmp.EQ.1) CYCLE
-        ! Increase index of boundary points
         iBP = iBP + 1
-        ! Store reference coordinates, which are the curved node coordinates for linear surfaces
         RefCoordinates(1:3,iBP) = Side%CurvedNode(i)%np%x
-        ! Set displacement to zero
         RBFRHS(iBP,1:3) = 0.
-        ! Mark this side node as done
         Side%CurvedNode(i)%np%tmp = 1
       END DO
     ELSE
@@ -412,6 +374,9 @@ END DO
 ! Set the rows of the R.H.S. associated with the linear polynomial to zero
 RBFRHS(nBP+1:nBP+4,:) = 0.
 
+!--------------------------------------------------------------------------------------------------------!
+! Solve the RBF system
+!--------------------------------------------------------------------------------------------------------!
 ! Build the RBF matrix
 ! Upper left part: M_i,j = phi(abs(X(i)-X(j)))
 DO j=1,nBP; DO i=1,nBP
@@ -442,6 +407,10 @@ DEALLOCATE(RBFMatrix)
 ALLOCATE(RBFMatrix(1:nBP+4,1:nBP+4))
 RBFMatrix = RBFMatrix_tmp
 DEALLOCATE(RBFMatrix_tmp)
+
+!--------------------------------------------------------------------------------------------------------!
+! Evaluate the interpolation for all nodes in the volume
+!--------------------------------------------------------------------------------------------------------!
 
 ! Evaluate the coefficients of the RBF interpolation by applying the inverse of the matrix to the R.H.S.
 RBFResult(1:nBP+4,1:3) = MATMUL(RBFMatrix(1:nBP+4,1:nBP+4),RBFRHS(1:nBP+4,1:3))
