@@ -59,12 +59,10 @@ TYPE(tSide),POINTER    :: Side
 INTEGER                :: i,j,nAns
 REAL,ALLOCATABLE       :: RefCoordinates(:,:)            ! Coordinates of boundary points
 REAL,ALLOCATABLE       :: RBFMatrix(:,:)                 ! Matrix of the linear system
-REAL,ALLOCATABLE       :: RBFMatrix_tmp(:,:)
 REAL,ALLOCATABLE       :: RBFRHS(:,:)
 INTEGER                :: nBP                            ! Number of boundary points considered
 REAL,ALLOCATABLE       :: Vdm_SurfBiLinear(:,:),Vdm_VolTriLinear(:,:)
 REAL,ALLOCATABLE       :: D_tmp(:,:,:)
-REAL,ALLOCATABLE       :: RBFResult(:,:)
 INTEGER,ALLOCATABLE    :: QuadMapInvLinear(:,:)
 INTEGER,ALLOCATABLE    :: HexaMapInvLinear(:,:,:)
 INTEGER,ALLOCATABLE    :: QuadMapLinear(:,:)
@@ -215,9 +213,9 @@ WRITE(*,*) 'Number of RBF control points: ',nBP
 ALLOCATE(RefCoordinates(1:3,1:nBP))    ! Coordinates of UNCURVED boundary points
 ALLOCATE(RBFMatrix(1:nBP+4,1:nBP+4))   ! Matrix of RBF system
 ALLOCATE(RBFRHS(1:nBP+4,1:3))          ! Right hand side of RBF system, last index = component of coordinates
-ALLOCATE(RBFResult(1:nBP+4,3))         ! Coefficients of RBF interpolation = result of EQS, last index = component of coordinates
 
 
+WRITE(*,*) 'Building RBF matrix entries... '
 !--------------------------------------------------------------------------------------------------------!
 ! With memory allocated, store the uncurved coordinates of the control points
 ! and calculate the displacement 
@@ -377,6 +375,7 @@ RBFRHS(nBP+1:nBP+4,:) = 0.
 !--------------------------------------------------------------------------------------------------------!
 ! Solve the RBF system
 !--------------------------------------------------------------------------------------------------------!
+WRITE(*,*) 'Solving RBF system... '
 ! Build the RBF matrix
 ! Upper left part: M_i,j = phi(abs(X(i)-X(j)))
 DO j=1,nBP; DO i=1,nBP
@@ -400,20 +399,14 @@ DO j=nBP+1,nBP+4; DO i=nBP+1,nBP+4
   RBFMatrix(i,j) = 0.
 END DO; END DO ! j,i=nBP+1,nBP+4
 
-! Now compute the inverse using LAPACK and store in the original array
-ALLOCATE(RBFMatrix_tmp(1:nBP+4,1:nBP+4))
-RBFMatrix_tmp = GetInverse(nBP+4,RBFMatrix(1:nBP+4,1:nBP+4))
+! Solve the system for all RHSs - RBFRHS will then contain the solution to the system!
+CALL SolveLinSys(nBP+4,3,RBFMatrix,RBFRHS)
 DEALLOCATE(RBFMatrix)
-ALLOCATE(RBFMatrix(1:nBP+4,1:nBP+4))
-RBFMatrix = RBFMatrix_tmp
-DEALLOCATE(RBFMatrix_tmp)
 
 !--------------------------------------------------------------------------------------------------------!
 ! Evaluate the interpolation for all nodes in the volume
 !--------------------------------------------------------------------------------------------------------!
-
-! Evaluate the coefficients of the RBF interpolation by applying the inverse of the matrix to the R.H.S.
-RBFResult(1:nBP+4,1:3) = MATMUL(RBFMatrix(1:nBP+4,1:nBP+4),RBFRHS(1:nBP+4,1:3))
+WRITE(*,*) 'Evaluating RBF interpolation... '
 
 Elem=>FirstElem
 DO WHILE(ASSOCIATED(Elem))
@@ -439,21 +432,22 @@ DO WHILE(ASSOCIATED(Elem))
     DO iBP=1,nBP
       dist = Distance(x,RefCoordinates(:,iBP))
       RBFValue = EvaluateRBF(dist)
-      xTmp(1) = xTmp(1) + RBFValue*RBFResult(iBP,1)
-      xTmp(2) = xTmp(2) + RBFValue*RBFResult(iBP,2)
-      xTmp(3) = xTmp(3) + RBFValue*RBFResult(iBP,3)
+      xTmp(1) = xTmp(1) + RBFValue*RBFRHS(iBP,1)
+      xTmp(2) = xTmp(2) + RBFValue*RBFRHS(iBP,2)
+      xTmp(3) = xTmp(3) + RBFValue*RBFRHS(iBP,3)
     END DO
     ! Take linear polynomial into account
-    xTmp = xTmp + RBFResult(nBP+1,:) ! constant part
-    xTmp(1) = xTmp(1) + DOT_PRODUCT(RBFResult(nBP+2:nBP+4,1),x(:)) ! Linear part
-    xTmp(2) = xTmp(2) + DOT_PRODUCT(RBFResult(nBP+2:nBP+4,2),x(:)) ! Linear part
-    xTmp(3) = xTmp(3) + DOT_PRODUCT(RBFResult(nBP+2:nBP+4,3),x(:)) ! Linear part
+    xTmp = xTmp + RBFRHS(nBP+1,:) ! constant part
+    xTmp(1) = xTmp(1) + DOT_PRODUCT(RBFRHS(nBP+2:nBP+4,1),x(:)) ! Linear part
+    xTmp(2) = xTmp(2) + DOT_PRODUCT(RBFRHS(nBP+2:nBP+4,2),x(:)) ! Linear part
+    xTmp(3) = xTmp(3) + DOT_PRODUCT(RBFRHS(nBP+2:nBP+4,3),x(:)) ! Linear part
     ! Overwrite curved node position by interpolation
     Elem%CurvedNode(i)%np%x = xTmp
   END DO
   Elem=>Elem%nextElem
 END DO
 
+DEALLOCATE(RBFRHS)
 WRITE(UNIT_stdOut,'(A)')' VOLUME CURVING DONE!'
 
 END SUBROUTINE RBFVolumeCurving
