@@ -70,10 +70,17 @@ REAL                   :: xTriLinear(3,BoundaryOrder**3),xBiLinear(3,BoundaryOrd
 REAL                   :: xCornerVol(1:3,8),xCornerSurf(1:3,4)
 REAL                   :: dist,x(3),xTmp(3),rbfvalue
 INTEGER                :: iBP
+REAL                   :: xMin,xMax,yMin,yMax
 !===================================================================================================================================
 
 WRITE(UNIT_StdOut,'(132("-"))')
 WRITE(UNIT_stdOut,'(A)') ' RBF VOLUME CURVING'
+
+! Box where curving should be done
+xMin = xlim(1)
+xMax = xlim(2)
+yMin = ylim(1)
+yMax = ylim(2)
 
 ! Build 2D Vandermonde from corner nodes to bi-linear side nodes
 CALL getQuadBasis(1,BoundaryOrder,Vdm_SurfBiLinear,D_tmp)
@@ -126,24 +133,32 @@ DO WHILE(ASSOCIATED(Elem))
     IF(.NOT.ASSOCIATED(Side%BC)) THEN
       ! Go through all 4 corner nodes
       IF (.NOT.(Side%CurvedNode(QuadMapInv(0,0))%np%tmp.EQ.1)) THEN
+        x = Side%CurvedNode(QuadMapInv(0,0))%np%x
+        IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
         ! Increase count of boundary points
         nBP = nBP + 1
         ! Mark this side node as done
         Side%CurvedNode(QuadMapInv(0,0))%np%tmp = 1
       END IF
       IF (.NOT.(Side%CurvedNode(QuadMapInv(0,N))%np%tmp.EQ.1)) THEN
+        x = Side%CurvedNode(QuadMapInv(0,0))%np%x
+        IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
         ! Increase count of boundary points
         nBP = nBP + 1
         ! Mark this side node as done
         Side%CurvedNode(QuadMapInv(0,N))%np%tmp = 1
       END IF
       IF (.NOT.(Side%CurvedNode(QuadMapInv(N,0))%np%tmp.EQ.1)) THEN
+        x = Side%CurvedNode(QuadMapInv(0,0))%np%x
+        IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
         ! Increase count of boundary points
         nBP = nBP + 1
         ! Mark this side node as done
         Side%CurvedNode(QuadMapInv(N,0))%np%tmp = 1
       END IF
       IF (.NOT.(Side%CurvedNode(QuadMapInv(N,N))%np%tmp.EQ.1)) THEN
+        x = Side%CurvedNode(QuadMapInv(0,0))%np%x
+        IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
         ! Increase count of boundary points
         nBP = nBP + 1
         ! Mark this side node as done
@@ -152,24 +167,32 @@ DO WHILE(ASSOCIATED(Elem))
     ELSE IF(Side%BC%BCType.EQ.1) THEN
       ! Go through all 4 corner nodes
       IF (.NOT.(Side%CurvedNode(QuadMapInv(0,0))%np%tmp.EQ.1)) THEN
+        x = Side%CurvedNode(QuadMapInv(0,0))%np%x
+        IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
         ! Increase count of boundary points
         nBP = nBP + 1
         ! Mark this side node as done
         Side%CurvedNode(QuadMapInv(0,0))%np%tmp = 1
       END IF
       IF (.NOT.(Side%CurvedNode(QuadMapInv(0,N))%np%tmp.EQ.1)) THEN
+        x = Side%CurvedNode(QuadMapInv(0,0))%np%x
+        IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
         ! Increase count of boundary points
         nBP = nBP + 1
         ! Mark this side node as done
         Side%CurvedNode(QuadMapInv(0,N))%np%tmp = 1
       END IF
       IF (.NOT.(Side%CurvedNode(QuadMapInv(N,0))%np%tmp.EQ.1)) THEN
+        x = Side%CurvedNode(QuadMapInv(0,0))%np%x
+        IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
         ! Increase count of boundary points
         nBP = nBP + 1
         ! Mark this side node as done
         Side%CurvedNode(QuadMapInv(N,0))%np%tmp = 1
       END IF
       IF (.NOT.(Side%CurvedNode(QuadMapInv(N,N))%np%tmp.EQ.1)) THEN
+        x = Side%CurvedNode(QuadMapInv(0,0))%np%x
+        IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
         ! Increase count of boundary points
         nBP = nBP + 1
         ! Mark this side node as done
@@ -177,6 +200,8 @@ DO WHILE(ASSOCIATED(Elem))
       END IF
     ELSE
       DO i=1,Side%nCurvedNodes
+        x = Side%CurvedNode(QuadMapInv(0,0))%np%x
+        IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) CYCLE
         ! Skip already marked boundary points
         IF (Side%CurvedNode(i)%np%tmp.EQ.1) CYCLE
         ! Increase count of boundary points
@@ -239,6 +264,8 @@ DO WHILE(ASSOCIATED(Elem))
 
       ! Go through all 4 corner nodes
       IF (.NOT.(Side%CurvedNode(QuadMapInv(0,0))%np%tmp.EQ.1)) THEN
+        x = Side%CurvedNode(QuadMapInv(0,0))%np%x
+        IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
         ! Increase index of boundary points
         iBP = iBP + 1
         ! Store reference coordinates, which are the curved node coordinates for linear surfaces
@@ -249,6 +276,8 @@ DO WHILE(ASSOCIATED(Elem))
         Side%CurvedNode(QuadMapInv(0,0))%np%tmp = 1
       END IF
       IF (.NOT.(Side%CurvedNode(QuadMapInv(0,N))%np%tmp.EQ.1)) THEN
+        x = Side%CurvedNode(QuadMapInv(0,0))%np%x
+        IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
         ! Increase index of boundary points
         iBP = iBP + 1
         ! Store reference coordinates, which are the curved node coordinates for linear surfaces
@@ -259,6 +288,8 @@ DO WHILE(ASSOCIATED(Elem))
         Side%CurvedNode(QuadMapInv(0,N))%np%tmp = 1
       END IF
       IF (.NOT.(Side%CurvedNode(QuadMapInv(N,0))%np%tmp.EQ.1)) THEN
+        x = Side%CurvedNode(QuadMapInv(0,0))%np%x
+        IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
         ! Increase index of boundary points
         iBP = iBP + 1
         ! Store reference coordinates, which are the curved node coordinates for linear surfaces
@@ -269,6 +300,8 @@ DO WHILE(ASSOCIATED(Elem))
         Side%CurvedNode(QuadMapInv(N,0))%np%tmp = 1
       END IF
       IF (.NOT.(Side%CurvedNode(QuadMapInv(N,N))%np%tmp.EQ.1)) THEN
+        x = Side%CurvedNode(QuadMapInv(0,0))%np%x
+        IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
         ! Increase index of boundary points
         iBP = iBP + 1
         ! Store reference coordinates, which are the curved node coordinates for linear surfaces
@@ -282,6 +315,8 @@ DO WHILE(ASSOCIATED(Elem))
       ! Periodic side, also fix the corner nodes
       ! Go through all 4 corner nodes
       IF (.NOT.(Side%CurvedNode(QuadMapInv(0,0))%np%tmp.EQ.1)) THEN
+        x = Side%CurvedNode(QuadMapInv(0,0))%np%x
+        IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
         ! Increase index of boundary points
         iBP = iBP + 1
         ! Store reference coordinates, which are the curved node coordinates for linear surfaces
@@ -292,6 +327,8 @@ DO WHILE(ASSOCIATED(Elem))
         Side%CurvedNode(QuadMapInv(0,0))%np%tmp = 1
       END IF
       IF (.NOT.(Side%CurvedNode(QuadMapInv(0,N))%np%tmp.EQ.1)) THEN
+        x = Side%CurvedNode(QuadMapInv(0,0))%np%x
+        IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
         ! Increase index of boundary points
         iBP = iBP + 1
         ! Store reference coordinates, which are the curved node coordinates for linear surfaces
@@ -302,6 +339,8 @@ DO WHILE(ASSOCIATED(Elem))
         Side%CurvedNode(QuadMapInv(0,N))%np%tmp = 1
       END IF
       IF (.NOT.(Side%CurvedNode(QuadMapInv(N,0))%np%tmp.EQ.1)) THEN
+        x = Side%CurvedNode(QuadMapInv(0,0))%np%x
+        IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
         ! Increase index of boundary points
         iBP = iBP + 1
         ! Store reference coordinates, which are the curved node coordinates for linear surfaces
@@ -312,6 +351,8 @@ DO WHILE(ASSOCIATED(Elem))
         Side%CurvedNode(QuadMapInv(N,0))%np%tmp = 1
       END IF
       IF (.NOT.(Side%CurvedNode(QuadMapInv(N,N))%np%tmp.EQ.1)) THEN
+        x = Side%CurvedNode(QuadMapInv(0,0))%np%x
+        IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
         ! Increase index of boundary points
         iBP = iBP + 1
         ! Store reference coordinates, which are the curved node coordinates for linear surfaces
@@ -324,6 +365,8 @@ DO WHILE(ASSOCIATED(Elem))
     ELSE IF (Side%CurveIndex.LE.0) THEN
       ! Linear surfaces
       DO i=1,Side%nCurvedNodes
+        x = Side%CurvedNode(QuadMapInv(0,0))%np%x
+        IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) CYCLE
         ! Skip already marked boundary points
         IF (Side%CurvedNode(i)%np%tmp.EQ.1) CYCLE
         ! Increase index of boundary points
@@ -347,6 +390,8 @@ DO WHILE(ASSOCIATED(Elem))
       xBiLinear(2,:) = MATMUL(Vdm_SurfBiLinear,xCornerSurf(2,:))
       xBiLinear(3,:) = MATMUL(Vdm_SurfBiLinear,xCornerSurf(3,:))
       DO i=1,Side%nCurvedNodes
+        IF ((xBiLinear(1,i).LT.xMin).OR.(xBiLinear(1,i).GT.xMax).OR. &
+            (xBiLinear(2,i).LT.yMin).OR.(xBiLinear(2,i).GT.yMax)) CYCLE
         ! Skip already marked boundary points
         IF (Side%CurvedNode(i)%np%tmp.EQ.1) CYCLE
         ! Increase index of boundary points

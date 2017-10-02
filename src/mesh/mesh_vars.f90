@@ -255,6 +255,7 @@ LOGICAL                        :: useRBF                 ! Volume curving using 
                                                          ! radial basis functions
 REAL                           :: SupportRadius          ! Support radius of radial basis functions
 INTEGER                        :: RBFType                ! Type of radial basis function
+REAL                           :: xlim(2),ylim(2)        ! Only inside this box the RBF curving is used
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! CURVE GRID GENERATOR
 !-----------------------------------------------------------------------------------------------------------------------------------

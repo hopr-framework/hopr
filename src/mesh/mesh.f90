@@ -245,6 +245,8 @@ IF(useCurveds) THEN
     IF (useRBF) THEN
       SupportRadius = GETREAL('SupportRadius')
       RBFType = GETINT('RBFType')
+      xlim = GETREALARRAY('xlim',2,'-1000000,1000000')
+      ylim = GETREALARRAY('ylim',2,'-1000000,1000000')
     END IF
 
   END IF
