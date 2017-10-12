@@ -297,6 +297,8 @@ INTEGER                        :: upperZ_BC_Ind          ! Boundary condition in
 LOGICAL                        :: doZcorrection 
 REAL                           :: zstart 
 LOGICAL                        :: zPeriodic 
+LOGICAL                        :: InitZOrient
+INTEGER,ALLOCATABLE            :: whichdirArr(:),orientArr(:)
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! Splitting of Elements 
 !-----------------------------------------------------------------------------------------------------------------------------------

@@ -246,6 +246,7 @@ USE MOD_Mesh_Vars,ONLY:zstart,dz,zLength,zPeriodic,nElemsZ
 USE MOD_Mesh_Vars,ONLY:BoundaryType
 USE MOD_Mesh_Tolerances,ONLY:SAMEPOINT
 USE MOD_Mesh_Vars,ONLY:N,nMeshElems
+USE MOD_Mesh_Vars,ONLY:InitZOrient,whichdirArr,orientArr
 USE MOD_Basis_Vars,ONLY:HexaMapInv
 USE MOD_ReadInTools
 ! IMPLICIT VARIABLE HANDLING
@@ -258,7 +259,6 @@ IMPLICIT NONE
 ! LOCAL VARIABLES
 TYPE(tElem),POINTER         :: Elem,lastElem  ! ?
 TYPE(tSide),POINTER         :: Side,zminusSide,zplusSide  ! ?
-INTEGER                     :: whichdirArr(nMeshElems),orientArr(nMeshElems)  ! ?
 INTEGER                     :: Map(4,2),SideMap(2)  ! ?
 INTEGER                     :: p,q,l,l1,l2,iSide  ! ?
 INTEGER                     :: switch, switch2, zcounter, whichdir  ! ?
@@ -300,28 +300,32 @@ DO WHILE(ASSOCIATED(Elem))
   Elem=>Elem%nexTElem
 END DO
 
-whichdirArr=0
-orientArr  =2
-Elem=>firstElem
-DO WHILE(ASSOCIATED(Elem))
-  dir(1,:)=NORMALIZE(Elem%node(2)%np%x-Elem%node(1)%np%x,3)
-  dir(2,:)=NORMALIZE(Elem%node(4)%np%x-Elem%node(1)%np%x,3)
-  dir(3,:)=NORMALIZE(Elem%node(5)%np%x-Elem%node(1)%np%x,3)
-  found=.FALSE.
-  DO whichdir=1,3
-    scalprod=SUM(dir(whichdir,:)*(/0.,0.,1./))
-    IF(ABS(scalprod).GT.0.5) THEN
-      found=.TRUE.
-      EXIT
+IF (InitZOrient) THEN
+  ALLOCATE(whichdirArr(nMeshElems))
+  ALLOCATE(orientArr(nMeshElems))
+  whichdirArr=0
+  orientArr  =2
+  Elem=>firstElem
+  DO WHILE(ASSOCIATED(Elem))
+    dir(1,:)=NORMALIZE(Elem%node(2)%np%x-Elem%node(1)%np%x,3)
+    dir(2,:)=NORMALIZE(Elem%node(4)%np%x-Elem%node(1)%np%x,3)
+    dir(3,:)=NORMALIZE(Elem%node(5)%np%x-Elem%node(1)%np%x,3)
+    found=.FALSE.
+    DO whichdir=1,3
+      scalprod=SUM(dir(whichdir,:)*(/0.,0.,1./))
+      IF(ABS(scalprod).GT.0.5) THEN
+        found=.TRUE.
+        EXIT
+      END IF
+    END DO
+    IF(.NOT.found) THEN
+      STOP "Element with no axis aligned with z direction found, cannot perform z correction!"
     END IF
+    whichdirArr(Elem%ind)=whichdir
+    IF(scalprod.GT.0) orientArr(Elem%ind)=1 !else is set to 2
+    Elem=>Elem%nexTElem
   END DO
-  IF(.NOT.found) THEN
-    STOP "Element with no axis aligned with z direction found, cannot perform z correction!"
-  END IF
-  whichdirArr(Elem%ind)=whichdir
-  IF(scalprod.GT.0) orientArr(Elem%ind)=1 !else is set to 2
-  Elem=>Elem%nexTElem
-END DO
+END IF
 
 ! main correction loop
 lastElem=>firstElem

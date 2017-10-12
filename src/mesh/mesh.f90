@@ -625,13 +625,21 @@ END IF ! useCurveds
 IF(doExactSurfProjection) CALL ProjectToExactSurfaces()
 ! get element types
 CALL FindElemTypes()
-! correct displacement in z (e.g. for periodic/2.5D)
+! make all nodes unique
 CALL GlobalUniqueNodes(.TRUE.)
+! correct displacement in z (e.g. for periodic/2.5D)
+InitZOrient = .TRUE.
 IF(doZcorrection) CALL zCorrection()
 
-! make all nodes unique
+
 ! Call RBF curving after GlobalUniqueNodes, since no double entries in the RBF nodes are allowed
-IF (useCurveds.AND.useRBF) CALL RBFVolumeCurving()
+IF (useCurveds.AND.useRBF) THEN
+  CALL RBFVolumeCurving()
+  ! Call z-Correction again to remove 3D effects of interpolation, zPeriodic is already done
+  zPeriodic = .FALSE.
+  InitZOrient = .FALSE.
+  IF(doZcorrection) CALL zCorrection()
+END IF
 
 CALL CheckNodeConnectivity()
 
