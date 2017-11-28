@@ -221,7 +221,6 @@ DO WHILE(ASSOCIATED(Elem))
         END IF
       END IF
       IF(Side%BC%BCType .EQ. 100) THEN
-        STOP
         nInner(1)=nInner(1)+1
         IF(.NOT. ASSOCIATED(Side%Connection)) THEN
           IF(.NOT.ASSOCIATED(Side%MortarSide))THEN
