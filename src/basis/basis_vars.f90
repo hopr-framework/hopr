@@ -9,7 +9,7 @@
 ! /____//   /____//  /______________//  /____//           /____//   |_____/)    ,X`      XXX`
 ! )____)    )____)   )______________)   )____)            )____)    )_____)   ,xX`     .XX`
 !                                                                           xxX`      XXx
-! Copyright (C) 2015  Prof. Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
+! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
 ! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
@@ -31,8 +31,7 @@ PUBLIC
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! GLOBAL VARIABLES 
 !-----------------------------------------------------------------------------------------------------------------------------------
-! Private Part ---------------------------------------------------------------------------------------------------------------------
-! Public Part ----------------------------------------------------------------------------------------------------------------------
+
 ! Vandermande and D matrices
 REAL,ALLOCATABLE,TARGET        :: VdM_visu_Tria(:,:)          
 REAL,ALLOCATABLE,TARGET        :: D_visu_Tria(:,:,:)          
@@ -46,8 +45,6 @@ REAL,ALLOCATABLE,TARGET        :: VdM_visu_Prism(:,:)
 REAL,ALLOCATABLE,TARGET        :: D_visu_Prism(:,:,:)          
 REAL,ALLOCATABLE,TARGET        :: VdM_visu_Hexa(:,:)          
 REAL,ALLOCATABLE,TARGET        :: D_visu_Hexa(:,:,:)          
-REAL,ALLOCATABLE,TARGET        :: VdM_analyze_Hexa(:,:)          
-REAL,ALLOCATABLE,TARGET        :: D_analyze_Hexa(:,:,:)          
 
 ! Tensorproduct mappings + inverse mappings for all elements
 INTEGER,ALLOCATABLE,TARGET     :: TriaMap(:,:) 

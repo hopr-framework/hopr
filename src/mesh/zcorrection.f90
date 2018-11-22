@@ -9,7 +9,7 @@
 ! /____//   /____//  /______________//  /____//           /____//   |_____/)    ,X`      XXX`
 ! )____)    )____)   )______________)   )____)            )____)    )_____)   ,xX`     .XX`
 !                                                                           xxX`      XXx
-! Copyright (C) 2015  Prof. Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
+! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
 ! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
@@ -74,8 +74,9 @@ INTEGER                     :: iNode,iSide,i,j,k,im,jm,km   ! ?
 INTEGER                     :: counter(2,3)  ! ?
 LOGICAL                     :: found
 !===================================================================================================================================
-WRITE(UNIT_stdOut,'(A)') ' ORIENT ELEMENTS IN Z FOR 3D->2D compatibility...'
 CALL Timer(.TRUE.)
+WRITE(UNIT_stdOut,'(132("~"))')
+WRITE(UNIT_stdOut,'(A)') ' ORIENT ELEMENTS IN Z FOR 3D->2D compatibility...'
 counter=0
 Elem=>firstElem
 DO WHILE(ASSOCIATED(Elem))

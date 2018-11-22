@@ -9,7 +9,7 @@
 ! /____//   /____//  /______________//  /____//           /____//   |_____/)    ,X`      XXX`
 ! )____)    )____)   )______________)   )____)            )____)    )_____)   ,xX`     .XX`
 !                                                                           xxX`      XXx
-! Copyright (C) 2015  Prof. Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
+! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
 ! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
@@ -32,9 +32,7 @@ PRIVATE
 !----------------------------------------------------------------------------------------------------------------------------------
 ! GLOBAL VARIABLES
 !----------------------------------------------------------------------------------------------------------------------------------
-! Private Part ---------------------------------------------------------------------------------------------------------------------
 
-! Public Part ----------------------------------------------------------------------------------------------------------------------
 INTERFACE ChangeBasis3D
   MODULE PROCEDURE ChangeBasis3D_Single
   MODULE PROCEDURE ChangeBasis3D_Mult
@@ -202,6 +200,8 @@ ELSE
 
 END IF
 END SUBROUTINE ChangeBasis3D_Mult
+
+
 SUBROUTINE ChangeBasis3D_Single(Dim1,N_In,N_Out,Vdm,X3D_In,X3D_Out)
 !==================================================================================================================================
 ! interpolate a 3D tensor product Lagrange basis defined by (N_in+1) 1D interpolation point positions xi_In(0:N_In)
@@ -380,6 +380,8 @@ ELSE
   DEALLOCATE(UBuf1)
 END IF
 END SUBROUTINE ChangeBasis2D_Mult
+
+
 SUBROUTINE ChangeBasis2D_Single(Dim1,N_In,N_Out,Vdm,X2D_In,X2D_Out)
 !==================================================================================================================================
 ! interpolate a 2D tensor product Lagrange basis defined by (N_in+1) 1D interpolation point positions xi_In(0:N_In)

@@ -9,7 +9,7 @@
 ! /____//   /____//  /______________//  /____//           /____//   |_____/)    ,X`      XXX`
 ! )____)    )____)   )______________)   )____)            )____)    )_____)   ,xX`     .XX`
 !                                                                           xxX`      XXx
-! Copyright (C) 2015  Prof. Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
+! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
 ! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
@@ -29,17 +29,13 @@ MODULE MOD_Readin_CGNS
 !===================================================================================================================================
 ! MODULES
 USE MOD_Globals
-!USE CGNS_header
+USE CGNS
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 PRIVATE
-  ! CGNS header file
-  INCLUDE 'cgnslib_f.h'
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! GLOBAL VARIABLES 
 !-----------------------------------------------------------------------------------------------------------------------------------
-! Private Part ---------------------------------------------------------------------------------------------------------------------
-! Public Part ----------------------------------------------------------------------------------------------------------------------
 INTERFACE ReadCGNSmesh
   MODULE PROCEDURE ReadCGNSmesh
 END INTERFACE
@@ -106,8 +102,8 @@ nZonesGlob = 0
 DO iFile=1,nMeshFiles
   ! Open CGNS file
   CALL OpenBase(TRIM(MeshFileName(iFile)),MODE_READ,md,md,CGNSFile,CGNSBase,.TRUE.)
-  !CALL CG_OPEN_F(TRIM(MeshFileName(iFile)), CG_MODE_READ, CGNSFile, iError)
   CALL CG_VERSION_F(CGNSFile, version, iError)
+  print*, iError
   WRITE(UNIT_stdOut,*)'CGNS version:',version
   CALL CG_IS_CGNS_F(TRIM(MeshFileName(iFile)), file_type, iError)
 
@@ -136,7 +132,7 @@ DO iFile=1,nMeshFiles
 
     ! Check structured / unstructured
     CALL cg_zone_type_f(CGNSFile, CGNSBase, iZone, ZoneType, iError)
-    IF (iError .NE. CG_OK) CALL cg_error_exit_f(__STAMP__,CGNSFile)
+    IF (iError .NE. CG_OK) CALL cg_error_exit_f()
     IF (ZoneType.EQ.Structured)THEN
       CALL ReadCGNSMeshStruct(FirstElem,CGNSFile,CGNSBase,iZone,nZonesGlob,nNodesGlob)
     ELSEIF(ZoneType.EQ.Unstructured)THEN
@@ -204,8 +200,9 @@ PP_CGNS_INT_TYPE             :: SizeZone(3)                         ! CGNS datas
 PP_CGNS_INT_TYPE             :: SectionElemType                     ! Type of elements in CGNS file
 PP_CGNS_INT_TYPE             :: ParentDataFlag                      ! 0=no parent data for elems available, 1=parent data available
 PP_CGNS_INT_TYPE             :: PntSetType                          ! BC data format (points or surface elemnents)
-PP_CGNS_INT_TYPE             :: NormalListFlag,DataType             ! CGNS datastructure variables
-INTEGER                      ::                         nDataSet    ! CGNS datastructure variables
+PP_CGNS_INT_TYPE             :: NormalListFlag,NormalIndex(3)          ! CGNS datastructure variables
+PP_CGNS_INT_TYPE             :: DataType                            ! CGNS datastructure variables
+PP_CGNS_INT_TYPE             ::                         nDataSet    ! CGNS datastructure variables
 PP_CGNS_INT_TYPE             :: CellDim, PhysDim                    ! Dimesnion of elements,physical dimension
 PP_CGNS_INT_TYPE             :: iError                              ! Error flag
 PP_CGNS_INT_TYPE             :: FirstElemInd  ! ?
@@ -402,7 +399,7 @@ ALLOCATE(NodeIsBCNode(nNodes))
 
 DO iBC=1,nCGNSBC
   NodeIsBCNode(:)=.FALSE.    ! Reset
-  CALL CG_BOCO_INFO_F(CGNSfile,CGNSBase,iZone,iBC,CGname,BCTypeIndex,PntSetType,nBCElems,NorVec,NormalListFlag, &
+  CALL CG_BOCO_INFO_F(CGNSfile,CGNSBase,iZone,iBC,CGname,BCTypeIndex,PntSetType,nBCElems,NormalIndex,NormalListFlag, &
                                                                                          DataType,nDataSet,iError)
   IF (iError .NE. CG_OK) CALL  abortCGNS(__STAMP__,CGNSFile)
   IF (NormalListFlag .NE. 0)THEN
@@ -779,17 +776,17 @@ DO k=1,irmax(1)
 END DO
 DEALLOCATE(NodeCoords)
 
-DO k=1,irmax(1)-N,N
-  DO l=1,irmax(2)-N,N
-    DO m=1,irmax(3)-N,N
-      CornerNode(1)%np=>Mnodes(k  ,l  ,m  )%np
-      CornerNode(2)%np=>Mnodes(k+N,l  ,m  )%np
-      CornerNode(3)%np=>Mnodes(k+N,l+N,m  )%np
-      CornerNode(4)%np=>Mnodes(k  ,l+N,m  )%np
-      CornerNode(5)%np=>Mnodes(k  ,l  ,m+N)%np
-      CornerNode(6)%np=>Mnodes(k+N,l  ,m+N)%np
-      CornerNode(7)%np=>Mnodes(k+N,l+N,m+N)%np
-      CornerNode(8)%np=>Mnodes(k  ,l+N,m+N)%np
+DO k=1,irmax(1)-N_loc,N_loc
+  DO l=1,irmax(2)-N_loc,N_loc
+    DO m=1,irmax(3)-N_loc,N_loc
+      CornerNode(1)%np=>Mnodes(k      ,l      ,m      )%np
+      CornerNode(2)%np=>Mnodes(k+N_loc,l      ,m      )%np
+      CornerNode(3)%np=>Mnodes(k+N_loc,l+N_loc,m      )%np
+      CornerNode(4)%np=>Mnodes(k      ,l+N_loc,m      )%np
+      CornerNode(5)%np=>Mnodes(k      ,l      ,m+N_loc)%np
+      CornerNode(6)%np=>Mnodes(k+N_loc,l      ,m+N_loc)%np
+      CornerNode(7)%np=>Mnodes(k+N_loc,l+N_loc,m+N_loc)%np
+      CornerNode(8)%np=>Mnodes(k      ,l+N_loc,m+N_loc)%np
       IF(meshdim.EQ.3)THEN
         CALL GetNewHexahedron(CornerNode)
         CALL CreateSides(FirstElem_in,.TRUE.)
@@ -809,7 +806,7 @@ DO k=1,irmax(1)-N,N
       IF(useCurveds.AND.MeshIsAlreadyCurved)THEN !read in curvedNodes
         FirstElem_in%nCurvedNodes=(N_loc+1)**3
         ALLOCATE(FirstElem_in%curvedNode(FirstElem_in%nCurvedNodes))
-        DO kk=0,N; DO ll=0,N; DO mm=0,N
+        DO kk=0,N_loc; DO ll=0,N_loc; DO mm=0,N_loc
           FirstElem_in%curvedNode(HexaMapInv(kk,ll,mm))%np=>Mnodes(k+kk,l+ll,m+mm)%np
         END DO; END DO; END DO
       END IF!useCurveds
@@ -821,7 +818,7 @@ DEALLOCATE(Mnodes)
 !------------------ READ BCs ------------------------------------!
 ! Check for number of Boundary Conditions nCGNSBC 
 CALL CG_NBOCOS_F(CGNSFile,CGNSBase,iZone,nCGNSBC,iError) !Number of Boundary conditions nCGNSBC
-IF (iError .NE. CG_OK) CALL cg_error_exit_f(__STAMP__,CGNSFile)
+IF (iError .NE. CG_OK) CALL cg_error_exit_f()
 
 IF (nCGNSBC.LT.1) RETURN ! exit if there are no boundary conditions
 
@@ -1074,7 +1071,7 @@ DO iZone=1,nCGNSZones
   nZonesGlob=nZonesGlob+1
   ! Check structured / unstructured
   CALL cg_zone_type_f(CGNSFile, CGNSBase, iZone, ZoneType, iError)
-  IF (iError .NE. CG_OK) CALL cg_error_exit_f(__STAMP__,CGNSFile)
+  IF (iError .NE. CG_OK) CALL cg_error_exit_f()
   IF (ZoneType.EQ.Structured)THEN
     STOP 'no structured readin for surface data'
   END IF
