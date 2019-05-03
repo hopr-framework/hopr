@@ -193,9 +193,9 @@ DO WHILE(ASSOCIATED(Elem))
       END IF
     ELSE
       ! BC side, include all nodes as control points
+      x = Side%CurvedNode(QuadMapInv(0,0))%np%x
+      IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
       DO i=1,Side%nCurvedNodes
-        x = Side%CurvedNode(QuadMapInv(0,0))%np%x
-        IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) CYCLE
         IF (Side%CurvedNode(i)%np%tmp.EQ.1) CYCLE
         nBP = nBP + 1
         Side%CurvedNode(i)%np%tmp = 1
@@ -340,6 +340,8 @@ DO WHILE(ASSOCIATED(Elem))
       END DO
     ELSE
       ! Curved surfaces
+      x = Side%CurvedNode(QuadMapInv(0,0))%np%x
+      IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
       ! Build coordinates of linear side. First, fill an temp array with the corner nodes
       xCornerSurf(:,QuadMapInvLinear(0,0)) = Side%CurvedNode(QuadMapInv(0,0))%np%x
       xCornerSurf(:,QuadMapInvLinear(0,1)) = Side%CurvedNode(QuadMapInv(0,N))%np%x
@@ -350,8 +352,6 @@ DO WHILE(ASSOCIATED(Elem))
       xBiLinear(2,:) = MATMUL(Vdm_SurfBiLinear,xCornerSurf(2,:))
       xBiLinear(3,:) = MATMUL(Vdm_SurfBiLinear,xCornerSurf(3,:))
       DO i=1,Side%nCurvedNodes
-        IF ((xBiLinear(1,i).LT.xMin).OR.(xBiLinear(1,i).GT.xMax).OR. &
-            (xBiLinear(2,i).LT.yMin).OR.(xBiLinear(2,i).GT.yMax)) CYCLE
         ! Skip already marked boundary points
         IF (Side%CurvedNode(i)%np%tmp.EQ.1) CYCLE
         ! Increase index of boundary points
