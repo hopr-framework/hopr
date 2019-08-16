@@ -35,7 +35,7 @@ ELSE()
   SET(CGNSDOWNLOAD https://github.com/CGNS/CGNS.git )
   SET(HDF5DOWNLOAD https://bitbucket.hdfgroup.org/scm/hdffv/hdf5.git )
 ENDIF()
-SET (HDF5TAG "hdf5_1_10_4" CACHE STRING "HDF5 version tag")
+SET (HDF5TAG "hdf5-1_10_4" CACHE STRING "HDF5 version tag")
 SET (CGNSTAG "v3.3.1"      CACHE STRING "CGNS version tag")
 
 # =========================================================================
@@ -329,7 +329,7 @@ IF (HOPR_BUILD_CGNS)
 
     ExternalProject_Add(cgns
     GIT_REPOSITORY ${CGNSDOWNLOAD}
-    GIT_TAG ${HOPR_CGNSTAG}
+    GIT_TAG ${CGNSTAG}
     #PATCH_COMMAND sed -i s/^c/!/g ${HOPR_CGNS_DIR}/src/cgns/src/cgnslib_f.h.in
     PREFIX ${HOPR_CGNS_DIR}
     CMAKE_ARGS  -DCMAKE_INSTALL_PREFIX=${HOPR_CGNS_DIR}/build /
