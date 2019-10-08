@@ -257,9 +257,10 @@ LOGICAL                        :: rebuildCurveds         ! switch .TRUE.= if cur
 LOGICAL                        :: meshIsAlreadyCurved    ! flag: mesh is already curved (GMSH, HDF5, block CGNS)
 LOGICAL                        :: useRBF                 ! Volume curving using interpolation of surface curving by 
                                                          ! radial basis functions
-REAL                           :: SupportRadius          ! Support radius of radial basis functions
-INTEGER                        :: RBFType                ! Type of radial basis function
-REAL                           :: xlim(2),ylim(2)        ! Only inside this box the RBF curving is used
+INTEGER                        :: nRBFBoxes              ! Number of RBF Bounding Boxes
+INTEGER,ALLOCATABLE            :: RBFType(:)             ! Type of radial basis function of each RBFBoundingBox
+REAL,ALLOCATABLE               :: SupportRadius(:)       ! Support radius of radial basis functions of each RBFBoundingBox
+REAL,ALLOCATABLE               :: xlim(:,:),ylim(:,:)    ! Only inside this box the RBF curving is used (2,nRBFBoxes)
 LOGICAL                        :: InnerElemStretch       ! for cartmeshes, apply stretching also to inner element nodes
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! CURVE GRID GENERATOR

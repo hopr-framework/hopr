@@ -22,7 +22,7 @@ PUBLIC::RBFVolumeCurving
 
 CONTAINS
 
-SUBROUTINE RBFVolumeCurving()
+SUBROUTINE RBFVolumeCurving(iRBFBox)
 !----------------------------------------------------------------------------------------------------------------------------------!
 ! Volume curving based on an radial basis function interpolation of the curved boundary surfaces.
 ! General structure:
@@ -52,6 +52,7 @@ USE MOD_Mesh_Vars
 !----------------------------------------------------------------------------------------------------------------------------------!
 IMPLICIT NONE
 ! INPUT / OUTPUT VARIABLES 
+INTEGER,INTENT(IN)     :: iRBFBox     ! Index of current RBF Bounding Box
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES
 TYPE(tElem),POINTER    :: Elem
@@ -78,10 +79,10 @@ WRITE(UNIT_StdOut,'(132("-"))')
 WRITE(UNIT_stdOut,'(A)') ' RBF VOLUME CURVING'
 
 ! Box where curving should be done
-xMin = xlim(1)
-xMax = xlim(2)
-yMin = ylim(1)
-yMax = ylim(2)
+xMin = xlim(1,iRBFBox)
+xMax = xlim(2,iRBFBox)
+yMin = ylim(1,iRBFBox)
+yMax = ylim(2,iRBFBox)
 
 ! Build 2D Vandermonde from corner nodes to bi-linear side nodes
 CALL getQuadBasis(1,BoundaryOrder,Vdm_SurfBiLinear,D_tmp)
@@ -380,7 +381,7 @@ WRITE(*,*) 'Solving RBF system... '
 ! Upper left part: M_i,j = phi(abs(X(i)-X(j)))
 DO j=1,nBP; DO i=1,nBP
   dist = Distance(RefCoordinates(:,i),RefCoordinates(:,j))
-  RBFMatrix(i,j) = EvaluateRBF(dist)
+  RBFMatrix(i,j) = EvaluateRBF(dist,SupportRadius(iRBFBox),RBFType(iRBFBox))
 END DO; END DO ! j,i=1,nBP
 ! Upper right part: P_b - row i equal to [1 x_i y_i z_i]
 ! Lower left part: transpose of P_b
@@ -431,7 +432,7 @@ DO WHILE(ASSOCIATED(Elem))
     xTmp = x
     DO iBP=1,nBP
       dist = Distance(x,RefCoordinates(:,iBP))
-      RBFValue = EvaluateRBF(dist)
+      RBFValue = EvaluateRBF(dist,supportRadius(iRBFBox),RBFType(iRBFBox))
       xTmp(1) = xTmp(1) + RBFValue*RBFRHS(iBP,1)
       xTmp(2) = xTmp(2) + RBFValue*RBFRHS(iBP,2)
       xTmp(3) = xTmp(3) + RBFValue*RBFRHS(iBP,3)
@@ -454,7 +455,7 @@ END SUBROUTINE RBFVolumeCurving
 
 
 
-FUNCTION EvaluateRBF(dist)
+FUNCTION EvaluateRBF(dist,supportRadius,RBFType)
 !===================================================================================================================================
 ! Evaluates the choosen RBF at distance dist with support radius supportRadius
 ! Numbering and choice of RBFs is taken from: A. de Boer et al. / Computers and Structures 85 (2007) 784–795
@@ -462,9 +463,10 @@ FUNCTION EvaluateRBF(dist)
 ! Typical values for this parameter are in the range 10E-5 - 10E-3.
 !===================================================================================================================================
 USE MOD_Globals
-USE MOD_Mesh_Vars,    ONLY: supportRadius,RBFType
 ! INPUT VARIABLES
-REAL,INTENT(IN) :: dist         ! Euclidean distance used in RBF evaluation
+REAL,INTENT(IN)    :: dist          ! Euclidean distance used in RBF evaluation
+REAL,INTENT(IN)    :: supportRadius ! Normalizing constant for RBF evaluation
+INTEGER,INTENT(IN) :: RBFType       ! Type of RBF to evaluate
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 REAL            :: EvaluateRBF

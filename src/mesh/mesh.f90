@@ -251,10 +251,19 @@ IF(useCurveds) THEN
     ! Volume curving by radial basis functions
     useRBF = GETLOGICAL('useRBF','.FALSE.')
     IF (useRBF) THEN
-      SupportRadius = GETREAL('SupportRadius')
-      RBFType = GETINT('RBFType')
-      xlim = GETREALARRAY('xlim',2,'-1000000,1000000')
-      ylim = GETREALARRAY('ylim',2,'-1000000,1000000')
+      nRBFBoxes = CNTSTR('RBFType','0')
+
+      ALLOCATE(SupportRadius(nRBFBoxes))
+      ALLOCATE(RBFType(      nRBFBoxes))
+      ALLOCATE(xlim(       2,nRBFBoxes))
+      ALLOCATE(ylim(       2,nRBFBoxes))
+
+      DO i=1,nRBFBoxes
+        SupportRadius(i) = GETREAL('SupportRadius')
+        RBFType(i) = GETINT('RBFType')
+        xlim(:, i) = GETREALARRAY('xlim',2,'-1000000,1000000')
+        ylim(:, i) = GETREALARRAY('ylim',2,'-1000000,1000000')
+      END DO
     END IF
 
   END IF
@@ -470,7 +479,7 @@ IMPLICIT NONE
 TYPE(tElem),POINTER :: Elem  ! ?
 TYPE(tSide),POINTER :: Side    ! ?
 LOGICAL             :: curvedFound  ! ?
-INTEGER             :: iElem  ! ?
+INTEGER             :: iElem,iRBFBox  ! ?
 !===================================================================================================================================
 CALL Timer(.TRUE.)
 WRITE(UNIT_stdOut,'(132("="))')
@@ -673,7 +682,14 @@ IF(doZcorrection) CALL zCorrection()
 
 ! Call RBF curving after GlobalUniqueNodes, since no double entries in the RBF nodes are allowed
 IF (useCurveds.AND.useRBF) THEN
-  CALL RBFVolumeCurving()
+  DO iRBFBox=1,nRBFBoxes
+    CALL RBFVolumeCurving(iRBFBox)
+  END DO
+  ! Deallocate all RBF quantities
+  DEALLOCATE(RBFType)
+  DEALLOCATE(SupportRadius)
+  DEALLOCATE(xlim)
+  DEALLOCATE(ylim)
   ! Call z-Correction again to remove 3D effects of interpolation, zPeriodic is already done
   zPeriodic = .FALSE.
   InitZOrient = .FALSE.
