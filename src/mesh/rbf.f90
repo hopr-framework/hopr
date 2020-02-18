@@ -72,7 +72,7 @@ REAL                   :: xTriLinear(3,BoundaryOrder**3),xBiLinear(3,BoundaryOrd
 REAL                   :: xCornerVol(1:3,8),xCornerSurf(1:3,4)
 REAL                   :: dist,x(3),xTmp(3),rbfvalue
 INTEGER                :: iBP
-REAL                   :: xMin,xMax,yMin,yMax
+REAL                   :: xMin,xMax,yMin,yMax,xBary(3)
 !===================================================================================================================================
 
 WRITE(UNIT_StdOut,'(132("-"))')
@@ -411,7 +411,8 @@ WRITE(*,*) 'Evaluating RBF interpolation... '
 
 Elem=>FirstElem
 DO WHILE(ASSOCIATED(Elem))
-  ! Calculate the tri-linear coordinates of the curved nodes
+  ! Calculate the tri-linear coordinates of the curved nodes (those are all control points of the RBF interpolation, so they don't
+  ! change due to the displacement procedure)
   xCornerVol(:,HexaMapInvLinear(0,0,0)) = Elem%CurvedNode(HexaMapInv(0,0,0))%np%x
   xCornerVol(:,HexaMapInvLinear(0,1,0)) = Elem%CurvedNode(HexaMapInv(0,N,0))%np%x
   xCornerVol(:,HexaMapInvLinear(1,0,0)) = Elem%CurvedNode(HexaMapInv(N,0,0))%np%x
@@ -420,6 +421,21 @@ DO WHILE(ASSOCIATED(Elem))
   xCornerVol(:,HexaMapInvLinear(0,1,1)) = Elem%CurvedNode(HexaMapInv(0,N,N))%np%x
   xCornerVol(:,HexaMapInvLinear(1,0,1)) = Elem%CurvedNode(HexaMapInv(N,0,N))%np%x
   xCornerVol(:,HexaMapInvLinear(1,1,1)) = Elem%CurvedNode(HexaMapInv(N,N,N))%np%x
+  ! Get a guess for the center of the current element by averaging the corner nodes
+  xBary(:) = Elem%CurvedNode(HexaMapInv(0,0,0))%np%x &
+           + Elem%CurvedNode(HexaMapInv(0,N,0))%np%x &
+           + Elem%CurvedNode(HexaMapInv(N,0,0))%np%x &
+           + Elem%CurvedNode(HexaMapInv(N,N,0))%np%x &
+           + Elem%CurvedNode(HexaMapInv(0,0,N))%np%x &
+           + Elem%CurvedNode(HexaMapInv(0,N,N))%np%x &
+           + Elem%CurvedNode(HexaMapInv(N,0,N))%np%x &
+           + Elem%CurvedNode(HexaMapInv(N,N,N))%np%x
+  xBary(:) = xBary(:) / 8.
+  ! Cycle if the bary center is not inside of the bounding box (thus only all or no points of an element are curved)
+  IF ((xBary(1).LT.xMin).OR.(xBary(1).GT.xMax).OR.(xBary(2).LT.yMin).OR.(xBary(2).GT.yMax)) THEN
+    Elem=>Elem%nextElem
+    CYCLE
+  END IF
   ! Then, apply Vandermonde matrix, e.g. evaluate bi-linear mapping on all curved side nodes
   xTriLinear(1,:) = MATMUL(Vdm_VolTriLinear,xCornerVol(1,:))
   xTriLinear(2,:) = MATMUL(Vdm_VolTriLinear,xCornerVol(2,:))
@@ -427,8 +443,6 @@ DO WHILE(ASSOCIATED(Elem))
   DO i=1,Elem%nCurvedNodes
     ! Evaluate the RBF interpolation at each linear volume point
     x = xTriLinear(:,i)
-    ! Only evaluate for points inside the box
-    IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) CYCLE
     xTmp = x
     DO iBP=1,nBP
       dist = Distance(x,RefCoordinates(:,iBP))
