@@ -36,7 +36,7 @@ If not present on your system, HOPR will automatically
 download and compile these libraries
 
 - HDF5 (versions <1.10 need to be compiled with Fortran2003)
-- CGNS
+- CGNS (not needed if the option `HOPR_USE_CGNS=OFF` is set in cmake)
 
 ## Prerequisites for Mac OSX
 
@@ -95,14 +95,16 @@ e.g. "build" . Inside that directory execute
 
 Here you can specify library paths and options. If no
 preinstallied libraries for HDF5 and CGNS are found these
-libraries will be downloaded and built automatically.
+libraries will be downloaded and built automatically. 
+**Note** that CGNS is only necessary if you plan to input cgns meshes, else, 
+you can also compile without it by setting `HOPR_USE_CGNS=OFF`.
 Press <c> to configure and <g> to create the Makefiles.
 Finally compile HOPR by typing `make`.
 
 ### Libraries
 
 In case you want to use a precompiled HDF5 or CGNS version
-on your system, set the option `BUILD_HDF5=<empty>`, then 
+on your system, set the option `HOPR_BUILD_HDF5=OFF`, then 
 the path to HDF5 can be specified by the environment variable
 `$HDF5_DIR` if HDF5 has been built with CMake or `$HDF5_ROOT`
 if built using Automake. Note that `$HDF5_DIR` should contain
@@ -113,6 +115,6 @@ i.e. $HDF5_ROOT/share/cmake/hdf5 .
 
 After compiling, you can test HOPR by going to the
 `tutorials` directory and running the script `executeall.sh`,
-which will run HOPR for all tutorial cases. For further
+which will run HOPR for all tutorial cases (some examples need CGNS). For further
 information check the [HOPR website](http://www.hopr-project.org/).
 
