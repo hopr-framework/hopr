@@ -30,7 +30,6 @@ ELSE()
   SET(HDF5DOWNLOAD https://bitbucket.hdfgroup.org/scm/hdffv/hdf5.git )
 ENDIF()
 SET(HOPR_HDF5TAG "hdf5-1_10_0-patch1" CACHE STRING "HDF5 version tag")
-SET(HOPR_CGNSTAG "v3.3.0"             CACHE STRING "CGNS version tag")
 
 # =========================================================================
 # Detect machine environements
@@ -82,8 +81,19 @@ ENDMACRO()
 OPTION(HOPR_MPI "Compile SINGLE or MPI version" ON)
 OPTION(HOPR_BUILD_YPLUSESTIMATOR "Compile and build Y+-Estimator" OFF)
 OPTION(HOPR_BUILD_HDF5 "Compile and build hdf5 library" ON)
-OPTION(HOPR_BUILD_CGNS "Compile and build CGNS library" ON)
-SET(HOPR_CGNS_INT "32" CACHE STRING "integer type in CGNS lib")
+OPTION(HOPR_USE_CGNS "use CGNS functionality in HOPR (needed for readin and output of cgns files)" ON)
+IF (HOPR_USE_CGNS)
+  SET(HOPR_CGNS_INT "32" CACHE STRING "integer type in CGNS lib")
+  OPTION(HOPR_BUILD_CGNS "Compile and build CGNS library" ON)
+  IF (HOPR_BUILD_CGNS)
+    SET(HOPR_CGNSTAG "v3.3.0"             CACHE STRING "CGNS version tag")
+  ELSE()
+    UNSET(HOPR_CGNSTAG CACHE )
+  ENDIF()
+ELSE()
+  UNSET(HOPR_BUILD_CGNS CACHE )
+  UNSET(HOPR_CGNS_INT CACHE )
+ENDIF()
 
 # =========================================================================
 # USERBLOCK + Preproc_flags
@@ -165,7 +175,7 @@ ELSEIF (CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
   # add flags only for compiling not linking!
    SET (HOPR_COMPILE_FLAGS "-fpp -assume bscc")
 ELSE()
-   MESSAGE(ERROR "Unknown compiler")
+   MESSAGE(SEND_ERROR "Unknown compiler")
 ENDIF()
 
 # =========================================================================
@@ -290,34 +300,37 @@ ENDIF()
 # =========================================================================
 # CGNS library
 # =========================================================================
-ADD_DEFINITIONS(-DPP_CGNS_INT=${HOPR_CGNS_INT})
+IF (HOPR_USE_CGNS)
+  ADD_DEFINITIONS(-DPP_USE_CGNS=1)
+  ADD_DEFINITIONS(-DPP_CGNS_INT=${HOPR_CGNS_INT})
 
-IF (HOPR_BUILD_CGNS)
-  SET(HOPR_CGNS_DLDIR ${HOPR_EXTERNAL_LIB_DIR}/CGNS)
-  SET(HOPR_CGNS_DIR   ${HOPR_CGNS_DLDIR}/build)
-  IF (NOT EXISTS "${HOPR_CGNS_DIR}/lib/libcgns.a")
-    STRING(COMPARE EQUAL ${HOPR_CGNS_INT} "64" HOPR_CGNS_64BIT)
-
-    ExternalProject_Add(cgns
-    GIT_REPOSITORY ${CGNSDOWNLOAD}
-    GIT_TAG ${HOPR_CGNSTAG}
-    #PATCH_COMMAND sed -i s/^c/!/g ${HOPR_CGNS_DIR}/src/cgns/src/cgnslib_f.h.in
-    PREFIX ${HOPR_CGNS_DIR}
-    CMAKE_ARGS  -DCMAKE_INSTALL_PREFIX=${HOPR_CGNS_DIR}/build /
-    -DCGNS_ENABLE_FORTRAN=ON   -DCGNS_ENABLE_64BIT=${HOPR_CGNS_64BIT} -DCGNS_BUILD_SHARED=OFF -DCGNS_USE_SHARED=OFF /
-    -DCMAKE_BUILD_TYPE=Release -DCGNS_BUILD_CGNSTOOLS=OFF -DCGNS_ENABLE_HDF5=OFF -DCGNS_ENABLE_PARALLEL=OFF -DCGNS_ENABLE_TESTS=OFF -DCMAKE_SKIP_RPATH=ON
-    )
-  ENDIF()
-  LIST(APPEND linkedlibs ${HOPR_CGNS_DIR}/build/lib/libcgns.a)
-  INCLUDE_DIRECTORIES(${HOPR_CGNS_DIR}/build/include)
-ELSE()
-  FIND_PACKAGE(CGNS)
-  IF (CGNS_FOUND)
-    MESSAGE(STATUS "CGNS include dir: " ${CGNS_INCLUDE_DIR})
-    LIST(APPEND linkedlibs ${CGNS_LIBRARIES})
-    INCLUDE_DIRECTORIES (${CGNS_INCLUDE_DIR})
- ELSE()
-    MESSAGE(ERROR "CGNS not found")
+  IF (HOPR_BUILD_CGNS)
+    SET(HOPR_CGNS_DLDIR ${HOPR_EXTERNAL_LIB_DIR}/CGNS)
+    SET(HOPR_CGNS_DIR   ${HOPR_CGNS_DLDIR}/build)
+    IF (NOT EXISTS "${HOPR_CGNS_DIR}/lib/libcgns.a")
+      STRING(COMPARE EQUAL ${HOPR_CGNS_INT} "64" HOPR_CGNS_64BIT)
+  
+      ExternalProject_Add(cgns
+      GIT_REPOSITORY ${CGNSDOWNLOAD}
+      GIT_TAG ${HOPR_CGNSTAG}
+      #PATCH_COMMAND sed -i s/^c/!/g ${HOPR_CGNS_DIR}/src/cgns/src/cgnslib_f.h.in
+      PREFIX ${HOPR_CGNS_DIR}
+      CMAKE_ARGS  -DCMAKE_INSTALL_PREFIX=${HOPR_CGNS_DIR}/build /
+      -DCGNS_ENABLE_FORTRAN=ON   -DCGNS_ENABLE_64BIT=${HOPR_CGNS_64BIT} -DCGNS_BUILD_SHARED=OFF -DCGNS_USE_SHARED=OFF /
+      -DCMAKE_BUILD_TYPE=Release -DCGNS_BUILD_CGNSTOOLS=OFF -DCGNS_ENABLE_HDF5=OFF -DCGNS_ENABLE_PARALLEL=OFF -DCGNS_ENABLE_TESTS=OFF -DCMAKE_SKIP_RPATH=ON
+      )
+    ENDIF()
+    LIST(APPEND linkedlibs ${HOPR_CGNS_DIR}/build/lib/libcgns.a)
+    INCLUDE_DIRECTORIES(${HOPR_CGNS_DIR}/build/include)
+  ELSE()
+    FIND_PACKAGE(CGNS)
+    IF (CGNS_FOUND)
+      MESSAGE(STATUS "CGNS include dir: " ${CGNS_INCLUDE_DIR})
+      LIST(APPEND linkedlibs ${CGNS_LIBRARIES})
+      INCLUDE_DIRECTORIES (${CGNS_INCLUDE_DIR})
+   ELSE()
+      MESSAGE(SEND_ERROR "CGNS not found")
+    ENDIF()
   ENDIF()
 ENDIF()
 
@@ -347,7 +360,6 @@ FILE(GLOB_RECURSE hoprF90 ./src/basis/*.f90
                           ./src/search/*.f90
                           ./src/sfc/*.f90
                           globals.f90
-                          headers.f90
                           io_hdf5.f90
                           sortingtools.f90)
 
