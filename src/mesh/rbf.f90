@@ -51,7 +51,7 @@ USE MOD_Basis_Vars,     ONLY: QuadMapInv,HexaMapInv
 USE MOD_Mesh_Vars
 !----------------------------------------------------------------------------------------------------------------------------------!
 IMPLICIT NONE
-! INPUT / OUTPUT VARIABLES 
+! INPUT / OUTPUT VARIABLES
 INTEGER,INTENT(IN)     :: iRBFBox     ! Index of current RBF Bounding Box
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES
@@ -195,9 +195,9 @@ DO WHILE(ASSOCIATED(Elem))
     ELSE IF (Side%CurveIndex.LE.0) THEN
       ! Boundaries, but uncurved - all nodes are fixed
       x = Side%CurvedNode(QuadMapInv(0,0))%np%x
+      IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
       DO i=1,Side%nCurvedNodes
         IF (Side%CurvedNode(i)%np%tmp.EQ.1) CYCLE
-        print *, 'uncurved'
         nBP = nBP + 1
         Side%CurvedNode(i)%np%tmp = 1
       END DO
@@ -228,7 +228,7 @@ ALLOCATE(RBFRHS(1:nBP+4,1:3))          ! Right hand side of RBF system, last ind
 WRITE(*,*) 'Building RBF matrix entries... '
 !--------------------------------------------------------------------------------------------------------!
 ! With memory allocated, store the uncurved coordinates of the control points
-! and calculate the displacement 
+! and calculate the displacement
 !--------------------------------------------------------------------------------------------------------!
 
 ! Reset the tmp variable later used to mark the boundary point
@@ -339,8 +339,9 @@ DO WHILE(ASSOCIATED(Elem))
       END IF
     ELSE IF (Side%CurveIndex.LE.0) THEN
       ! Boundaries, but uncurved - all nodes are fixed
+      x = Side%CurvedNode(QuadMapInv(0,0))%np%x
+      IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) EXIT
       DO i=1,Side%nCurvedNodes
-        x = Side%CurvedNode(QuadMapInv(0,0))%np%x
         IF ((x(1).LT.xMin).OR.(x(1).GT.xMax).OR.(x(2).LT.yMin).OR.(x(2).GT.yMax)) CYCLE
         IF (Side%CurvedNode(i)%np%tmp.EQ.1) CYCLE
         iBP = iBP + 1
