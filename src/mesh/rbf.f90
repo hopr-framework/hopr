@@ -192,6 +192,15 @@ DO WHILE(ASSOCIATED(Elem))
         nBP = nBP + 1
         Side%CurvedNode(QuadMapInv(N,N))%np%tmp = 1
       END IF
+    ELSE IF (Side%CurveIndex.LE.0) THEN
+      ! Boundaries, but uncurved - all nodes are fixed
+      x = Side%CurvedNode(QuadMapInv(0,0))%np%x
+      DO i=1,Side%nCurvedNodes
+        IF (Side%CurvedNode(i)%np%tmp.EQ.1) CYCLE
+        print *, 'uncurved'
+        nBP = nBP + 1
+        Side%CurvedNode(i)%np%tmp = 1
+      END DO
     ELSE
       ! BC side, include all nodes as control points
       x = Side%CurvedNode(QuadMapInv(0,0))%np%x
