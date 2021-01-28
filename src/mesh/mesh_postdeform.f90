@@ -640,6 +640,25 @@ CASE(34) ! cos3D (1.5Pi) [-1;1]^3
   x_out(1,:) = x_in(1,:)+ 0.1*COS(1.5*Pi*x_in(1,:))*COS(1.5*Pi*x_in(2,:))*COS(1.5*Pi*x_in(3,:))
   x_out(2,:) = x_in(2,:)+ 0.1*COS(1.5*Pi*x_in(1,:))*COS(1.5*Pi*x_in(2,:))*COS(1.5*Pi*x_in(3,:))
   x_out(3,:) = x_in(3,:)+ 0.1*COS(1.5*Pi*x_in(1,:))*COS(1.5*Pi*x_in(2,:))*COS(1.5*Pi*x_in(3,:))
+CASE(40) ! cos with coupling  [-1;1]^3 (from https://arxiv.org/pdf/1809.01178.pdf, page 20) 
+  x_out(2,:) = x_in(2,:)+ 0.15*COS(1.5*Pi*x_in( 1,:))*COS(0.5*Pi*x_in( 2,:))*COS(0.5*Pi*x_in(3,:))
+  x_out(1,:) = x_in(1,:)+ 0.15*COS(0.5*Pi*x_in( 1,:))*SIN(2.0*Pi*x_out(2,:))*COS(0.5*Pi*x_in(3,:))
+  x_out(3,:) = x_in(3,:)+ 0.15*COS(0.5*Pi*x_out(1,:))*COS(    Pi*x_out(2,:))*COS(0.5*Pi*x_in(3,:))
+CASE(41) ! cos in xy with coupling  [-1;1]^2 (from https://arxiv.org/pdf/1809.01178.pdf, page 18) 
+  x_out(1,:) = x_in(1,:)+ 0.15*COS(0.5*Pi*x_in( 1,:))*COS(1.5*Pi*x_in( 2,:))
+  x_out(2,:) = x_in(2,:)+ 0.15*COS(2.0*Pi*x_out(1,:))*COS(0.5*Pi*x_in( 2,:))
+  x_out(3,:) = x_in(3,:)
+CASE(42) ! cos in xz with coupling  [-1;1]^2 (from https://arxiv.org/pdf/1809.01178.pdf, page 18) 
+  x_out(1,:) = x_in(1,:)+ 0.15*COS(0.5*Pi*x_in( 1,:))*COS(1.5*Pi*x_in( 3,:))
+  x_out(2,:) = x_in(2,:)
+  x_out(3,:) = x_in(3,:)+ 0.15*COS(2.0*Pi*x_out(1,:))*COS(0.5*Pi*x_in( 3,:))
+CASE(43) ! cos in yz with coupling  [-1;1]^2 (from https://arxiv.org/pdf/1809.01178.pdf, page 18) 
+  x_out(1,:) = x_in(1,:)
+  x_out(2,:) = x_in(2,:)+ 0.15*COS(0.5*Pi*x_in( 2,:))*COS(1.5*Pi*x_in( 3,:))
+  x_out(3,:) = x_in(3,:)+ 0.15*COS(2.0*Pi*x_out(2,:))*COS(0.5*Pi*x_in( 3,:))
+CASE(1000) !do nothing
+  x_out(:,:)=x_in(:,:)
+
 END SELECT
 
 END SUBROUTINE PostDeformFunc
