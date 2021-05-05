@@ -942,7 +942,6 @@ IF (ANSA_CGNS_SplitBC) THEN
   END DO
 
   ! Multiple BC PIDs
-  print*, meshdim
   ALLOCATE(BCElemsBlock(MeshDim,nBCElemsMax,nCGNSBC))
 END IF
 
