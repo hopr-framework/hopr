@@ -687,6 +687,8 @@ PP_CGNS_INT_TYPE ,ALLOCATABLE :: BCElems(:,:)  ! ?
 REAL ,ALLOCATABLE             :: NormalList(:)  ! ?
 LOGICAL                       :: zFit
 INTEGER                       :: MapCGNS(3)
+! Multiple BC PIDs per BCSide
+INTEGER,ALLOCATABLE           :: BCElemsBlock(:,:,:)
 !===================================================================================================================================
 ALLOCATE(isize(meshDim,3))
 ALLOCATE(DimVec(meshDim,2))
@@ -841,6 +843,12 @@ DO m=1,irmax(MapCGNS(3))
   DO l=1,irmax(MapCGNS(2))
     DO k=1,irmax(MapCGNS(1))
       CALL GetNewNode(Mnodes(k,l,m)%np)
+
+      ! Save IJK sorting
+      Mnodes(k,l,m)%np%IJK(1) = k
+      Mnodes(k,l,m)%np%IJK(2) = l
+      Mnodes(k,l,m)%np%IJK(3) = m
+
       IF(meshDim.EQ.3)THEN
         Mnodes(k,l,m)%np%x      =NodeCoords(:,l,m,k)      ! Node coordinates are assigned
       ELSE
@@ -924,7 +932,7 @@ BCTypeIndex=0
 countBCs=0
 DO iBC=1,nCGNSBC !Loop over all BCs
   CALL CG_BOCO_INFO_F(CGNSfile,CGNSBase,iZone,iBC,CGname,BCTypeI,PntSetType,nBCElems,NormalIndex, &
-                      NormalListFlag, DataType,nDataSet,iError)
+                      NormalListFlag,DataType,nDataSet,iError)
   IF (iError.NE.CG_OK) CALL  abortCGNS(__STAMP__,CGNSFile)
 !  IF (NormalListFlag .NE. 0)THEN
 !    CALL closeFile(CGNSFile)
@@ -938,15 +946,24 @@ DO iBC=1,nCGNSBC !Loop over all BCs
   IF(iError.NE.CG_OK)THEN  ! if family name is not available
     FamilyName=CGName
   END IF
+
   BCTypeIndex(iBC)=GetBoundaryIndex(FamilyName)
   IF (BCTypeIndex(iBC).EQ.-1) THEN
     WRITE(UNIT_stdOut,*)'ERROR - Could not find corresponding boundary definition of ',FamilyName
     CYCLE
   END IF
+
+  ! Multiple BC PIDs
+  IF (.NOT.ALLOCATED(BCElemsBlock)) ALLOCATE(BCElemsBlock(MeshDim,nBCElems,nCGNSBC))
+
   ALLOCATE(BCElems(MeshDim,nBCElems))
   NormalListSize=nBCElems*MeshDim
   ALLOCATE(NormalList(NormalListSize))
   CALL CG_BOCO_READ_F(CGNSfile,CGNSBase,iZone,iBC,BCElems,NormalList,iError)
+
+  ! Multiple BC PIDs
+  BCElemsBlock(:,:,iBC) = BCElems
+
   IF(PntSetType.EQ.PointRange)THEN
     IF(ANY(BCElems.LE.0))THEN
       WRITE(UNIT_StdOut,'(A)') &
@@ -955,9 +972,13 @@ DO iBC=1,nCGNSBC !Loop over all BCs
       nBCFaces(iBC)  = 1
       IF(nBCElems.NE.2) STOP 'PointRange has only 2 entries!'
       DO k=1,meshDim
-        IF(((BCElems(k,1).NE.irmaxorg(k)).AND.(BCElems(k,1).NE.1)).AND. &
+        IF(((BCElems(k,1).NE.irmaxorg(k)).AND.(BCElems(k,1).NE.1)).OR. &
            ((BCElems(k,2).NE.irmaxorg(k)).AND.(BCElems(k,2).NE.1))) THEN
           WRITE(UNIT_StdOut,*)'WARNING: Block face has multiple boundary faces, BoundaryName: ',TRIM(FamilyName)
+          IF (ANY(MOD(BCElems(k,:)-1,4).NE.0)) THEN
+            WRITE(UNIT_StdOut,*) 'Boundary is off by',PACK(MOD(BCElems(k,:)-1,4),MOD(BCElems(k,:)-1,4).NE.0),'elements'
+            CALL ABORT(__STAMP__,'Split boundary! Please adjust PID to match with agglomerated elems')
+          END IF
         END IF
         IF(BCElems(k,1).EQ.BCElems(k,2))&
           BCIndex(iBC,1) = MERGE(SideMap(k,1),SideMap(k,2),BCElems(k,1).EQ.1) ! else irmax(k)
@@ -1052,6 +1073,13 @@ DO WHILE(ASSOCIATED(aElem))
           IF(INT(MOD(aSide%Node(l)%np%tmp,10**iSide)/(10**(iSide-1))).NE.iSide) THEN
             onBnd=.FALSE.
             EXIT !Loop
+          ELSE
+            ! Check if aSide is on correct BC region
+            IF (ANY(aSide%Node(l)%np%IJK(:).LT.BCElemsBlock(:,1,iBC)) .OR. &
+                ANY(aSide%Node(l)%np%IJK(:).GT.BCElemsBlock(:,2,iBC))) THEN
+              onBnd=.FALSE.
+              EXIT !Loop
+            END IF
           END IF
         END DO !l=1,4
         IF(onBnd) THEN
@@ -1071,7 +1099,7 @@ DO WHILE(ASSOCIATED(aElem))
   END DO !WHILE(ASSOCIATED(aSide))
   aElem=>aElem%nextElem
 END DO !WHILE(ASSOCIATED(aElem))
-DEALLOCATE(BCIndex,BCTypeIndex,countBCs,nBCFaces)
+DEALLOCATE(BCIndex,BCTypeIndex,countBCs,nBCFaces,BCElemsBlock)
 END SUBROUTINE ReadCGNSMeshStruct
 #endif /*def PP_USE_CGNS*/
 

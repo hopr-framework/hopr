@@ -148,6 +148,7 @@ TYPE tNode ! provides data structure for local node
   !                                                                   ! one side / element -> Node%refCount > 1
   !                                                                   ! Node%refCount = 0 means that node is not used any more
   TYPE(tVertex),POINTER               ::       FirstVertex            ! pointer to the beginning of the vertex connection list
+  INTEGER                             ::       IJK(3)                 ! IJK sorting for structured CGNS meshes
 END TYPE tNode
 
 
