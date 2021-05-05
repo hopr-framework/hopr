@@ -631,7 +631,7 @@ SUBROUTINE ReadCGNSMeshStruct(FirstElem_in,CGNSFile,CGNSBase,iZone,nZonesGlob,nN
 USE MOD_CartMesh ,ONLY:GetNewHexahedron
 USE MOD_Mesh_Vars,ONLY:tElem,tElemPtr,tSide,tNodePtr
 USE MOD_Mesh_Vars,ONLY:DZ,nMeshElems,meshDim
-USE MOD_Mesh_Vars,ONLY:BoundaryType,useCurveds,N,NBlock,MeshIsAlreadyCurved
+USE MOD_Mesh_Vars,ONLY:BoundaryType,BoundaryName,useCurveds,N,NBlock,MeshIsAlreadyCurved
 USE MOD_Mesh_Vars,ONLY:nSkip,nSkipZ
 USE MOD_Mesh_Vars,ONLY:getNewElem,getNewNode,getNewBC,GETNEWQUAD,deleteNode
 USE MOD_Mesh_Vars,ONLY:ANSA_CGNS_SplitBC
@@ -1099,8 +1099,13 @@ DO WHILE(ASSOCIATED(aElem))
           END IF
         END DO !l=1,4
         IF(onBnd) THEN
-          !WRITE(*,*) 'BCi',iBC
           IF(BoundaryType(BCTypeIndex(iBC),1).EQ.0) EXIT  !ignore BCType=0 (DEFAULT_SURFACES)
+          ! Check if boundary was already associated to another BC
+          IF (ASSOCIATED(aSide%BC)) THEN
+            WRITE(UNIT_StdOut,*) 'Warning: Moving previously associated side from '  &
+                                 ,TRIM(BoundaryName(aSide%BC%BCIndex)),' to '        &
+                                 ,TRIM(BoundaryName(BCTypeIndex(iBC))               )
+          END IF
           CALL getNewBC(aSide%BC)
           aSide%BC%BCType    =BoundaryType(BCTypeIndex(iBC),1)
           aSide%CurveIndex   =BoundaryType(BCTypeIndex(iBC),2)
