@@ -188,7 +188,7 @@ USE MOD_Mesh_Vars,ONLY:tElem,tElemPtr,tSide
 USE MOD_Mesh_Vars,ONLY:MeshDim
 USE MOD_Mesh_Vars,ONLY:BoundaryType
 USE MOD_Mesh_Vars,ONLY:getNewElem,getNewNode,getNewBC
-USE MOD_Mesh_Vars,ONLY:BugFix_ANSA_CGNS
+USE MOD_Mesh_Vars,ONLY:ANSA_CGNS_BugFix
 USE MOD_Mesh_Basis,ONLY:createSides,GetBoundaryIndex
 USE MOD_SortingTools,ONLY:Qsort1Int
 ! IMPLICIT VARIABLE HANDLING
@@ -479,7 +479,7 @@ DO iBC=1,nCGNSBC
     END IF
   END IF
 
-  IF(Bugfix_ANSA_CGNS) PntSetType=ElementList
+  IF(ANSA_CGNS_Bugfix) PntSetType=ElementList
 
   ! Boundary is given as a list of boundary nodes
   IF((PntSetType .EQ. PointList).OR.(PntSetType .EQ. PointRange))THEN
@@ -634,6 +634,7 @@ USE MOD_Mesh_Vars,ONLY:DZ,nMeshElems,meshDim
 USE MOD_Mesh_Vars,ONLY:BoundaryType,useCurveds,N,NBlock,MeshIsAlreadyCurved
 USE MOD_Mesh_Vars,ONLY:nSkip,nSkipZ
 USE MOD_Mesh_Vars,ONLY:getNewElem,getNewNode,getNewBC,GETNEWQUAD,deleteNode
+USE MOD_Mesh_Vars,ONLY:ANSA_CGNS_SplitBC
 USE MOD_Mesh_Basis,ONLY:createSides,GetBoundaryIndex
 USE MOD_Basis_Vars,ONLY:HexaMapInv
 USE MOD_Basis     ,ONLY:GetVandermonde
@@ -688,6 +689,7 @@ REAL ,ALLOCATABLE             :: NormalList(:)  ! ?
 LOGICAL                       :: zFit
 INTEGER                       :: MapCGNS(3)
 ! Multiple BC PIDs per BCSide
+INTEGER                       :: nBCElemsMax
 INTEGER,ALLOCATABLE           :: BCElemsBlock(:,:,:)
 !===================================================================================================================================
 ALLOCATE(isize(meshDim,3))
@@ -930,6 +932,20 @@ BCIndex=-1
 nBCFaces=0
 BCTypeIndex=0
 countBCs=0
+
+! Multiple BC PIDS
+IF (ANSA_CGNS_SplitBC) THEN
+  DO iBC=1,nCGNSBC !Loop over all BCs
+    CALL CG_BOCO_INFO_F(CGNSfile,CGNSBase,iZone,iBC,CGname,BCTypeI,PntSetType,nBCElems,NormalIndex, &
+                        NormalListFlag,DataType,nDataSet,iError)
+    nBCElemsMax = MAX(nBCElemsMax,nBCElems)
+  END DO
+
+  ! Multiple BC PIDs
+  print*, meshdim
+  ALLOCATE(BCElemsBlock(MeshDim,nBCElemsMax,nCGNSBC))
+END IF
+
 DO iBC=1,nCGNSBC !Loop over all BCs
   CALL CG_BOCO_INFO_F(CGNSfile,CGNSBase,iZone,iBC,CGname,BCTypeI,PntSetType,nBCElems,NormalIndex, &
                       NormalListFlag,DataType,nDataSet,iError)
@@ -953,16 +969,15 @@ DO iBC=1,nCGNSBC !Loop over all BCs
     CYCLE
   END IF
 
-  ! Multiple BC PIDs
-  IF (.NOT.ALLOCATED(BCElemsBlock)) ALLOCATE(BCElemsBlock(MeshDim,nBCElems,nCGNSBC))
-
   ALLOCATE(BCElems(MeshDim,nBCElems))
   NormalListSize=nBCElems*MeshDim
   ALLOCATE(NormalList(NormalListSize))
   CALL CG_BOCO_READ_F(CGNSfile,CGNSBase,iZone,iBC,BCElems,NormalList,iError)
 
   ! Multiple BC PIDs
-  BCElemsBlock(:,:,iBC) = BCElems
+  IF (ANSA_CGNS_SplitBC) THEN
+    BCElemsBlock(:,:nBCElems,iBC) = BCElems(:,:)
+  END IF
 
   IF(PntSetType.EQ.PointRange)THEN
     IF(ANY(BCElems.LE.0))THEN
@@ -1073,7 +1088,9 @@ DO WHILE(ASSOCIATED(aElem))
           IF(INT(MOD(aSide%Node(l)%np%tmp,10**iSide)/(10**(iSide-1))).NE.iSide) THEN
             onBnd=.FALSE.
             EXIT !Loop
+          ! Multiple BC PIDS
           ELSE
+            IF (.NOT.ANSA_CGNS_SplitBC) CYCLE
             ! Check if aSide is on correct BC region
             IF (ANY(aSide%Node(l)%np%IJK(:).LT.BCElemsBlock(:,1,iBC)) .OR. &
                 ANY(aSide%Node(l)%np%IJK(:).GT.BCElemsBlock(:,2,iBC))) THEN
@@ -1099,7 +1116,10 @@ DO WHILE(ASSOCIATED(aElem))
   END DO !WHILE(ASSOCIATED(aSide))
   aElem=>aElem%nextElem
 END DO !WHILE(ASSOCIATED(aElem))
-DEALLOCATE(BCIndex,BCTypeIndex,countBCs,nBCFaces,BCElemsBlock)
+
+DEALLOCATE(BCIndex,BCTypeIndex,countBCs,nBCFaces)
+IF (ANSA_CGNS_SplitBC) DEALLOCATE(BCElemsBlock)
+
 END SUBROUTINE ReadCGNSMeshStruct
 #endif /*def PP_USE_CGNS*/
 

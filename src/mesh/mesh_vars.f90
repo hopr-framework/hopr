@@ -207,8 +207,9 @@ CHARACTER(LEN=255)             :: SplitElemFile          ! file with subdivided 
 CHARACTER(LEN=255)             :: SpecElemFile           ! curved nodes file for CGNS(ICEM)
 LOGICAL                        :: ConformConnect         ! If mesh is knwon to be conform, this switch enhances connect speed
 LOGICAL                        :: useBinary              ! read in special binary GAMBIT files
-LOGICAL                        :: BugFix_ANSA_CGNS       ! for ANSA unstructured CGNS Ansa Files, to set Boundary Condition
+LOGICAL                        :: ANSA_CGNS_BugFix       ! for ANSA unstructured CGNS Ansa Files, to set Boundary Condition
                                                          ! PointList always to an ElementList, default is false
+LOGICAL                        :: ANSA_CGNS_SplitBC      ! Allow ANSA to split BC PIDs
 LOGICAL                        :: MeshInitDone=.FALSE.
 LOGICAL                        :: checkElemJacobians     ! check if Jacobians are positiv over curved Elements,default=.TRUE.!
 INTEGER                        :: NegativeJacobians=0    ! counter for elements with scaledJac<jacobianTolerance
