@@ -466,6 +466,22 @@ CASE(3) ! 2D box, x,y in [-1,1]^2, to cylinder with radius PostDeform_R0 z  [0,1
     xout(3)=x(3)*PostDeform_Lz 
     X_out(:,i)=xout(:)
   END DO !i=1,nTotal
+CASE(300) ! planar Annulus: tensor-product mapping: input 2*pi*x=>theta must be  [-1,1] y => height in z ,z=> radius
+  DO i=1,nTotal
+    x(:)=x_in(:,i)
+    xout(1)=PostDeform_R0*x(3)*COS(pi*x(1))
+    xout(2)=PostDeform_R0*x(3)*SIN(pi*x(1))
+    xout(3)=x(2)
+    X_out(:,i)=xout(:)
+  END DO !i=1,nTotal
+CASE(310) ! spherical Annulus: tensor-product mapping: input pi*x=>theta must be  [-1,1] Pi*y => phi ,z=> radius
+  DO i=1,nTotal
+    x(:)=x_in(:,i)
+    xout(1)=PostDeform_R0*x(3)*COS(pi*x(1))*COS(pi*x(2))
+    xout(2)=PostDeform_R0*x(3)*SIN(pi*x(1))*COS(pi*x(2))
+    xout(3)=PostDeform_R0*x(3)*SIN(pi*x(2))
+    X_out(:,i)=xout(:)
+  END DO !i=1,nTotal
 CASE(4) ! 3D box, x,y in [-1,1]^3, to Sphere with radius PostDeform_R0 
         ! all points outside [-1,1]^3 and inside [-4,4]^3 are smoothly mapped back to a cube of 
         ! of size [-4,4]*PostDeform_R0/sqrt(3)
