@@ -1,6 +1,7 @@
 # HOPR
 
 [![Slack](https://img.shields.io/badge/chat-slack-e01e5a)](https://join.slack.com/t/hopr-framework/shared_invite/zt-tvhyqwwj-7r_neuU~VWHt6AKyzf6oKg)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPLv3-success.svg)](https://opensource.org/licenses/GPL-3.0)
 
 
            _____     _____    _______________    _______________   _______________
@@ -32,7 +33,7 @@ Discontinuous Galerkin, Spectral Element Methods or pFEM,
 in order to retain their accuracy if the computational domain
 includes curved boundaries.
 
-HOPR has been developed by the [**Numerics Research Group (NRG)**][nrg]
+HOPR has been developed by the [**Numerics Research Group (NRG)**](https://www.iag.uni-stuttgart.de/en/working-groups/numerical-methods/)
 lead by Prof. Claus-Dieter Munz at the Institute of Aerodynamics
 and Gasdynamics at the University of Stuttgart, Germany.
 
