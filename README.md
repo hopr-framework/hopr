@@ -1,4 +1,8 @@
 # HOPR
+
+[![Slack](https://img.shields.io/badge/chat-slack-e01e5a)](https://join.slack.com/t/hopr-framework/shared_invite/zt-tvhyqwwj-7r_neuU~VWHt6AKyzf6oKg)
+
+
            _____     _____    _______________    _______________   _______________
           /    /)   /    /)  /    _____     /)  /    _____     /) /    _____     /)
          /    //   /    //  /    /)___/    //  /    /)___/    // /    /)___/    //
