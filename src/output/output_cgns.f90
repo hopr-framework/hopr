@@ -9,7 +9,7 @@
 ! /____//   /____//  /______________//  /____//           /____//   |_____/)    ,X`      XXX`
 ! )____)    )____)   )______________)   )____)            )____)    )_____)   ,xX`     .XX`
 !                                                                           xxX`      XXx
-! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
+! Copyright (C) 2015  Prof. Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
 ! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
@@ -27,7 +27,9 @@ MODULE MOD_Output_CGNS
 ! Module for generic data output in CGNS format
 !===================================================================================================================================
 ! MODULES
+#ifdef PP_USE_CGNS
 USE CGNS
+#endif
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 PRIVATE
@@ -67,20 +69,26 @@ CHARACTER(LEN=*),INTENT(IN)   :: FileString              ! Output file name
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES
-INTEGER            :: CGNSFile, CGNSBase, CGNSZone, CGNSCoords, CGNSsection, CGNSFlowSol, CGNSFieldInd ! ?
-PP_CGNS_INT_TYPE   :: one, iSize(1,1:3)  ! ?
-INTEGER            :: zero
-INTEGER            :: iErr  ! ?
+#ifdef PP_USE_CGNS
+PP_CGNS_INT_TYPE   :: CGNSFile,CGNSBase,CGNSZone,CGNSCoords,CGNSsection,CGNSFlowSol,CGNSFieldInd ! ?
+PP_CGNS_INT_TYPE   :: iSize(1,1:3)  ! ?
+PP_CGNS_INT_TYPE   :: iErr  ! ?
 INTEGER            :: iVal,i,j,k,iElem  ! ?
 INTEGER            :: NPlot_p1,NPlot_p1_2,NPlot_p1_3,NPlot_2  ! ?
 INTEGER            :: NodeIDElem  ! ?
 PP_CGNS_INT_TYPE   :: ElemConn(1:2**dim1,1:NPlot**dim1,1:nElems)  ! ?
+PP_CGNS_INT_TYPE   :: one,zero   ! ?
 CHARACTER(LEN=255) :: CGName  ! ?
 CHARACTER(LEN=32)  :: VarNames32(nVal)                   ! CGNS uses only 32 characters for (variable-)names
+#endif /*defined PP_USE_CGNS*/
 !===================================================================================================================================
+#ifndef PP_USE_CGNS
+CALL ABORT(__STAMP__, &
+          'WriteDataToCGNS needs compilation with USE_CGNS flag!')
+#else
 WRITE(UNIT_stdOut,'(A)',ADVANCE='NO')"   WRITE DATA TO CGNS FILE... "//TRIM(FileString)
-one=1
-zero=0
+one  = 1
+zero = 0
 
 ! Open the cgns file
 CALL cg_open_f(TRIM(FileString), MODE_WRITE, CGNSFile, iErr)
@@ -184,11 +192,11 @@ END DO
 CALL cg_close_f(CGNSfile,iErr)
 IF (iErr .NE. CG_OK) CALL my_cg_error_exit('Error closing CGNS File.',CGNSFile)
 WRITE(UNIT_stdOut,'(A)',ADVANCE='YES')"  DONE"
+#endif /*defined PP_USE_CGNS*/
 END SUBROUTINE WriteDataToCGNS
 
 
-
-
+#ifdef PP_USE_CGNS
 SUBROUTINE my_cg_error_exit(ErrorMessage,CGNSFile)
 !===================================================================================================================================
 ! Provides a controlled code abort in case of an CGNS error
@@ -218,5 +226,6 @@ WRITE(Unit_StdOut,'(A)') CGNSmessage
 CALL abort(__STAMP__, &
           'CGNS error!')
 END SUBROUTINE my_cg_error_exit
+#endif /*defined PP_USE_CGNS*/
 
 END MODULE MOD_Output_CGNS

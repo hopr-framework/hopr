@@ -241,51 +241,57 @@ ENDIF()
 # =========================================================================
 # CGNS library
 # =========================================================================
-SET(LIBS_BUILD_CGNS ON CACHE BOOL "Compile and build CGNS library")
-SET(LIBS_BUILD_CGNS_INT "32" CACHE STRING "integer type in CGNS lib")
-ADD_DEFINITIONS(-DPP_CGNS_INT=${LIBS_BUILD_CGNS_INT})
+OPTION(LIBS_USE_CGNS "Switch for using cgns as a library (needed for input/output of CGNS files)" ON)
+CMAKE_DEPENDENT_OPTION(LIBS_BUILD_CGNS "Compile and build CGNS library (off: link to system one)" ON
+                       LIBS_USE_CGNS OFF)
 
-# Use system CGNS
-IF (NOT LIBS_BUILD_CGNS)
-  FIND_PACKAGE(CGNS)
-  IF (CGNS_FOUND)
-    MESSAGE(STATUS "CGNS include dir: " ${CGNS_INCLUDE_DIR})
-    LIST(APPEND linkedlibs ${CGNS_LIBRARIES})
-    INCLUDE_DIRECTORIES (${CGNS_INCLUDE_DIR})
-  ELSE()
-    MESSAGE(ERROR "CGNS not found")
-  ENDIF()
-ELSE()
-  SET(LIBS_CGNS_DLDIR ${LIBS_EXTERNAL_LIB_DIR}/CGNS)
-  SET(LIBS_CGNS_DIR   ${LIBS_CGNS_DLDIR}/build)
+IF (LIBS_USE_CGNS)
+  SET(LIBS_BUILD_CGNS_INT "32" CACHE STRING "Integer type in CGNS lib")
+  ADD_DEFINITIONS(-DPP_USE_CGNS=${HOPR_USE_CGNS})
+  ADD_DEFINITIONS(-DPP_CGNS_INT=${LIBS_BUILD_CGNS_INT})
 
-  IF (NOT EXISTS "${LIBS_CGNS_DIR}/lib/libcgns.a")
-    STRING(COMPARE EQUAL ${LIBS_BUILD_CGNS_INT} "64" LIBS_CGNS_64BIT)
-
-    # Origin pointing to Github
-    IF("${GIT_ORIGIN}" MATCHES ".github.com")
-      SET (CGNSDOWNLOAD "https://github.com/CGNS/CGNS.git")
+  # Use system CGNS
+  IF (NOT LIBS_BUILD_CGNS)
+    FIND_PACKAGE(CGNS)
+    IF (CGNS_FOUND)
+      MESSAGE(STATUS "CGNS include dir: " ${CGNS_INCLUDE_DIR})
+      LIST(APPEND linkedlibs ${CGNS_LIBRARIES})
+      INCLUDE_DIRECTORIES (${CGNS_INCLUDE_DIR})
     ELSE()
-      SET (CGNSDOWNLOAD ${LIBS_DLPATH}libs/cgns.git )
+      MESSAGE(ERROR "CGNS not found")
+    ENDIF()
+  ELSE()
+    SET(LIBS_CGNS_DLDIR ${LIBS_EXTERNAL_LIB_DIR}/CGNS)
+    SET(LIBS_CGNS_DIR   ${LIBS_CGNS_DLDIR}/build)
+
+    IF (NOT EXISTS "${LIBS_CGNS_DIR}/lib/libcgns.a")
+      STRING(COMPARE EQUAL ${LIBS_BUILD_CGNS_INT} "64" LIBS_CGNS_64BIT)
+
+      # Origin pointing to Github
+      IF("${GIT_ORIGIN}" MATCHES ".github.com")
+        SET (CGNSDOWNLOAD "https://github.com/CGNS/CGNS.git")
+      ELSE()
+        SET (CGNSDOWNLOAD ${LIBS_DLPATH}libs/cgns.git )
+      ENDIF()
+
+      # Set CGNS_Tag
+      SET (LIBS_BUILD_CGNS_TAG "v3.4.1" CACHE STRING "CGNS version tag")
+
+      # CGNS does not need to depend on HDF5, we can build both simultaneously
+      EXTERNALPROJECT_ADD(cgns
+      GIT_REPOSITORY ${CGNSDOWNLOAD}
+      GIT_TAG ${LIBS_BUILD_CGNS_TAG}
+      GIT_PROGRESS TRUE
+      ${${GITSHALLOW}}
+      PREFIX ${LIBS_CGNS_DIR}
+      CMAKE_ARGS  -DCMAKE_INSTALL_PREFIX=${LIBS_CGNS_DIR}/build /
+        -DCGNS_ENABLE_FORTRAN=ON   -DCGNS_ENABLE_64BIT=${LIBS_CGNS_64BIT} -DCGNS_BUILD_SHARED=OFF -DCGNS_USE_SHARED=OFF /
+        -DCMAKE_BUILD_TYPE=Release -DCGNS_BUILD_CGNSTOOLS=OFF -DCGNS_ENABLE_HDF5=OFF -DCGNS_ENABLE_PARALLEL=OFF -DCGNS_ENABLE_TESTS=OFF -DCMAKE_SKIP_RPATH=ON)
+      LIST(APPEND SELFBUILTEXTERNALS cgns)
     ENDIF()
 
-    # Set CGNS_Tag
-    SET (LIBS_BUILD_CGNS_TAG "v3.4.1" CACHE STRING "CGNS version tag")
-
-    # CGNS does not need to depend on HDF5, we can build both simultaneously
-    EXTERNALPROJECT_ADD(cgns
-    GIT_REPOSITORY ${CGNSDOWNLOAD}
-    GIT_TAG ${LIBS_BUILD_CGNS_TAG}
-    GIT_PROGRESS TRUE
-    ${${GITSHALLOW}}
-    PREFIX ${LIBS_CGNS_DIR}
-    CMAKE_ARGS  -DCMAKE_INSTALL_PREFIX=${LIBS_CGNS_DIR}/build /
-      -DCGNS_ENABLE_FORTRAN=ON   -DCGNS_ENABLE_64BIT=${LIBS_CGNS_64BIT} -DCGNS_BUILD_SHARED=OFF -DCGNS_USE_SHARED=OFF /
-      -DCMAKE_BUILD_TYPE=Release -DCGNS_BUILD_CGNSTOOLS=OFF -DCGNS_ENABLE_HDF5=OFF -DCGNS_ENABLE_PARALLEL=OFF -DCGNS_ENABLE_TESTS=OFF -DCMAKE_SKIP_RPATH=ON)
-    LIST(APPEND SELFBUILTEXTERNALS cgns)
+    LIST(APPEND linkedlibs ${LIBS_CGNS_DIR}/build/lib/libcgns.a)
+    INCLUDE_DIRECTORIES(   ${LIBS_CGNS_DIR}/build/include)
   ENDIF()
-
-  LIST(APPEND linkedlibs ${LIBS_CGNS_DIR}/build/lib/libcgns.a)
-  INCLUDE_DIRECTORIES(   ${LIBS_CGNS_DIR}/build/include)
 ENDIF()
 

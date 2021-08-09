@@ -10,7 +10,7 @@
 ! )____)    )____)   )______________)   )____)            )____)    )_____)   ,xX`     .XX`
 !                                                                           xxX`      XXx
 ! Copyright (C) 2017  Florian Hindenlang <hindenlang@gmail.com>
-! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
+! Copyright (C) 2015  Prof. Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
 ! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
@@ -188,7 +188,7 @@ DO i=1,10
   ELSE
     EXIT
   END IF
-  CALL NonconformConnectMesh()
+  CALL NonconformConnectMesh(reconnect)
   IF(nNonConformingSides.EQ.0) EXIT
   connectedSides=connectedSides+nNonConformingSides
   WRITE(UNIT_StdOut,*)'   --> ',connectedSides,' sides of ', nInnerSides,'  sides connected.'
@@ -198,7 +198,6 @@ END DO
 nInner=0     ! inner sides
 nPeriodic=0  ! periodic sides
 Elem=>FirstElem
-WRITE(UNIT_stdOut,'(A)')'check'
 DO WHILE(ASSOCIATED(Elem))
   Side=>Elem%firstSide
   DO WHILE(ASSOCIATED(Side))
@@ -247,7 +246,6 @@ DO WHILE(ASSOCIATED(Elem))
   END DO
   Elem=>Elem%nextElem
 END DO
-WRITE(UNIT_stdOut,'(A)')'check2'
 IF(nInner(2)+nPeriodic(2) .GT. 0) THEN
   WRITE(*,*) 'Sides with missing connection found!'
   WRITE(*,*) 'Inner sides: ',nInner(2),' of ',nInner(1),' sides missing.'
@@ -471,7 +469,7 @@ END SUBROUTINE ConnectMesh
 
 
 
-SUBROUTINE NonconformConnectMesh()
+SUBROUTINE NonconformConnectMesh(reconnect)
 !===================================================================================================================================
 ! Connect all non-conforming sides. 
 ! This routine assumes that all conforming sides have already been connected and that all nodes in the mesh are unique.
@@ -485,6 +483,7 @@ USE MOD_SortingTools,ONLY:Qsort1Int,Qsort4Int,MSortNInt
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT VARIABLES
+LOGICAL,INTENT(IN)        :: reconnect
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -521,8 +520,12 @@ DO WHILE(ASSOCIATED(Elem))
   Side=>Elem%firstSide
   DO WHILE(ASSOCIATED(Side))
     IF(ASSOCIATED(Side%MortarSide))THEN
-      Side=>Side%nextElemSide
-      CYCLE
+      IF(.NOT.reconnect)THEN
+        Side=>Side%nextElemSide
+        CYCLE
+      ELSE
+        NULLIFY(Side%MortarSide)
+      END IF
     END IF
     IF(.NOT.ASSOCIATED(Side%BC))THEN
       IF(.NOT.ASSOCIATED(Side%Connection))THEN

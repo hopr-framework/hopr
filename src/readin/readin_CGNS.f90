@@ -9,7 +9,8 @@
 ! /____//   /____//  /______________//  /____//           /____//   |_____/)    ,X`      XXX`
 ! )____)    )____)   )______________)   )____)            )____)    )_____)   ,xX`     .XX`
 !                                                                           xxX`      XXx
-! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
+! Copyright (C) 2017  Florian Hindenlang <hindenlang@gmail.com>
+! Copyright (C) 2015  Prof. Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
 ! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
@@ -29,7 +30,9 @@ MODULE MOD_Readin_CGNS
 !===================================================================================================================================
 ! MODULES
 USE MOD_Globals
+#ifdef PP_USE_CGNS
 USE CGNS
+#endif
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 PRIVATE
@@ -44,6 +47,7 @@ INTERFACE ReadCGNSSurfaceMesh
   MODULE PROCEDURE ReadCGNSSurfaceMesh
 END INTERFACE
 
+#ifdef PP_USE_CGNS
 INTERFACE openBase
   MODULE PROCEDURE openBase
 END INTERFACE
@@ -52,10 +56,12 @@ INTERFACE abortCGNS
   MODULE PROCEDURE abortCGNS
 END INTERFACE
 
-PUBLIC::ReadCGNSmesh
-PUBLIC::ReadCGNSSurfaceMesh
 PUBLIC::openBase
 PUBLIC::abortCGNS
+#endif /*defined PP_USE_CGNS*/
+
+PUBLIC::ReadCGNSmesh
+PUBLIC::ReadCGNSSurfaceMesh
 !===================================================================================================================================
 
 CONTAINS
@@ -78,6 +84,7 @@ IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES
 INTEGER                    :: iFile  ! ?
+#ifdef PP_USE_CGNS
 INTEGER                    :: iZone  ! ?
 INTEGER                    :: nBases,nCGNSZones  ! Number of bases / zones in CGNS file
 PP_CGNS_INT_TYPE           :: nNodesGlob         ! Total number of nodes in the mesh file (in 2d: only first layer)
@@ -91,7 +98,12 @@ REAL(KIND=4)               :: version  ! ?
 
 CHARACTER(LEN=32)          :: CGName             ! necessary data for CGNS
 INTEGER                    :: ZoneType  ! ?
+#endif /*defined PP_USE_CGNS*/
 !===================================================================================================================================
+#ifndef PP_USE_CGNS
+CALL ABORT(__STAMP__, &
+          'ReadCGNSmesh needs compilation with USE_CGNS flag!')
+#else
 WRITE(UNIT_stdOut,'(132("~"))')
 CALL Timer(.TRUE.)
 WRITE(UNIT_stdOut,'(A)')'Reading CGNS mesh...'
@@ -103,7 +115,6 @@ DO iFile=1,nMeshFiles
   ! Open CGNS file
   CALL OpenBase(TRIM(MeshFileName(iFile)),MODE_READ,md,md,CGNSFile,CGNSBase,.TRUE.)
   CALL CG_VERSION_F(CGNSFile, version, iError)
-  print*, iError
   WRITE(UNIT_stdOut,*)'CGNS version:',version
   CALL CG_IS_CGNS_F(TRIM(MeshFileName(iFile)), file_type, iError)
 
@@ -147,9 +158,11 @@ END DO ! iFile=1,nMeshFiles
 IF(MeshDim .EQ. 2) n2dNodes=nNodesGlob
 
 CALL Timer(.FALSE.)
+#endif /*defined PP_USE_CGNS*/
 END SUBROUTINE ReadCGNSmesh
 
 
+#ifdef PP_USE_CGNS
 SUBROUTINE ReadCGNSMeshUnstruct(FirstElem_in,CGNSFile,CGNSBase,iZone,nZonesGlob,nNodesGlob)
 !===================================================================================================================================
 ! This subroutine reads unstructured 3D meshes from the CGNS file and prepares the element list.
@@ -801,9 +814,9 @@ DO m=1,irmax(MapCGNS(3))
 END DO
 DEALLOCATE(NodeCoords)
 
-DO m=1,irmax(MapCGNS(3))-N_loc,N_loc
-  DO l=1,irmax(MapCGNS(2))-N_loc,N_loc
-    DO k=1,irmax(MapCGNS(1))-N_loc,N_loc
+DO k=1,irmax(1)-N_loc,N_loc
+  DO l=1,irmax(2)-N_loc,N_loc
+    DO m=1,irmax(3)-N_loc,N_loc
       CornerNode(1)%np=>Mnodes(k      ,l      ,m      )%np
       CornerNode(2)%np=>Mnodes(k+N_loc,l      ,m      )%np
       CornerNode(3)%np=>Mnodes(k+N_loc,l+N_loc,m      )%np
@@ -831,7 +844,7 @@ DO m=1,irmax(MapCGNS(3))-N_loc,N_loc
       IF(useCurveds.AND.MeshIsAlreadyCurved)THEN !read in curvedNodes
         FirstElem_in%nCurvedNodes=(N_loc+1)**3
         ALLOCATE(FirstElem_in%curvedNode(FirstElem_in%nCurvedNodes))
-        DO mm=0,N_loc; DO ll=0,N_loc; DO kk=0,N_loc
+        DO kk=0,N_loc; DO ll=0,N_loc; DO mm=0,N_loc
           FirstElem_in%curvedNode(HexaMapInv(kk,ll,mm))%np=>Mnodes(k+kk,l+ll,m+mm)%np
         END DO; END DO; END DO
       END IF!useCurveds
@@ -1011,6 +1024,7 @@ DO WHILE(ASSOCIATED(aElem))
 END DO !WHILE(ASSOCIATED(aElem))
 DEALLOCATE(BCIndex,BCTypeIndex,countBCs,nBCFaces)
 END SUBROUTINE ReadCGNSMeshStruct
+#endif /*def PP_USE_CGNS*/
 
 
 
@@ -1031,6 +1045,7 @@ CHARACTER(LEN=255),INTENT(IN)                   :: FileName
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES
+#ifdef PP_USE_CGNS
 INTEGER                      :: iZone
 INTEGER                      :: nBases,nCGNSZones  ! Number of bases / zones in CGNS file
 PP_CGNS_INT_TYPE             :: nNodesGlob         ! Total number of nodes in the mesh file
@@ -1067,9 +1082,14 @@ INTEGER                      :: ParentDataFlag                      ! 0=no paren
 INTEGER                      :: CellDim, PhysDim                    ! Dimesnion of elements,physical dimension
 INTEGER                      :: iError                              ! Error flag
 CHARACTER(LEN=30)            :: coordNameCGNS(3)                 ! List of CGNS names for the coordinates
-PP_CGNS_INT_TYPE             :: one(1)                ! ?
+PP_CGNS_INT_TYPE             :: one  ! ?
+#endif /*defined PP_USE_CGNS*/
 !===================================================================================================================================
-WRITE(UNIT_stdOut,*)'Read CGNS Surface File: ',TRIM(FileName)
+#ifndef PP_USE_CGNS
+CALL ABORT(__STAMP__, &
+          'ReadCGNSsurfaceMesh needs compilation with USE_CGNS flag!')
+#else
+WRITE(UNIT_stdOut,*)'Read CGNS File: ',TRIM(FileName)
 ! Open CGNS file
 CALL OpenBase(TRIM(FileName),MODE_READ,md,md,CGNSFile,CGNSBase,.TRUE.)
 !CALL CG_OPEN_F(TRIM(MeshFileName(iFile)), CG_MODE_READ, CGNSFile, iError)
@@ -1250,9 +1270,11 @@ DO iZone=1,nCGNSZones
   nElemsGlob = nElemsGlob+nElems
 END DO ! iZone
 
+#endif /*defined PP_USE_CGNS*/
 END SUBROUTINE ReadCGNSSurfaceMesh
 
 
+#ifdef PP_USE_CGNS
 SUBROUTINE openBase(ioName,mode,celldim,physdim,CGNSFile,CGNSBase,externBase_in)
 !===================================================================================================================================
 ! Opens CGNS files and, if they do not yet exist, prepares their datastructure
@@ -1403,6 +1425,7 @@ CALL cg_get_error_f(message)
 CALL closeFile(CGNSFile)
 CALL abort(sourceFile,sourceLine,compDate,compTime,message)
 END SUBROUTINE abortCGNS
+#endif /*defined PP_USE_CGNS*/
 
 END MODULE MOD_Readin_CGNS
 
