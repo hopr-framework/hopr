@@ -276,14 +276,16 @@ IF(NOT LIBS_BUILD_MATH_LIB)
   FIND_PACKAGE(LAPACK QUIET)
   IF (LAPACK_FOUND)
     LIST(APPEND linkedlibs ${LAPACK_LIBRARIES})
-    MESSAGE(STATUS "Using system BLAS/Lapack library")
+    MESSAGE(STATUS "Compiling with system [BLAS/Lapack]")
   ENDIF()
-
-# Build LAPACK/OpenBLAS in HOPR
 ELSE()
   # Offer LAPACK and OpenBLAS
   SET (LIBS_BUILD_MATH_LIB_VENDOR LAPACK CACHE STRING "Choose the type of math lib vendor, options are: LAPACK, OpenBLAS.")
   SET_PROPERTY(CACHE LIBS_BUILD_MATH_LIB_VENDOR PROPERTY STRINGS LAPACK OpenBLAS)
+
+  # Set parallel build with maximum number of threads
+  INCLUDE(ProcessorCount)
+  PROCESSORCOUNT(N)
 
   # Build LAPACK
   IF (LIBS_BUILD_MATH_LIB_VENDOR MATCHES "LAPACK")
@@ -328,6 +330,7 @@ ELSE()
         PREFIX ${LIBS_MATH_DIR}
         UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_PREFIX=${LIBS_MATH_DIR} -DBLAS++=OFF -DLAPACK++=OFF -DBUILD_SHARED_LIBS=ON -DCBLAS=OFF -DLAPACKE=OFF -DBUILD_TESTING=OFF
+        BUILD_BYPRODUCTS ${LIBS_MATH_DIR}/lib/liblapack.so ${LIBS_MATH_DIR}/lib/libblas.so
       )
 
       LIST(APPEND SELFBUILTEXTERNALS ${LIBS_BUILD_MATH_LIB_VENDOR})
@@ -344,8 +347,11 @@ ELSE()
         PREFIX ${LIBS_MATH_DIR}
         UPDATE_COMMAND ""
         CONFIGURE_COMMAND ""
+        BUILD_BYPRODUCTS ${LIBS_MATH_DIR}/src/${LIBS_BUILD_MATH_LIB_VENDOR}/libopenblas.so
         BUILD_IN_SOURCE TRUE
         INSTALL_COMMAND ""
+        # Configure explicitly requires GNU make
+        BUILD_COMMAND make -j${N}
       )
 
       LIST(APPEND SELFBUILTEXTERNALS ${LIBS_BUILD_MATH_LIB_VENDOR})
@@ -368,7 +374,7 @@ ELSE()
     # Actually add the math lib paths to the linking paths
     INCLUDE_DIRECTORIES (${MATH_LIB_LIBRARIES})
     LIST(APPEND linkedlibs ${LAPACK_LIBRARY} ${BLAS_LIBRARY})
-    MESSAGE(STATUS "Using self-built LAPACK library")
+    MESSAGE(STATUS "Compiling with self-built [LAPACK]")
   ELSEIF (LIBS_BUILD_MATH_LIB_VENDOR MATCHES "OpenBLAS")
     # Set math lib paths
     SET(MATH_LIB_LIBRARIES              ${LIBS_MATH_DIR}/src/${LIBS_BUILD_MATH_LIB_VENDOR})
@@ -382,7 +388,7 @@ ELSE()
     # Actually add the math lib paths to the linking paths
     INCLUDE_DIRECTORIES (${MATH_LIB_LIBRARIES})
     LIST(APPEND linkedlibs ${LAPACK_LIBRARY} ${BLAS_LIBRARY})
-    MESSAGE(STATUS "Using self-built OpenBLAS library")
+    MESSAGE(STATUS "Compiling with self-built [OpenBLAS]")
   ENDIF()
 ENDIF()
 
