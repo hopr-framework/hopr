@@ -265,7 +265,7 @@ DO iFile=1,nMeshFiles
         WRITE(*,*)'BC found: ',TRIM(strBC)
         WRITE(*,*)'              -->  mapped to:',TRIM(BoundaryName(i))
         strBC=strBC(dummy1+LEN(TRIM(BoundaryName(i))):LEN(strBC))  ! First we need to cut off the boundary name...
-        READ(strBC,'(I8,I8,I8,I8)')dummy1,nBCElems,dummy2,dummy3  ! ...before we can read the number of BC elements
+        READ(strBC,'(I8,I8,I8,I8)')dummy1,dummy2,nBCElems,dummy3  ! ...before we can read the number of BC elements
         EXIT
       END IF
     END DO

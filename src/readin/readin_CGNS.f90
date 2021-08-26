@@ -100,12 +100,24 @@ nNodesGlob = 0
 nZonesGlob = 0
 ! Let's fetz now
 DO iFile=1,nMeshFiles
+  ! Check CGNS file (CG_IS_CGNS_F must NOT be performed after CG_OPEN_F (in OpenBase), leads to an error in the read-in of HDF5-based CGNS files)
+  CALL CG_IS_CGNS_F(TRIM(MeshFileName(iFile)), file_type, iError)
+  IF (iError .NE. CG_OK) &
+    CALL abortCGNS(__STAMP__,CGNSFile)
   ! Open CGNS file
   CALL OpenBase(TRIM(MeshFileName(iFile)),MODE_READ,md,md,CGNSFile,CGNSBase,.TRUE.)
   CALL CG_VERSION_F(CGNSFile, version, iError)
-  print*, iError
   WRITE(UNIT_stdOut,*)'CGNS version:',version
-  CALL CG_IS_CGNS_F(TRIM(MeshFileName(iFile)), file_type, iError)
+
+  SELECT CASE(file_type)
+  CASE(CG_FILE_ADF)
+    WRITE(UNIT_stdOut,*)'CGNS file type: ADF'
+  CASE(CG_FILE_HDF5)
+    WRITE(UNIT_stdOut,*)'CGNS file type: HDF5'
+  CASE DEFAULT
+    CALL closeFile(CGNSFile)
+    CALL abort(__STAMP__,'CGNS file type is unknown!')
+  END SELECT
 
   ! Get number of bases in CGNS file
   CALL CG_NBASES_F(CGNSfile,nBases,iError)
@@ -219,6 +231,7 @@ LOGICAL                      :: orient2D  ! ?
 INTEGER,ALLOCATABLE          :: nBCNodes(:),BCInds(:,:)
 INTEGER                      :: locInds(4),nUnique
 LOGICAL,ALLOCATABLE          :: BCFound(:)
+INTEGER                      :: GridLoc
 !===================================================================================================================================
 coordNameCGNS(1) = 'CoordinateX'
 coordNameCGNS(2) = 'CoordinateY'
@@ -327,6 +340,14 @@ DO iSect=1,nSect ! Vol. and Face elems
     CALL CG_NPE_F(LocType,nNodesLoc,iError) ! Get number of nodes for iElem
     iEnd=iEnd+nNodesLoc
 
+    ! Check if the number of nodes is above the allocated and display the element type
+    IF(nNodesLoc.GT.12) THEN
+      CALL closeFile(CGNSFile)
+      CALL abort(__STAMP__,&
+        'ERROR: Number of nodes is greater than expected. Following element type (per CGNS standard) might not be supported: '&
+                &//TRIM(ElementTypeName(LocType)))
+    END IF
+
     LocDim=1
     IF(LocType .GT.  BAR_3) LocDim=2
     IF(LocType .GT. QUAD_9) LocDim=3
@@ -417,6 +438,18 @@ DO iBC=1,nCGNSBC
   IF(BCTypeIndex .EQ. -1)THEN
     WRITE(UNIT_stdOut,*)'ERROR - Could not find corresponding boundary definition of', CGName
     CYCLE
+  END IF
+
+  ! Read-in the grid location: FaceCenter means that the ElementList/Range approach is required (unstructured grids)
+  CALL CG_GOTO_F(CGNSFile, CGNSBase, iError,'Zone_t',iZone,'ZoneBC_t',1,'BC_t',iBC,'end')
+  CALL CG_GRIDLOCATION_READ_F(GridLoc,iError)
+  IF (GridLoc.EQ.FaceCenter) THEN
+    WRITE(UNIT_stdOut,*) 'GridLocation=FaceCenter: Using ElementList/Range read-in approach'
+    IF(PntSetType .EQ. PointList) THEN
+      PntSetType=ElementList
+    ELSE IF(PntSetType .EQ. PointRange) THEN
+      PntSetType=ElementRange
+    END IF
   END IF
 
   IF(Bugfix_ANSA_CGNS) PntSetType=ElementList
