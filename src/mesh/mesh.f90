@@ -258,11 +258,14 @@ IF(useCurveds) THEN
       ALLOCATE(xlim(       2,nRBFBoxes))
       ALLOCATE(ylim(       2,nRBFBoxes))
 
+      ! If xlim or ylim not given, apply RBF curving to whole mesh
+      WRITE(DefStr,'(E21.11,A1,E21.11)')-HUGE(1.),',',HUGE(1.)
+
       DO i=1,nRBFBoxes
         SupportRadius(i) = GETREAL('SupportRadius')
         RBFType(i) = GETINT('RBFType')
-        xlim(:, i) = GETREALARRAY('xlim',2,'-1000000,1000000')
-        ylim(:, i) = GETREALARRAY('ylim',2,'-1000000,1000000')
+        xlim(:, i) = GETREALARRAY('xlim',2,TRIM(DefStr))
+        ylim(:, i) = GETREALARRAY('ylim',2,TRIM(DefStr))
       END DO
     END IF
 
