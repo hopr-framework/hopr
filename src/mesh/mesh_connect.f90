@@ -198,6 +198,7 @@ END DO
 nInner=0     ! inner sides
 nPeriodic=0  ! periodic sides
 Elem=>FirstElem
+
 DO WHILE(ASSOCIATED(Elem))
   Side=>Elem%firstSide
   DO WHILE(ASSOCIATED(Side))
@@ -246,6 +247,7 @@ DO WHILE(ASSOCIATED(Elem))
   END DO
   Elem=>Elem%nextElem
 END DO
+
 IF(nInner(2)+nPeriodic(2) .GT. 0) THEN
   WRITE(*,*) 'Sides with missing connection found!'
   WRITE(*,*) 'Inner sides: ',nInner(2),' of ',nInner(1),' sides missing.'
