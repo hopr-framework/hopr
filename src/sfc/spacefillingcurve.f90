@@ -66,7 +66,7 @@ SUBROUTINE SortElemsBySpaceFillingCurve(nElems,ElemBary,IDList,whichBoundBox)
 ! ?
 !===================================================================================================================================
 ! MODULES
-USE MOD_Globals,ONLY:UNIT_stdOut,Timer
+USE MOD_Globals,ONLY:UNIT_stdOut,Timer,Abort
 USE MOD_Basis1D,ONLY:ALMOSTEQUAL
 USE MOD_SortingTools,ONLY:Qsort1DoubleInt1Pint
 IMPLICIT NONE
@@ -104,6 +104,9 @@ IF(nElems.GT.1)THEN
   CASE(2)
     lower=MINVAL(ElemBary)
     upper=MAXVAL(ElemBary)
+  CASE DEFAULT
+    CALL abort(__STAMP__, &
+      'wrong bounding box type (only 1,2) ')
   END SELECT
   DO i=1,3
     IF(ALMOSTEQUAL(lower(i),upper(i)))THEN
@@ -131,6 +134,7 @@ FUNCTION COORD2INT(Box, Coord) RESULT(ind)
 ! ?
 !===================================================================================================================================
 ! MODULES
+USE MOD_Globals,ONLY:Abort
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT VARIABLES
@@ -160,6 +164,10 @@ CASE('mortonZ')
 CASE('hilbertZ')
   ind = evalhilbert(disc(1:2),box%nbits,2)
   ind = ind+ disc(3)*box%intfact2
+CASE DEFAULT
+  CALL abort(__STAMP__, &
+        'sfc_type does not exist (only hilbert,morton,mortonZ,hilbertZ)')
+  
 END SELECT
 END FUNCTION COORD2INT 
 
