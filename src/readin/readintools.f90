@@ -540,6 +540,8 @@ DO WHILE(EOF.NE.IOSTAT_END)
       IF(LEN(CHAR(Separator)).EQ.0) Str1%Str=bStr
       ! Remove blanks
       Str1%Str=Replace(Str1%Str," ","",Every=.true.)
+      ! Remove tabulator
+      Str1%Str=Replace(Str1%Str,CHAR(9),"",Every=.true.)
       ! Replace brackets
       Str1%Str=Replace(Str1%Str,"(/"," ",Every=.true.)
       Str1%Str=Replace(Str1%Str,"/)"," ",Every=.true.)
