@@ -1116,7 +1116,7 @@ INTEGER                      :: ParentDataFlag                      ! 0=no paren
 INTEGER                      :: CellDim, PhysDim                    ! Dimesnion of elements,physical dimension
 INTEGER                      :: iError                              ! Error flag
 CHARACTER(LEN=30)            :: coordNameCGNS(3)                 ! List of CGNS names for the coordinates
-PP_CGNS_INT_TYPE             :: one  ! ?
+PP_CGNS_INT_TYPE             :: one(1)
 #endif /*defined PP_USE_CGNS*/
 !===================================================================================================================================
 #ifndef PP_USE_CGNS
@@ -1162,7 +1162,7 @@ DO iZone=1,nCGNSZones
   coordNameCGNS(1) = 'CoordinateX'
   coordNameCGNS(2) = 'CoordinateY'
   coordNameCGNS(3) = 'CoordinateZ'
-  one=1
+  one(1)=1
   ! Check dimensions of CGNS base
   CALL CG_BASE_READ_F(CGNSfile,CGNSBase,CGname,CellDim,PhysDim,iError)
   IF(iError .NE. CG_OK) &
@@ -1179,7 +1179,7 @@ DO iZone=1,nCGNSZones
   NodeCoords=0.
   DO dm=1,3
     CGname=TRIM(CoordNameCGNS(dm))
-    CALL CG_COORD_READ_F(CGNSfile,CGNSBase,iZone,CGName,RealDouble,one,nNodes,NodeCoords(dm,:),iError)
+    CALL CG_COORD_READ_F(CGNSfile,CGNSBase,iZone,CGName,RealDouble,one(1),nNodes,NodeCoords(dm,:),iError)
     IF (iError .NE. CG_OK)THEN
       WRITE(UNIT_stdOut,*)'ERROR - Could not read coordinate(',dm,'): ',TRIM(CoordNameCGNS(dm))
       CALL CG_NCOORDS_F(CGNSFile,CGNSBase,iZone,PhysDim,iError )  ! Here we use PhysDim as nCoords
