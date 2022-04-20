@@ -692,13 +692,13 @@ IF(MeshPostDeform.NE.0)THEN
     END DO
     CALL Connect(reconnect=.TRUE.,deletePeriodic=.FALSE.)                           ! Create connection between elements
   END SELECT !postConnect
-
-  IF(mortarFound) THEN
-    IF(doRebuildMortarGeometry) CALL RebuildMortarGeometry()
-    !after rebuild , mortars should be fine, but checking is better:
-    CALL CheckMortarWaterTight()
-  END IF !mortarFound
 END IF
+
+IF(mortarFound) THEN
+  IF(doRebuildMortarGeometry) CALL RebuildMortarGeometry()
+  !after rebuild , mortars should be fine, but checking is better:
+  CALL CheckMortarWaterTight()
+END IF !mortarFound
 
 ! apply meshscale before output (default)
 IF(doScale.AND.postScale) CALL ApplyMeshScale(FirstElem)
