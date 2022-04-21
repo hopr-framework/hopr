@@ -80,7 +80,7 @@ INTEGER                :: BCind  ! ?
 INTEGER,ALLOCATABLE    :: iDummyArray2(:,:),iDummyArray3(:)  ! ?
 CHARACTER(LEN=99)      :: formstr,BinaryFile  ! ?
 CHARACTER(LEN=100)     :: cdummy,cdummy2   ! ?
-CHARACTER(LEN=255)     :: strBC  ! ?
+CHARACTER(LEN=255)     :: strBC,strBCName  ! ?
 LOGICAL                :: foundBC  ! ?
 INTEGER                :: HexNodeMap(8)  = (/3,2,7,6,4,1,8,5/)  ! ?
 INTEGER                :: HexSideMap(6)  = (/1,2,6,4,3,5/)  ! ?
@@ -256,6 +256,9 @@ DO iFile=1,nMeshFiles
     DO i=1,nUserDefinedBoundaries
       dummy1=INDEX(TRIM(strBC),TRIM(BoundaryName(i)))
       IF(dummy1.NE.0) THEN
+        strBCName=TRIM(ADJUSTL(strBC(1:dummy1+LEN(TRIM(BoundaryName(i))))))  ! Get the boundary name
+        ! Check if it is really the same BC and not a partial match
+        IF(TRIM(strBCName).NE.TRIM(BoundaryName(i))) CYCLE
         foundBC=.TRUE. 
         BCType     = BoundaryType(i,1)
         curveIndex = BoundaryType(i,2)
