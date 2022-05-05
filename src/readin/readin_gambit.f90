@@ -85,6 +85,7 @@ LOGICAL                :: foundBC  ! ?
 INTEGER                :: HexNodeMap(8)  = (/3,2,7,6,4,1,8,5/)  ! ?
 INTEGER                :: HexSideMap(6)  = (/1,2,6,4,3,5/)  ! ?
 INTEGER                :: PyraNodeMap(5) = (/1,2,4,3,5/)  ! ?
+INTEGER                :: TetraNodeMap(4) = (/3,1,4,2/)  ! ?
 !===================================================================================================================================
 WRITE(UNIT_stdOut,'(132("~"))')
 CALL Timer(.TRUE.)
@@ -180,6 +181,8 @@ DO iFile=1,nMeshFiles
       actualNode%ind=iDummyArray2(iElem,iNode)
       ! for some elements, gambit ordering is INCOMPATIBLE to standard (!!)
       SELECT CASE(actualElem%nnodes)
+      CASE(4) ! Tetra
+        actualElem%Node(TetraNodeMap(iNode))%np=>actualNode
       CASE(5) ! Pyra
         actualElem%Node(PyraNodeMap(iNode))%np=>actualNode
       CASE(8) ! Hex
