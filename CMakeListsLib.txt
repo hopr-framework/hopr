@@ -61,6 +61,7 @@ IF(LIBS_USE_MPI)
     ENDFOREACH()
     LIST(APPEND linkedlibs ${MPI_Fortran_LIBRARIES})
   ENDIF()
+
   MARK_AS_ADVANCED(FORCE MPI_LIBRARY MPI_EXTRA_LIBRARY)
   MESSAGE(STATUS "Building HOPR with MPI")
   MESSAGE(STATUS "MPI Compiler: " ${MPI_Fortran_COMPILER})
@@ -92,6 +93,12 @@ SET(HDF5_ROOT "$ENV{HDF5_ROOT}" CACHE STRING "Expose HDF5_ROOT environment varia
 
 # Use system HDF5
 IF(NOT LIBS_BUILD_HDF5)
+  # Unset leftover paths from old CMake runs
+  UNSET(HDF5_LIBRARIES)
+  UNSET(HDF5_INCLUDE_DIR_FORTRAN)
+  UNSET(HDF5_INCLUDE_DIR)
+  UNSET(HDF5_DIFF_EXECUTABLE)
+
   # Try to find the CMake version
   SET(LIBS_HDF5_CMAKE TRUE)
   FIND_PACKAGE(HDF5 NAMES hdf5 COMPONENTS C Fortran ${SEARCH_TYPE} QUIET PATH_SUFFIXES share/cmake)
@@ -137,20 +144,16 @@ ELSE()
   #SET HDF5_TAG depending on MPI Version
   IF(LIBS_USE_MPI)
     # HDF5 1.12.0 and greater is compatible with OpenMPI 4.0.0 and greater
-    EXECUTE_PROCESS(COMMAND mpiexec --version COMMAND grep ^mpiexec COMMAND sed "s/^.* //g" OUTPUT_VARIABLE OPENMPI_VERSION)
-    IF (DEFINED OPENMPI_VERSION  AND NOT "${OPENMPI_VERSION}" STREQUAL "")
-      IF (${OPENMPI_VERSION} VERSION_GREATER_EQUAL "4.0.0")
+    IF("${LIBS_MPI_NAME}" MATCHES "OpenMPI" AND ${MPI_C_LIBRARY_VERSION} VERSION_GREATER_EQUAL "4.0.0")
         SET (HDF5_TAG "hdf5-1_12_0" CACHE STRING "HDF5 version tag")
       ELSE()
         SET (HDF5_TAG "hdf5-1_10_6" CACHE STRING "HDF5 version tag")
       ENDIF()
-    ELSE()
-      SET (HDF5_TAG "hdf5-1_10_6" CACHE STRING "HDF5 version tag")
-    ENDIF()
+    MESSAGE (STATUS "Setting HDF5 to tag ${HDF5_TAG} to be compatible with detected [${LIBS_MPI_NAME}] (v${MPI_C_LIBRARY_VERSION})")
   ELSE()
     SET (HDF5_TAG "hdf5-1_12_0" CACHE STRING "HDF5 version tag")
+    MESSAGE (STATUS "Setting HDF5 to tag ${HDF5_TAG} as no MPI support was requested")
   ENDIF()
-  MESSAGE (STATUS "Setting HDF5 to tag ${HDF5_TAG} to be compatible with detected MPI version")
   MARK_AS_ADVANCED(FORCE HDF5_TAG)
 
   # Set HDF5 build dir
@@ -168,6 +171,10 @@ ELSE()
       SET(LIBS_HDF5FC ${CMAKE_Fortran_COMPILER})
       SET(LIBS_HDF5CC ${CMAKE_C_COMPILER} )
     ENDIF()
+
+    # Set parallel build with maximum number of threads
+    INCLUDE(ProcessorCount)
+    PROCESSORCOUNT(N)
 
     # Optional Features:
     #   --enable-silent-rules   less verbose build output (undo: "make V=1")
@@ -192,12 +199,14 @@ ELSE()
       PREFIX ${LIBS_HDF5_DIR}
       UPDATE_COMMAND ""
       CONFIGURE_COMMAND FC=${LIBS_HDF5FC} CC=${LIBS_HDF5CC} ${LIBS_HDF5_DIR}/src/HDF5/configure --prefix=${LIBS_HDF5_DIR} --with-pic --enable-fortran ${LIBS_HDF5PARALLEL} --libdir=${LIBS_HDF5_DIR}/lib --enable-build-mode=production --enable-silent-rules --disable-dependency-tracking
-      BUILD_COMMAND ${MAKE}
+      BUILD_BYPRODUCTS ${LIBS_HDF5_DIR}/lib/libhdf5_fortran.a ${LIBS_HDF5_DIR}/lib/libhdf5.a ${LIBS_HDF5_DIR}/bin/h5diff
+      # Configure explicitly requires GNU make
+      BUILD_COMMAND make -j${N}
     )
     SET(LIBS_HDF5_CMAKE FALSE)
 
     # CMake HDF5 is fast but not yet reliable. The following section can be enabled once HDF5 promotes the CMake option to stable
-    #ExternalProject_Add(HDF5
+    #EXTERNALPROJECT_ADD(HDF5
     #  GIT_REPOSITORY ${HDF5DOWNLOAD}
     #  GIT_TAG ${HDF5_TAG}
     #  GIT_PROGRESS TRUE
@@ -239,7 +248,11 @@ IF(LIBS_HDF5_CMAKE)
 # HDF5 build with configure
 ELSE()
   INCLUDE_DIRECTORIES (${HDF5_INCLUDE_DIR_FORTRAN} ${HDF5_INCLUDE_DIR})
-  MESSAGE(STATUS "Found HDF5 Libs: " ${HDF5_LIBRARIES})
+  IF(${HDF5_IS_PARALLEL})
+    MESSAGE(STATUS "Compiling with [HDF5] (v${HDF5_VERSION}) with parallel support")
+  ELSE()
+    MESSAGE(STATUS "Compiling with [HDF5] (v${HDF5_VERSION}) without parallel support")
+  ENDIF()
   LIST(APPEND linkedlibs ${HDF5_LIBRARIES} )
 ENDIF()
 
@@ -424,7 +437,7 @@ ELSE()
     SET(LIBS_CGNS_DLDIR ${LIBS_EXTERNAL_LIB_DIR}/CGNS${LIBS_BUILD_CGNS_TAG})
     SET(LIBS_CGNS_DIR   ${LIBS_CGNS_DLDIR})
   
-    IF (NOT EXISTS "${LIBS_CGNS_DIR}/build/lib/libcgns.a")
+    IF (NOT EXISTS "${LIBS_CGNS_DIR}/lib/libcgns.a")
       STRING(COMPARE EQUAL ${LIBS_BUILD_CGNS_INT} "64" LIBS_CGNS_64BIT)
   
       # Origin pointing to Github
@@ -445,10 +458,11 @@ ELSE()
         GIT_PROGRESS TRUE
         ${${GITSHALLOW}}
         PREFIX ${LIBS_CGNS_DIR}
-        CMAKE_ARGS  -DCMAKE_INSTALL_PREFIX=${LIBS_CGNS_DIR}/build -DCMAKE_PREFIX_PATH=${LIBS_HDF5_DIR} /
+        CMAKE_ARGS  -DCMAKE_INSTALL_PREFIX=${LIBS_CGNS_DIR} -DCMAKE_PREFIX_PATH=${LIBS_HDF5_DIR} /
         -DCGNS_ENABLE_FORTRAN=ON   -DCGNS_ENABLE_64BIT=${LIBS_CGNS_64BIT} -DCGNS_BUILD_SHARED=OFF -DCGNS_USE_SHARED=OFF /
         -DCMAKE_BUILD_TYPE=Release -DCGNS_BUILD_CGNSTOOLS=OFF -DCGNS_ENABLE_HDF5=${LIBS_BUILD_CGNS_ENABLE_HDF5} /
-        -DCGNS_ENABLE_PARALLEL=OFF -DCGNS_ENABLE_TESTS=OFF -DCMAKE_SKIP_RPATH=ON /
+        -DCGNS_ENABLE_PARALLEL=OFF -DCGNS_ENABLE_TESTS=OFF -DCMAKE_SKIP_RPATH=ON
+        BUILD_BYPRODUCTS ${LIBS_CGNS_DIR}/lib/libcgns.a
       )
       # If HDF5 is built in HOPR, it must occur before the CGNS compilation (for the support of HDF5-based CGNS files)
       IF(LIBS_BUILD_HDF5)
@@ -459,8 +473,10 @@ ELSE()
       LIST(APPEND SELFBUILTEXTERNALS cgns)
     ENDIF()
   
-    LIST(INSERT linkedlibs 0 ${LIBS_CGNS_DIR}/build/lib/libcgns.a)
-    INCLUDE_DIRECTORIES(   ${LIBS_CGNS_DIR}/build/include)
+    LIST(INSERT linkedlibs 0 ${LIBS_CGNS_DIR}/lib/libcgns.a)
+    INCLUDE_DIRECTORIES(   ${LIBS_CGNS_DIR}/include)
+
+    MESSAGE(STATUS "Compiling with [CGNS] (${LIBS_BUILD_CGNS_TAG})")
   ENDIF()
 
   # set pre-processor flag for CGNS version
