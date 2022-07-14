@@ -143,9 +143,9 @@ DO iFile=1,nMeshFiles
     ! Check structured / unstructured
     CALL cg_zone_type_f(CGNSFile, CGNSBase, iZone, ZoneType, iError)
     IF (iError .NE. CG_OK) CALL cg_error_exit_f()
-    IF (ZoneType.EQ.Structured)THEN
+    IF (ZoneType.EQ.CG_Structured)THEN
       CALL ReadCGNSMeshStruct(FirstElem,CGNSFile,CGNSBase,iZone,nZonesGlob,nNodesGlob)
-    ELSEIF(ZoneType.EQ.Unstructured)THEN
+    ELSEIF(ZoneType.EQ.CG_Unstructured)THEN
       CALL ReadCGNSMeshUnstruct(FirstElem,CGNSFile,CGNSBase,iZone,nZonesGlob,nNodesGlob)
     ELSE
       STOP 'Wrong zone type specifier, should be structured or unstructured.'
@@ -257,7 +257,7 @@ ALLOCATE(NodeCoords(3,nNodes(1)))
 NodeCoords=0.
 DO dm=1,MeshDim
   CGname=TRIM(CoordNameCGNS(dm))
-  CALL CG_COORD_READ_F(CGNSfile,CGNSBase,iZone,CGName,RealDouble,one,nNodes,NodeCoords(dm,:),iError)
+  CALL CG_COORD_READ_F(CGNSfile,CGNSBase,iZone,CGName,CG_RealDouble,one,nNodes,NodeCoords(dm,:),iError)
   IF (iError .NE. CG_OK)THEN
     WRITE(UNIT_stdOut,*)'ERROR - Could not read coordinate(',dm,'): ',TRIM(CoordNameCGNS(dm))
     CALL CG_NCOORDS_F(CGNSFile,CGNSBase,iZone,PhysDim,iError )  ! Here we use PhysDim as nCoords
@@ -299,7 +299,7 @@ DO iSect=1,nSect ! Vol. and Face elems
   CALL CG_SECTION_READ_F(CGNSfile,CGNSBase,iZone,iSect,CGname,SectionElemType,IndMin,IndMax,ParentDataFlag,ParentDataFlag,iError)
   WRITE(UNIT_StdOut,*)'   read section ',TRIM(CGname)
   IF (iError .NE. CG_OK) CALL abortCGNS(__STAMP__,CGNSFile)
-  IF(SectionElemType .LT. TRI_3) CYCLE !ignore additional sections with data <nDim-1
+  IF(SectionElemType .LT. CG_TRI_3) CYCLE !ignore additional sections with data <nDim-1
   CALL CG_ELEMENTDATASIZE_F(CGNSFile,CGNSBase,iZone,iSect,nSectElems,iError)  ! Get number of connectivity values
   ALLOCATE(LocalConnect(nSectElems))
   nSectElems=1+IndMax-IndMin ! Important for surface elements only
@@ -311,7 +311,7 @@ DO iSect=1,nSect ! Vol. and Face elems
   ! Check if 2D element is not oriented in z+, check only first element#
   IF(MeshDim .EQ. 2)THEN
     orient2D=.TRUE. !
-    IF(SectionElemType .EQ. MIXED) THEN
+    IF(SectionElemType .EQ. CG_MIXED) THEN
       locType=LocalConnect(1)
       iStart=2
     ELSE
@@ -330,7 +330,7 @@ DO iSect=1,nSect ! Vol. and Face elems
   iStart=1
   DO iElem=1,nSectElems
     iEnd=iStart
-    IF(SectionElemType .EQ. MIXED) THEN
+    IF(SectionElemType .EQ. CG_MIXED) THEN
       LocType=LocalConnect(iStart)  ! Mixed type elements, read elem type from array
       iStart =iStart+1              ! First value is elem type
     ELSE
@@ -349,9 +349,9 @@ DO iSect=1,nSect ! Vol. and Face elems
     END IF
 
     LocDim=1
-    IF(LocType .GT.  BAR_3) LocDim=2
-    IF(LocType .GT. QUAD_9) LocDim=3
-    IF(LocType .GT.  MIXED) LocDim=2 !NGON_n
+    IF(LocType .GT.  CG_BAR_3) LocDim=2
+    IF(LocType .GT. CG_QUAD_9) LocDim=3
+    IF(LocType .GT.  CG_MIXED) LocDim=2 !NGON_n
 
     IF(LocDim .EQ. MeshDim) THEN ! volume element
       iVolElem=iVolElem+1
@@ -443,20 +443,20 @@ DO iBC=1,nCGNSBC
   ! Read-in the grid location: FaceCenter means that the ElementList/Range approach is required (unstructured grids)
   CALL CG_GOTO_F(CGNSFile, CGNSBase, iError,'Zone_t',iZone,'ZoneBC_t',1,'BC_t',iBC,'end')
   CALL CG_GRIDLOCATION_READ_F(GridLoc,iError)
-  IF (GridLoc.EQ.FaceCenter) THEN
+  IF (GridLoc.EQ.CG_FaceCenter) THEN
     WRITE(UNIT_stdOut,*) 'GridLocation=FaceCenter: Using ElementList/Range read-in approach'
-    IF(PntSetType .EQ. PointList) THEN
-      PntSetType=ElementList
-    ELSE IF(PntSetType .EQ. PointRange) THEN
-      PntSetType=ElementRange
+    IF(PntSetType .EQ. CG_PointList) THEN
+      PntSetType=CG_ElementList
+    ELSE IF(PntSetType .EQ. CG_PointRange) THEN
+      PntSetType=CG_ElementRange
     END IF
   END IF
 
-  IF(Bugfix_ANSA_CGNS) PntSetType=ElementList
+  IF(Bugfix_ANSA_CGNS) PntSetType=CG_ElementList
 
   ! Boundary is given as a list of boundary nodes
-  IF((PntSetType .EQ. PointList).OR.(PntSetType .EQ. PointRange))THEN
-    IF(PntSetType .EQ. PointRange) THEN
+  IF((PntSetType .EQ. CG_PointList).OR.(PntSetType .EQ. CG_PointRange))THEN
+    IF(PntSetType .EQ. CG_PointRange) THEN
       CALL CG_BOCO_READ_F(CGNSfile,CGNSBase,iZone,iBC,DimVec,NorVec,iError)
       nBCPoints=1+DimVec(2)-DimVec(1)
       DO j=1,nBCPoints
@@ -494,8 +494,8 @@ DO iBC=1,nCGNSBC
     END DO  ! iElem=1,nElems
 
   ! Boundary is given as a list of boundary elements
-  ELSEIF ((PntSetType .EQ. ElementList).OR.(PntSetType .EQ. ElementRange)) THEN
-    IF(PntSetType .EQ. ElementRange)THEN
+  ELSEIF ((PntSetType .EQ. CG_ElementList).OR.(PntSetType .EQ. CG_ElementRange)) THEN
+    IF(PntSetType .EQ. CG_ElementRange)THEN
       CALL CG_BOCO_READ_F(CGNSfile,CGNSBase,iZone,iBC,DimVec,NorVec,iError)
       nBCElems=1+DimVec(2)-DimVec(1)
       ALLOCATE(BCElemList(nBCElems))
@@ -709,9 +709,9 @@ ELSE
 END IF
 
 ! Read Coordinates
-CALL cg_coord_read_f(CGNSFile,CGNSBase,iZone,'CoordinateX',REALDOUBLE,irmin,irmax,NodeCoords(1,:,:,:),iError)
-CALL cg_coord_read_f(CGNSFile,CGNSBase,iZone,'CoordinateY',REALDOUBLE,irmin,irmax,NodeCoords(2,:,:,:),iError)
-CALL cg_coord_read_f(CGNSFile,CGNSBase,iZone,'CoordinateZ',REALDOUBLE,irmin,irmax,NodeCoords(3,:,:,:),iError)
+CALL cg_coord_read_f(CGNSFile,CGNSBase,iZone,'CoordinateX',CG_REALDOUBLE,irmin,irmax,NodeCoords(1,:,:,:),iError)
+CALL cg_coord_read_f(CGNSFile,CGNSBase,iZone,'CoordinateY',CG_REALDOUBLE,irmin,irmax,NodeCoords(2,:,:,:),iError)
+CALL cg_coord_read_f(CGNSFile,CGNSBase,iZone,'CoordinateZ',CG_REALDOUBLE,irmin,irmax,NodeCoords(3,:,:,:),iError)
 
 ! Apply skip
 IF(nSkip.NE.1)THEN
@@ -918,7 +918,7 @@ DO iBC=1,nCGNSBC !Loop over all BCs
   NormalListSize=nBCElems*MeshDim
   ALLOCATE(NormalList(NormalListSize))
   CALL CG_BOCO_READ_F(CGNSfile,CGNSBase,iZone,iBC,BCElems,NormalList,iError)
-  IF(PntSetType.EQ.PointRange)THEN
+  IF(PntSetType.EQ.CG_PointRange)THEN
     IF(ANY(BCElems.LE.0))THEN
       WRITE(UNIT_StdOut,'(A)') &
         'WARNING: corrupted pointrange found on Boundary '//TRIM(FamilyName)//' ( '//TRIM(CGName)//', '//TRIM(ZoneName)//' )'
@@ -936,7 +936,7 @@ DO iBC=1,nCGNSBC !Loop over all BCs
       IF (BCindex(iBC,1).EQ.-1) STOP 'ERROR - pointrange does not allow association of BC'
     END IF
   END IF
-  IF(PntSetType.EQ.PointList)THEN
+  IF(PntSetType.EQ.CG_PointList)THEN
     IF(nBCElems.EQ.1) THEN
        WRITE(UNIT_StdOut,*) 'Warning: Single point BC. Zone No,BC no, BCname, ',iZone,iBC,FamilyName
     ELSE
@@ -1135,7 +1135,7 @@ DO iZone=1,nCGNSZones
   ! Check structured / unstructured
   CALL cg_zone_type_f(CGNSFile, CGNSBase, iZone, ZoneType, iError)
   IF (iError .NE. CG_OK) CALL cg_error_exit_f()
-  IF (ZoneType.EQ.Structured)THEN
+  IF (ZoneType.EQ.CG_Structured)THEN
     STOP 'no structured readin for surface data'
   END IF
   coordNameCGNS(1) = 'CoordinateX'
@@ -1158,7 +1158,7 @@ DO iZone=1,nCGNSZones
   NodeCoords=0.
   DO dm=1,3
     CGname=TRIM(CoordNameCGNS(dm))
-    CALL CG_COORD_READ_F(CGNSfile,CGNSBase,iZone,CGName,RealDouble,one,nNodes,NodeCoords(dm,:),iError)
+    CALL CG_COORD_READ_F(CGNSfile,CGNSBase,iZone,CGName,CG_RealDouble,one,nNodes,NodeCoords(dm,:),iError)
     IF (iError .NE. CG_OK)THEN
       WRITE(UNIT_stdOut,*)'ERROR - Could not read coordinate(',dm,'): ',TRIM(CoordNameCGNS(dm))
       CALL CG_NCOORDS_F(CGNSFile,CGNSBase,iZone,PhysDim,iError )  ! Here we use PhysDim as nCoords
@@ -1188,7 +1188,7 @@ DO iZone=1,nCGNSZones
     CALL CG_SECTION_READ_F(CGNSfile,CGNSBase,iZone,iSect,CGname,SectionElemType,IndMin,IndMax,nBCElems,ParentDataFlag,iError)
     WRITE(UNIT_StdOut,*)'   read section',TRIM(CGname)
     IF (iError .NE. CG_OK) CALL abortCGNS(__STAMP__,CGNSFile)
-    IF(SectionElemType .LT. TRI_3) CYCLE !ignore additional sections with data <nDim-1
+    IF(SectionElemType .LT. CG_TRI_3) CYCLE !ignore additional sections with data <nDim-1
     CALL CG_ELEMENTDATASIZE_F(CGNSFile,CGNSBase,iZone,iSect,nSectElems,iError)  ! Get number of connectivity values
     ALLOCATE(LocalConnect(nSectElems))
     ALLOCATE(ParentData(nSectElems,4))
@@ -1200,7 +1200,7 @@ DO iZone=1,nCGNSZones
     iStart=1
     DO iSecElem=1,nSectElems
       iEnd=iStart
-      IF(SectionElemType .EQ. MIXED) THEN
+      IF(SectionElemType .EQ. CG_MIXED) THEN
         LocType=LocalConnect(iStart)  ! Mixed type elements, read elem type from array
         iStart =iStart+1              ! First value is elem type
       ELSE
@@ -1211,9 +1211,9 @@ DO iZone=1,nCGNSZones
       iEnd=iEnd+nNodesLoc
 
       LocDim=1
-      IF(LocType .GT.  BAR_3) LocDim=2
-      IF(LocType .GT. QUAD_9) LocDim=3
-      IF(LocType .GT.  MIXED) LocDim=2 !NGON_n
+      IF(LocType .GT.  CG_BAR_3) LocDim=2
+      IF(LocType .GT. CG_QUAD_9) LocDim=3
+      IF(LocType .GT.  CG_MIXED) LocDim=2 !NGON_n
 
       IF(LocDim .EQ. 2) THEN ! surface element
         iElem=iElem+1
