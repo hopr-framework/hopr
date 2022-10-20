@@ -41,7 +41,7 @@ INTEGER,ALLOCATABLE                :: tetMapGMSH(:,:,:),  pyrMapGMSH(:,:,:),  pr
 INTEGER                            :: tetMapCGNSToGMSH(4),pyrMapCGNSToGMSH(5),priMapCGNSToGMSH(6),hexMapCGNSToGMSH(8)
 INTEGER                            :: GMSH_TYPES(6,131)
 INTEGER                            :: nBCs_GMSH
-INTEGER,ALLOCATABLE                :: MapBC(:),MapBCInd(:)
+INTEGER,ALLOCATABLE                :: MapBCToGmshTag(:),MapSurfToBC(:)
 
 CONTAINS
 SUBROUTINE buildTypes()

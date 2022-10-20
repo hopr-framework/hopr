@@ -54,8 +54,6 @@ TYPE tBCTempPtr
   TYPE(tBCTemp),POINTER :: bp
 END TYPE
 
-INTEGER                 :: BCTagsFound(1337)
-
 CONTAINS
 
 FUNCTION GETNNODES(ElementType,bOrd)
@@ -126,23 +124,24 @@ TYPE(tSide),POINTER    :: aSide  ! ?
 TYPE(tBCTemp),POINTER  :: aBCTemp  ! ?
 TYPE(tBCTempPtr),POINTER :: BCList(:)  ! ?
 INTEGER                :: os,iFile  ! ?
-INTEGER                :: i,iElem,nElems,iNode,nNodes  ! ?
-INTEGER                :: elemCount  ! ?
-INTEGER                :: elemType,nTags  ! ?
-INTEGER                :: tags(1337),nodeInds(1337)  ! ?
-INTEGER                :: junk1  ! ?
-INTEGER                :: minInd,tempNodeInds(4) ! three are enough
-INTEGER                :: iBC,whichDim,BCInd
+INTEGER                :: i,iElem,nElems,iNode,nNodes
+INTEGER                :: elemCount                         !> Counter for 3D elements
+INTEGER                :: elemType                          !> Read-in element type from gmsh
+INTEGER                :: nodeInds(1337)                    !> Node IDs per element
+INTEGER                :: minInd,tempNodeInds(4)
+INTEGER                :: iBC,whichDim,BCTag
 LOGICAL                :: isBCSide,BCFound(nUserDefinedBoundaries),found,s  ! ?
 CHARACTER(LEN=255)     :: BCName
+INTEGER                 :: nPoints, nCurves, nSurf, nVolumes, dummy, nNodesInBlock, entityDim, entityTag
+INTEGER                 :: nBCs_Surf, iTag, nElemsPerTag, asciiBinary
+REAL                    :: dummy_array(1:100), version
 !===================================================================================================================================
 WRITE(UNIT_stdOut,'(132("~"))')
 CALL Timer(.TRUE.)
 WRITE(UNIT_stdOut,'(A)')'Reading GMSH mesh...'
 CALL buildTypes()
-BCTagsFound=-1
 
-! start reading mesh
+! Start reading mesh
 DO iFile=1,nMeshFiles
   OPEN(UNIT   = 104,                  &
        FILE   = MeshFileName(iFile),  &
@@ -150,75 +149,142 @@ DO iFile=1,nMeshFiles
        ACTION = 'READ',               &
        ACCESS = 'SEQUENTIAL',         &
        IOSTAT = os                    )
-  WRITE(UNIT_stdOut,*)  'Reading mesh from ascii file: ',TRIM(MeshFileName(iFile))
-  ! Read Version and other infos
+  WRITE(UNIT_stdOut,*)  'Reading mesh from ASCII file: ',TRIM(MeshFileName(iFile))
+  ! Read version and other infos
   s=TRYREAD(104,'$MeshFormat')
-  READ(104,*) ! format
+  READ(104,*) version, asciiBinary, dummy
+  WRITE(*,'(A,F0.1)') ' Version gmsh format: ', version
+  IF(asciiBinary.NE.0) THEN
+    CALL abort(__STAMP__, 'ERROR gmsh: Binary format not supported!')
+  END IF
   s=TRYREAD(104,'$EndMeshFormat')
+
+  ! Read-in of boundary conditions (in gmsh: physical groups)
   s=TRYREAD(104,'$PhysicalNames')
+  ! Number of BCs and allocate mapping to BC and BCTag
+  ! Format: numPhysicalNames(ASCII int)
   READ(104,*) nBCs_GMSH
-  ALLOCATE(MapBC(nBCs_GMSH))
-  ALLOCATE(MapBCInd(nBCs_GMSH))
-  MapBC=-1
+  ALLOCATE(MapBCToGmshTag(nBCs_GMSH))
   BCFound=.FALSE.
   DO iBC=1,nBCs_GMSH
-    READ(104,*) whichDim, BCInd, BCName
-    MapBCInd(iBC)=BCind
+    ! Format: dimension(ASCII int) physicalTag(ASCII int) "name"(127 characters max)
+    READ(104,*) whichDim, BCTag, BCName
+    ! Mapping of boundary counter to physical tag, defined (automatically) in gmsh
+    MapBCToGmshTag(iBC) = BCTag
     IF(whichDim.EQ.2)THEN
       found=.FALSE.
+      ! Mapping of gmsh boundary counter to boundary names given by user in hopr.ini
       DO i=1,nUserDefinedBoundaries
         IF(INDEX(TRIM(BCName),TRIM(BoundaryName(i))).NE.0) THEN
           found=.TRUE. 
           BCFound(i)=.TRUE.
-          MapBC(iBC)=i
-          WRITE(*,*)'BC found: ',TRIM(BCName)
-          WRITE(*,*)'              -->  mapped to:',TRIM(BoundaryName(i))
+          WRITE(*,*)'BC found: ',TRIM(BCName),' -->  mapped to: ',TRIM(BoundaryName(i)), ' with index: ', iBC
           EXIT
         END IF
       END DO
-      IF(.NOT.found) CALL abort(__STAMP__, &
-                    'UserDefinedBoundary condition missing: '//TRIM(BCName),nUserDefinedBoundaries)
+      IF(.NOT.found) CALL abort(__STAMP__, 'UserDefinedBoundary condition missing: '//TRIM(BCName),nUserDefinedBoundaries)
     END IF
   END DO
-
   s=TRYREAD(104,'$EndPhysicalNames')
-  s=TRYREAD(104,'$Nodes')
-  READ(104,*) nNodes
 
-  ! Read node coordinates
-  ALLOCATE(Nodes(nNodes))
-  DO iNode = 1, nNodes   ! READ nodes
-    CALL GetNewNode(Nodes(iNode)%np,0)
-    READ(104,*)Nodes(iNode)%np%ind,Nodes(iNode)%np%x !assume ordered nodes (1,2,3..)
-    IF (iNode.NE.Nodes(iNode)%np%ind)&
-      CALL abort(__STAMP__,&
-                  'List of nodes in GMSH file has to be sorted (1,2,3,...)')
+  ! Read-in of elementary model entities containing the coordinates (0D) or dimensions (1D/2D/3D) and mapping to physical groups
+  s=TRYREAD(104,'$Entities')
+  ! Format: numPoints(size_t) numCurves(size_t) numSurfaces(size_t) numVolumes(size_t)
+  READ(104,*) nPoints, nCurves, nSurf, nVolumes
+  WRITE(*,*) 'Mesh with: ', nPoints, ' Points, ', nCurves, ' Curves', nSurf, ' Surfaces', nVolumes, ' Volumes'
+  ! Skip points and curves definition
+  DO i=1,nPoints+nCurves
+    READ(104,*)
   END DO
+  ! Mapping from number of surfaces to BCTag
+  ALLOCATE(MapSurfToBC(nSurf))
+  MapSurfToBC = -1
+  DO i=1,nSurf
+    ! Format: surfaceTag minX minY minZ maxX maxY maxZ numPhysicalTags physicalTag numBoundingCurves curveTag
+    ! Skipping the surfaceTag (equivalent to the i-variable) and the bounding box; nBCs_Surf defines the number of physicalTag(s);
+    ! skipping the following bounding curves
+    READ(104,*) dummy, dummy_array(1:6), nBCs_Surf, BCTag, dummy, dummy_array(1:dummy)
+    ! Currently a surface cannot belong to multiple BCs
+    IF(nBCs_Surf.GT.1) CALL abort(__STAMP__, 'ERROR: Surface is overdefined with more than one BC!')
+    ! Compare the BCTag of the surface with the BCTag of the BC and map surface index to BC index
+    DO iBC=1,nBCs_GMSH
+      IF(MapBCToGmshTag(iBC).EQ.BCTag) THEN
+        MapSurfToBC(i) = iBC
+      END IF
+    END DO
+  END DO
+  ! Every surface has to be associated with a BC
+  IF(ANY(MapSurfToBC.EQ.-1)) CALL abort(__STAMP__, 'ERROR: Surface is not associated with a BC!')
+  ! Skip volume definitions
+  DO i=1,nVolumes
+    READ(104,*)
+  END DO
+  s=TRYREAD(104,'$EndEntities')
 
+  ! Read-in of nodes, which are grouped into "entity blocks"
+  s=TRYREAD(104,'$Nodes')
+  ! Format: numEntityBlocks, numNodes, minNodeTag, maxNodeTag,
+  READ(104,*) dummy, nNodes, dummy, dummy
+  WRITE(*,*) 'Found', nNodes, ' nodes.'
+  ALLOCATE(Nodes(nNodes))
+  iNode = 1
+  DO WHILE (iNode.LE.nNodes)
+    ! Format: entityDim, entityTag, parametric(int; 0 or 1) numNodesInBlock
+    READ(104,*) entityDim, entityTag, dummy, nNodesInBlock
+    ! Skip over node tags
+    DO i = 1, nNodesInBlock
+      READ(104,*)
+    END DO
+    ! Get new node and store coordinates
+    DO i = 1, nNodesInBlock
+      ! Get new nodes
+      CALL GetNewNode(Nodes(iNode)%np,0)
+      Nodes(iNode)%np%ind = iNode
+      READ(104,*) Nodes(iNode)%np%x
+      iNode = iNode + 1
+    END DO
+  END DO
+  s=TRYREAD(104,'$EndNodes')
+
+  ! Initialize BCList pointer
   ALLOCATE(BCList(nNodes))
   DO i=1,nNodes
     NULLIFY(BCList(i)%bp)
   END DO
 
-  s=TRYREAD(104,'$EndNodes')
+  ! Read elements (contains everything, points, lines, surfaces, hexahedra); elements are grouped by the dimension and physical groups
   s=TRYREAD(104,'$Elements')
-  READ(104,*) nElems !=vertices + lines + faces + elements (we want only elements)
+  ! Format: numEntityBlocks, numElements, minElementTag, maxElementTag
+  READ(104,*) dummy, nElems, dummy, dummy
+  WRITE(*,*) 'Found', nElems, ' elements (points, lines, surfaces & volume elements).'
   ALLOCATE(Elems(nElems))
-  ! Read element connectivity
-  elemCount=0
-  DO iElem=1,nElems
-    READ(104,*)junk1,elemType,nTags,tags(1:nTags),nodeInds(1:GMSH_TYPES(3,elemType))
-    !IF (GMSH_TYPES(elemType,5) .NE. 1) & !not complete
-    !  CALL abort(__STAMP__, &
-    !  'The specified mesh contains element types, which are currently not supported',999,999.)
-    SELECT CASE(GMSH_TYPES(6,elemType)) !2d=bc or 3d=element
-    CASE(2)
-      CALL addToBCs(BCList,elemType,nodeInds,nTags,tags)
-    CASE(3)
-      CALL buildElem(Elems(elemCount+1),elemCount,elemType,Nodes,nodeInds)
-    END SELECT
+  ! Counter for actual 3D elements
+  elemCount = 0
+  ! Counter of total number of elements as defined by gmsh
+  iElem = 1
+  DO WHILE (iElem.LE.nElems)
+    ! Read-in elements, which are sorted by the dimension (starting with points, 0) and grouped by tags, e.g. a surfaceTag contains
+    ! multiple quad elements, usually all volume elements are within a single block
+    ! Format: entityDim entityTag elementType nElems (points, lines, surfaces, hexahedra)
+    READ(104,*) entityDim, iTag, elemType, nElemsPerTag
+    ! Loop over the number of elements per tag
+    DO i = 1, nElemsPerTag
+      ! Format: elementTag nodeTag(s)
+      READ(104,*) dummy, nodeInds(1:GMSH_TYPES(3,elemType))
+      ! Read-in of 2D and 3D elements
+      SELECT CASE(entityDim)
+      CASE(2)   ! Surface elements, boundary conditions, 2D
+        CALL addToBCs(BCList,iTag,elemType,nodeInds)
+      CASE(3)   ! Volume elements, 3D
+        CALL buildElem(Elems(elemCount+1),elemCount,elemType,Nodes,nodeInds)
+      END SELECT
+      iElem = iElem + 1
+    END DO
   END DO ! nElems
-  
+
+  WRITE(*,*) 'Found', elemCount, ' 3D elements.'
+
+  IF(elemCount.LT.1) CALL abort(__STAMP__,'ERROR gmsh read-in: No 3D elements found!')
   ! Assign Boundary Conditions
   DO iElem=1,elemCount
     aSide=>Elems(iElem)%ep%firstSide
@@ -279,9 +345,9 @@ END DO
 WRITE(UNIT_stdOut,'(132("~"))')
 END SUBROUTINE readGMSH
 
-SUBROUTINE addToBCs(BCList,gmshElemType,nodeInds,nTags,tags)
+SUBROUTINE addToBCs(BCList,iTag,gmshElemType,nodeInds)
 !===================================================================================================================================
-! ?
+!> Assigning the nodes of 2D elements to the surface tag (iTag), which has been mapped to a BC previously
 !===================================================================================================================================
 ! MODULES
 USE MOD_Mesh_Vars,ONLY:BoundaryType
@@ -291,35 +357,19 @@ USE MOD_Readin_GMSH_Vars
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT VARIABLES
-INTEGER,INTENT(IN)         :: gmshElemType  ! ?
-INTEGER,INTENT(IN)         :: nodeInds(GMSH_TYPES(1,gmshElemType)) ! only take primary nodes of side
-INTEGER,INTENT(IN)         :: nTags  ! ?
-INTEGER,INTENT(IN)         :: tags(nTags)  ! ?
+INTEGER,INTENT(IN)         :: iTag                                  !> Surface tag
+INTEGER,INTENT(IN)         :: gmshElemType                          !> Surface tag
+INTEGER,INTENT(IN)         :: nodeInds(GMSH_TYPES(1,gmshElemType))  !> only take primary nodes of side
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
-TYPE(tBCTempPtr),POINTER,INTENT(INOUT) :: BCList(:)  ! ?
+TYPE(tBCTempPtr),POINTER,INTENT(INOUT) :: BCList(:)  !> Pointer structure, associating nodes with a boundary
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES 
-INTEGER                    :: i,iBC,minInd  ! ?
-TYPE(tBCTemp),POINTER      :: aBCTemp  ! ?
+INTEGER                    :: i,iBC,minInd
+TYPE(tBCTemp),POINTER      :: aBCTemp
 !-----------------------------------------------------------------------------------------------------------------------------------
 
-IF(GMSH_TYPES(6,gmshElemType).NE.2) RETURN ! filter out volumes
-IF(GMSH_TYPES(1,gmshElemType).LE.2) RETURN ! filter out lines 
-! GMSH Tags: 1=physical group (aka BoundaryCondition), 2=geometric entitry(edge,face,vol) element belongs to, 3=mesh partition
-! element belongs to, 4+=partition ids (negative partition = ghost cells)
-
-iBC=-1
-IF(tags(1).LE.MAXVAL(MapBCInd,1).AND.tags(1).GE.MINVAL(MapBCInd,1))THEN
-  DO i=1,nBCs_GMSH
-    IF(MapBCInd(i).EQ.tags(1))THEN
-      iBC=MapBC(i)
-      EXIT
-    END IF
-  END DO
-END IF
-IF(iBC.EQ.-1) CALL abort(__STAMP__,&
-                         'Side with undefined BoundaryCondition found')
+iBC = MapSurfToBC(iTag)
 
 ALLOCATE(aBCTemp)
 DO i=1,GMSH_TYPES(1,gmshElemType) !primary nodes
@@ -329,7 +379,7 @@ ALLOCATE(aBCTemp%BC)
 ! BCType
 aBCTemp%BC%BCType    =BoundaryType(iBC,1)
 ! curveIndex
-aBCTemp%curveIndex   =BoundaryType(iBC,2)  
+aBCTemp%curveIndex   =BoundaryType(iBC,2)
 ! BCState
 aBCTemp%BC%BCState   =BoundaryType(iBC,3)
 ! BCAlphaInd
@@ -349,7 +399,7 @@ END SUBROUTINE
 
 SUBROUTINE buildElem(elem,elemCount,gmshElemType,Nodes,nodeInds)
 !===================================================================================================================================
-! ?
+!> Assigning the nodes of a 3D element
 !===================================================================================================================================
 ! MODULES
 USE MOD_Basis_Vars,ONLY:TetraMap,PyraMap,PrismMap,HexaMap
@@ -365,19 +415,18 @@ USE MOD_Readin_GMSH_Vars,ONLY:tetMapCGNSToGMSH,pyrMapCGNSToGMSH,priMapCGNSToGMSH
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT VARIABLES
-INTEGER,INTENT(IN)         :: gmshElemType  ! ?
-INTEGER,INTENT(IN)         :: nodeInds(GMSH_TYPES(3,gmshElemType))  ! ?
-TYPE(tNodePtr),POINTER,INTENT(IN)  :: Nodes(:)  ! ?
+INTEGER,INTENT(IN)                  :: gmshElemType
+TYPE(tNodePtr),POINTER,INTENT(IN)   :: Nodes(:)
+INTEGER,INTENT(IN)                  :: nodeInds(GMSH_TYPES(3,gmshElemType))
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
-TYPE(tElemPtr),INTENT(OUT) :: elem  ! ?
-INTEGER, INTENT(INOUT)     :: elemCount  ! ?
+TYPE(tElemPtr),INTENT(OUT) :: elem
+INTEGER, INTENT(INOUT)     :: elemCount
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES 
-INTEGER                    :: i  ! ?
+INTEGER                    :: i
 !-----------------------------------------------------------------------------------------------------------------------------------
 
-IF(GMSH_TYPES(6,gmshElemType).NE.3) RETURN ! no 3d element
 IF (bOrd .EQ.0) THEN
   bOrd = GMSH_TYPES(4,gmshElemType)+1
   IF ((bOrd .NE. N+1).AND.useCurveds.AND..NOT.rebuildCurveds) & 
@@ -390,6 +439,7 @@ ELSE
     'All elements in the mesh are required to have the same boundary order!')
 END IF
 
+! Advance number of 3D elements
 elemCount = elemCount + 1 ! element is valid, raise number of mesh elements by one
 CALL getNewElem(elem%ep)
 elem%ep%ind    = elemCount
