@@ -343,9 +343,10 @@ DO iSect=1,nSect ! Vol. and Face elems
     ! Check if the number of nodes is above the allocated and display the element type
     IF(nNodesLoc.GT.12) THEN
       CALL closeFile(CGNSFile)
-      CALL abort(__STAMP__,&
-        'ERROR: Number of nodes is greater than expected. Following element type (per CGNS standard) might not be supported: '&
-                &//TRIM(ElementTypeName(LocType)))
+      ! TODO: ElementTypeName is only available if available when compiled with CGNS, do not compile these routines if cgns was not build
+      ! CALL abort(__STAMP__,&
+      !   'ERROR: Number of nodes is greater than expected. Following element type (per CGNS standard) might not be supported: '&
+      !           &//TRIM(ElementTypeName(LocType)))
     END IF
 
     LocDim=1
