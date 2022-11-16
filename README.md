@@ -33,7 +33,7 @@ Discontinuous Galerkin, Spectral Element Methods or pFEM,
 in order to retain their accuracy if the computational domain
 includes curved boundaries.
 
-HOPR has been developed by the [**Numerics Research Group (NRG)**](https://www.iag.uni-stuttgart.de/en/working-groups/numerical-methods/)
+HOPR has been developed by the [**Numerics Research Group (NRG)**][nrg]
 lead by Prof. Claus-Dieter Munz at the Institute of Aerodynamics
 and Gasdynamics at the University of Stuttgart, Germany.
 
@@ -43,18 +43,26 @@ our publications given in [REFERENCE.md](REFERENCE.md).
 
 ## Installation / Documentation
 
-For installation instruction see [Install.md](INSTALL.md).
+See the full documentation including usage instructions and tutorial for HOPR is the [User Guide][hopr].
 
-See the full documentation including usage instructions and
-turorial for HOPR [here][hopr].
- 
+For installation instruction see the user guide section [Chapter 2][install].
+
 In case you have question regarding HOPR, want to report bugs
 or contribute to the project you can use the mailing list
 <hopr-project@listserv.uni-stuttgart.de>.
 You can also subscribe to the mailing list [here][list].
 
+## Used libraries
+
+HOPR uses several external libraries as well as auxiliary functions from open source projects, including:
+
+* [cmake](https://www.cmake.org)
+* [LAPACK](http://www.netlib.org/lapack/)
+* [MPI](https://www.open-mpi.org/)
+* [HDF5](https://www.hdfgroup.org/)
+
 ## License
-HOPR is Copyright (C) 2017, Prof. Claus-Dieter Munz and is 
+HOPR is Copyright (C) 2017, Prof. Claus-Dieter Munz and is
 released under the terms of the
 GNU General Public License v3.0 (GPL v3.0). For the complete
 license terms see the included license file [LICENSE](LICENSE).
@@ -63,6 +71,7 @@ available under other licenses,for more information refer to
 [MULTILICENSING.md](MULTILICENSING.md)
 
 
-[nrg]:  https://nrg.iag.uni-stuttgart.de/
-[hopr]: http://www.hopr-project.org/
+[hopr]: https://hopr.readthedocs.io/en/latest/
+[install]: https://hopr.readthedocs.io/en/latest/userguide/installation.html
 [list]: https://listserv.uni-stuttgart.de/mailman/listinfo/hopr-project
+[nrg]: https://www.iag.uni-stuttgart.de/en/working-groups/numerical-methods/

@@ -5,3 +5,6 @@ ctags.txt
 *.mod
 *.o
 *~
+
+# documentation
+_build/
