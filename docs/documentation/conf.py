@@ -20,7 +20,7 @@ import sphinx_rtd_theme
 # -- Project information -----------------------------------------------------
 
 project = 'HOPR Documentation'
-copyright = '2021, HOPR Developers'
+copyright = '2022, HOPR Developers'
 author = 'HOPR Developers'
 
 # latex config

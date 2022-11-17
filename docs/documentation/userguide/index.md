@@ -9,6 +9,7 @@ caption: Table of Contents
 numbered:
 ---
 installation.md
+meshformat.md
 appendix.md
 ```
 

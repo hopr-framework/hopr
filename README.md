@@ -45,12 +45,16 @@ our publications given in [REFERENCE.md](REFERENCE.md).
 
 See the full documentation including usage instructions and tutorial for HOPR is the [User Guide][hopr].
 
-For installation instruction see the user guide section [Chapter 2][install].
+For installation instruction see the user guide section [Installation][install].
 
 In case you have question regarding HOPR, want to report bugs
 or contribute to the project you can use the mailing list
 <hopr-project@listserv.uni-stuttgart.de>.
 You can also subscribe to the mailing list [here][list].
+
+## Mesh Format
+
+The [Mesh Format][meshformat] is described as part of the [User Guide][hopr] or can be viewed as a separate [PDF][pdfmeshformat]
 
 ## Used libraries
 
@@ -75,3 +79,5 @@ available under other licenses,for more information refer to
 [install]: https://hopr.readthedocs.io/en/latest/userguide/installation.html
 [list]: https://listserv.uni-stuttgart.de/mailman/listinfo/hopr-project
 [nrg]: https://www.iag.uni-stuttgart.de/en/working-groups/numerical-methods/
+[meshformat]: https://hopr.readthedocs.io/en/latest/userguide/meshformat.html
+[pdfmeshformat]: ./docs/Meshformat/Meshformat.pdf

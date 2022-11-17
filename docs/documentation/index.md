@@ -15,7 +15,7 @@ It is licensed under GPLv3 and written in Fortran.
 
 ```{toctree}
 ---
-maxdepth: 2
+maxdepth: 4
 caption: User Guide
 ---
 userguide/index.md
