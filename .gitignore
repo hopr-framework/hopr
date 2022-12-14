@@ -11,3 +11,5 @@ build*
 
 # documentation
 _build/
+CMakeCache.txt
+CMakeFiles/

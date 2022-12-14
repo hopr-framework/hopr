@@ -45,7 +45,7 @@ our publications given in [REFERENCE.md](REFERENCE.md).
 
 See the full documentation including usage instructions and tutorial for HOPR is the [User Guide][hopr].
 
-For installation instruction see the user guide section [Installation][install].
+For installation instruction see the user guide section [Installation][install] or the [source file](./docs/documentation/userguide/installation.md).
 
 In case you have question regarding HOPR, want to report bugs
 or contribute to the project you can use the mailing list
