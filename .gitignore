@@ -6,5 +6,8 @@ ctags.txt
 *.o
 *~
 
+# build dirs
+build*
+
 # documentation
 _build/
