@@ -5,3 +5,11 @@ ctags.txt
 *.mod
 *.o
 *~
+
+# build dirs
+build*
+
+# documentation
+_build/
+CMakeCache.txt
+CMakeFiles/

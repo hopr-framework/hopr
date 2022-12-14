@@ -1,0 +1,50 @@
+\documentclass[varwidth]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[ruled,boxed,vlined]{algorithm2e}
+
+%\usepackage[paperwidth=17cm]{geometry} % max 15800 long
+
+\usepackage{varwidth}
+\usepackage{amsmath,amssymb}
+\begin{document}
+\hsize=17cm
+\setlength{\algomargin}{10pt}
+% ----------- END OF HEADER -------------
+
+\setcounter{algocf}{5}
+\begin{varwidth}{\linewidth}
+\begin{algorithm}[H]
+ \caption{Overall parallel read-in process for an MPI rank\label{alg:readmesh}}
+ \DontPrintSemicolon
+  \SetKwProg{myproc}{Procedure}{}{End}
+  \myproc{ReadMesh}{
+ \KwIn{MeshFile,nRanks,myRank}
+ \KwOut{ElemInfo,SideInfo,NodeCoords}
+  \;
+  FileID= OpenDataFile(MeshFile)\;
+  \;
+  nGlobalElems= ReadAttribute(FileID,'nElems',1)\;
+  offsetElem(0:nDomains)= DomainDecomp(nGlobalElems,nRanks,myRank)\;
+  \tcc{read local subarray of ElemInfo}
+  firstElem= offsetElem(myRank)+1\;
+  nLocalElems= offsetElem(myRank+1)-offsetElem(myRank)\;
+  ElemInfo(1:6,1:nLocalElems)= ReadArray(FileID,'ElemInfo',2,(6,nLocalElems),(0,firstElem-1) )\;
+  \;
+  \tcc{read local subarray of NodeCoords and GlobalNodeIDs}
+  firstNode= ElemInfo(5,1)+1\;
+  nLocalNodes = ElemInfo(6,nLocalElems)-ElemInfo(5,1)\;
+  NodeCoords(1:3,1:nLocalNodes)= ReadArray(FileID,'NodeCoords',2,(3,nLocalNodes),(0,firstNode-1) )\; 
+  GlobalNodeIDs(1:nLocalNodes)= ReadArray(FileID,'GlobalNodeIDs',1,(nLocalNodes),(firstNode-1) )\; 
+  \;
+  \tcc{read local subarray of SideInfo}
+  firstSide= ElemInfo(3,1)+1\;
+  nLocalSides = ElemInfo(4,nLocalElems)-ElemInfo(3,1)\;
+  SideInfo(1:5,1:nLocalSides)= ReadArray(FileID,'SideInfo',2,(5,nLocalSides),(0,firstSide-1) )\;
+  \;
+  CloseDataFile(FileID)\;
+}
+\end{algorithm}
+\end{varwidth}
+
+% ----------- FOOTER -------------
+\end{document}

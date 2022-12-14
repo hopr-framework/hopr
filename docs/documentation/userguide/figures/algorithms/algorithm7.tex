@@ -1,0 +1,54 @@
+\documentclass[varwidth]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[ruled,boxed,vlined]{algorithm2e}
+
+%\usepackage[paperwidth=17cm]{geometry} % max 15800 long
+
+\usepackage{varwidth}
+\usepackage{amsmath,amssymb}
+\begin{document}
+\hsize=17cm
+\setlength{\algomargin}{10pt}
+% ----------- END OF HEADER -------------
+
+\setcounter{algocf}{6}
+\begin{varwidth}{\linewidth}
+\begin{algorithm}[H]
+ \caption{Find domain containing element index: use offsetElem array from Algorithm 4 and perform a bisection \label{alg:elemID}}
+ \DontPrintSemicolon
+  \SetKwProg{myproc}{Procedure}{}{End}
+  \myproc{ElemToRank}{
+ \KwIn{nDomains, offsetElem(0:nDomains), elemID}
+ \KwOut{domain}
+  \;
+domain=0 \;
+maxSteps $\leftarrow$ INT(LOG(REAL(nDomains))/LOG(2))+1 \;
+low $\leftarrow$ 0\;
+up $\leftarrow$ nDomains-1 \;
+\uIf{ offsetElem(low) $<$ elemID $\leq$ offsetElemMPI(low+1)} {
+  domain$\leftarrow$ low \;
+}
+\uElseIf{offsetElem(up) $<$ elemID $\leq$ offsetElem(up+1)} {
+  domain$\leftarrow$ up \;
+}
+\Else{
+  \For{$i= 1$ \KwTo  maxSteps}{
+    mid=(up-low)/2+low \tcc*{bisection}
+    \uIf{offsetElem(mid) $<$ elemID $\leq$ offsetElem(mid+1) }{
+      domain=mid \tcc*{index found}                     
+      \KwRet \; 
+    }
+    \uElseIf{elemID $>$ offsetElem(mid+1) } { 
+      low=mid+1 \tcc*{seek in upper half}
+    }
+    \Else{
+      up=mid \;
+    }
+  }
+}
+}
+\end{algorithm}
+\end{varwidth}
+
+% ----------- FOOTER -------------
+\end{document}

@@ -48,7 +48,8 @@ ENDIF()
 # =========================================================================
 # MPI
 # =========================================================================
-OPTION(LIBS_USE_MPI "Compile SINGLE or MPI version" ON)
+OPTION(LIBS_USE_MPI "Compile SINGLE or MPI version" OFF)
+MARK_AS_ADVANCED(FORCE LIBS_USE_MPI)
 IF(LIBS_USE_MPI)
   FIND_PACKAGE(MPI REQUIRED)
   IF (NOT MPI_Fortran_NO_INTERROGATE)
