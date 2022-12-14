@@ -7,13 +7,12 @@ instead of compiling them yourself.
 
 ## Prerequisites
 **HOPR** has been tested on various Linux distributions. This includes Ubuntu 14.04 LTS, 16.04 LTS and 18.04 LTS, 20.04 LTS
-20.10 and 21.04, OpenSUSE 42.1 and CentOS 7.
+20.10 and 21.04.
 For **tested combinations** of prerequisites (HDF5, OpenMPI, CMake etc.) and known problems that may occur, visit
 Chapter {ref}`userguide/appendix:Appendix`.
 
 The suggested packages in this section can be replaced by self compiled versions. The required packages for the Ubuntu Linux
-distributions are listed in {numref}`tab:installation_prereqs_ubuntu` and for Centos Linux in
-{numref}`tab:installation_prereqs_centos`.
+distributions are listed in {numref}`tab:installation_prereqs_ubuntu`.
 Under Ubuntu, they can be obtained using the apt environment:
 
     sudo apt-get install git
@@ -35,40 +34,6 @@ name: tab:installation_prereqs_ubuntu
 |    zlib1g-dev    |       -      |       x      |       x      |       x      |
 |  exuberant-ctags |       o      |       o      |       o      |       o      |
 ```
-
-and under CentOS via
-
-    sudo yum install git
-
-For extra packages install EPEL and SCL
-
-    sudo yum install epel-release centos-release-scl
-
-```{table} Centos packages. x: required, o: optional, -: not available
----
-name: tab:installation_prereqs_centos
----
-|      Package     |   CentOS 7   |
-| :--------------: | :----------: |
-|        git       |       x      |
-|       cmake      |       x      |
-|      cmake3      |       x      |
-|      libtool     |       x      |
-|   ncurses-devel  |       x      |
-|   lapack-devel   |       x      |
-|  openblas-devel  |       x      |
-|   devtoolset-9   |       x      |
-|        gcc       |       x      |
-|      gcc-c++     |       x      |
-|      zlib1g      |       x      |
-|   zlib1g-devel   |       o      |
-|  exuberant-ctags |       o      |
-|   numactl-devel  |       x      |
-|  rdma-core-devel |       o      |
-|     binutils     |       x      |
-|        tar       |       x      |
-```
-
 On some systems it may be necessary to increase the size of the stack (part of the memory used to store information about active
 subroutines) in order to execute **HOPR** correctly. This is done using the command
 
