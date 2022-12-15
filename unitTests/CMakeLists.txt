@@ -33,7 +33,7 @@ function(add_unit_test target)
     # Add this test to the global list of tests
     SET(UNIT_TEST_TARGETS ${UNIT_TEST_TARGETS} ${target} PARENT_SCOPE)
     # Add the test
-    ADD_TEST(NAME ${target}
+    ADD_TEST(NAME unitTest:${target}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/unitTests
     COMMAND  ${CMAKE_BINARY_DIR}/unitTests/bin/${target})
 endfunction()

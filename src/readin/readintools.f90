@@ -13,7 +13,7 @@
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -44,6 +44,8 @@ PUBLIC::GETINTARRAY
 PUBLIC::GETREALARRAY
 
 PUBLIC::IgnoredStrings
+
+PUBLIC :: FillStrings
 
 !===================================================================================================================================
 
@@ -130,7 +132,7 @@ LOGICAL,INTENT(IN),OPTIONAL          :: abortOpt
 ! OUTPUT VARIABLES
 LOGICAL                              :: TRYREAD
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 INTEGER                              :: stat
 CHARACTER(LEN=255)                   :: tmp
 LOGICAL                              :: abortLoc=.TRUE.
@@ -164,7 +166,7 @@ CHARACTER(LEN=*),OPTIONAL,INTENT(IN) :: Proposal ! Default values as character s
 ! OUTPUT VARIABLES
 CHARACTER(LEN=255)                   :: GetStr   ! String read from setup file or initialized with default value
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 CHARACTER(LEN=8)                     :: DefMsg  ! ?
 !===================================================================================================================================
 ! Read-in ini file if not done already
@@ -244,7 +246,7 @@ CHARACTER(LEN=*),OPTIONAL,INTENT(IN) :: Proposal ! Default values as character s
 ! OUTPUT VARIABLES
 INTEGER                              :: GetInt  ! Integer read from setup file or initialized with default value
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 CHARACTER(LEN=255)                   :: HelpStr  ! ?
 CHARACTER(LEN=8)                     :: DefMsg  ! ?
 INTEGER                              :: ioerr
@@ -261,7 +263,7 @@ READ(HelpStr,*,IOSTAT=ioerr)GetInt
 IF(ioerr.NE.0)THEN
   WRITE(*,*)'PROBLEM IN READIN OF LINE (integer):'
   WRITE(*,*) TRIM(key),' = ',TRIM(helpStr)
-  STOP     
+  CALL abort(__STAMP__,'GETINT failed!')
 END IF
 SWRITE(UNIT_StdOut,'(a3,a30,a3,i33,a3,a7,a3)')' | ',TRIM(Key),' | ', GetInt,' | ',TRIM(DefMsg),' | '
 END FUNCTION GETINT
@@ -284,7 +286,7 @@ CHARACTER(LEN=*),OPTIONAL,INTENT(IN) :: Proposal ! Default values as character s
 ! OUTPUT VARIABLES
 REAL                                 :: GetReal  ! Real read from setup file or initialized with default value
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 CHARACTER(LEN=500)                   :: HelpStr  ! ?
 CHARACTER(LEN=8)                     :: DefMsg  ! ?
 INTEGER                              :: ioerr
@@ -303,7 +305,7 @@ READ(HelpStr,*,IOSTAT=ioerr)GetReal
 IF(ioerr.NE.0)THEN
   WRITE(*,*)'PROBLEM IN READIN OF LINE (real):'
   WRITE(*,*) TRIM(key),' = ',TRIM(helpStr)
-  STOP     
+  CALL abort(__STAMP__,'GETREAL failed!')
 END IF
 SWRITE(UNIT_StdOut,'(a3,a30,a3,e33.5,a3,a7,a3)')' | ',TRIM(Key),' | ', GetReal,' | ',TRIM(DefMsg),' | '
 END FUNCTION GETREAL
@@ -326,7 +328,7 @@ CHARACTER(LEN=*),OPTIONAL,INTENT(IN) :: Proposal   ! Default values as character
 ! OUTPUT VARIABLES
 LOGICAL                              :: GetLogical ! Logical read from setup file or initialized with default value
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 CHARACTER(LEN=255)                   :: HelpStr  ! ?
 CHARACTER(LEN=8)                     :: DefMsg  ! ?
 INTEGER                              :: ioerr
@@ -343,7 +345,7 @@ READ(HelpStr,*,IOSTAT=ioerr)GetLogical
 IF(ioerr.NE.0)THEN
   WRITE(*,*)'PROBLEM IN READIN OF LINE (logical):'
   WRITE(*,*) TRIM(key),' = ',TRIM(helpStr)
-  STOP     
+  CALL abort(__STAMP__,'GETLOGICAL failed!')
 END IF
 SWRITE(UNIT_StdOut,'(a3,a30,a3,l33,a3,a7,a3)')' | ',TRIM(Key),' | ', GetLogical,' | ',TRIM(DefMsg),' | '
 END FUNCTION GETLOGICAL
@@ -367,7 +369,7 @@ CHARACTER(LEN=*),OPTIONAL,INTENT(IN) :: Proposal         ! Default values as cha
 ! OUTPUT VARIABLES
 INTEGER                   :: GetIntArray(nIntegers)      ! Integer array read from setup file or initialized with default values
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 CHARACTER(LEN=255)        :: HelpStr  ! ?
 CHARACTER(LEN=8)          :: DefMsg  ! ?
 INTEGER                   :: iInteger  ! ?
@@ -385,7 +387,7 @@ READ(HelpStr,*,IOSTAT=ioerr)GetIntArray
 IF(ioerr.NE.0)THEN
   WRITE(*,*)'PROBLEM IN READIN OF LINE (integer array):'
   WRITE(*,*) TRIM(key),' = ',TRIM(helpStr)
-  STOP     
+  CALL abort(__STAMP__,'GETINTARRAY failed!')
 END IF
 SWRITE(UNIT_stdOut,'(a3,a30,a3,a28,i4,a4,a7,a3)',ADVANCE='NO') ' | ',TRIM(Key),' | ',&
                                                                'Integer array of size (',nIntegers,') | ',TRIM(DefMsg),' | '
@@ -418,7 +420,7 @@ CHARACTER(LEN=*),OPTIONAL,INTENT(IN) :: Proposal         ! Default values as cha
 ! OUTPUT VARIABLES
 REAL                      :: GetRealArray(nReals)        ! Real array read from setup file or initialized with default values
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 CHARACTER(LEN=255+nReals*50) :: HelpStr  ! ?
 CHARACTER(LEN=8)          :: DefMsg  ! ?
 INTEGER                   :: iReal  ! ?
@@ -437,7 +439,7 @@ READ(HelpStr,*,IOSTAT=ioerr)GetRealArray
 IF(ioerr.NE.0)THEN
   WRITE(*,*)'PROBLEM IN READIN OF LINE (RealArray):'
   WRITE(*,*) TRIM(key),' = ',TRIM(helpStr)
-  STOP     
+  CALL abort(__STAMP__,'GETREALARRAY failed!')
 END IF
 SWRITE(UNIT_stdOut,'(a3,a30,a3,a28,i4,a4,a7,a3)',ADVANCE='NO') ' | ',TRIM(Key),' | ',&
                                                                'Real array of size (',nReals,') | ',TRIM(DefMsg),' | '
@@ -496,7 +498,7 @@ CHARACTER(LEN=*),INTENT(IN),OPTIONAL   :: IniFile                    ! Name of i
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tString),POINTER                  :: Str1=>NULL(),Str2=>NULL()  ! ?
 CHARACTER(LEN=255)                     :: HelpStr,Str  ! ?
 CHARACTER(LEN=300)                     :: File  ! ?
@@ -509,7 +511,7 @@ IF (ReadInDone) RETURN
 IF (PRESENT(IniFile)) THEN
   File = TRIM(IniFile)
 ELSE
-  IF(COMMAND_ARGUMENT_COUNT().LT.1) STOP 'Parameter file not specified! Usage: "hopr <parameter.ini>"'
+  IF(COMMAND_ARGUMENT_COUNT().LT.1) CALL abort(__STAMP__,'Parameter file not specified! Usage: "hopr <parameter.ini>"')
   CALL GET_COMMAND_ARGUMENT(1,File)
 END IF
 SWRITE(UNIT_StdOut,*)'| Reading from file "',TRIM(File),'":'
@@ -573,7 +575,7 @@ END SUBROUTINE FillStrings
 
 SUBROUTINE UserDefinedVars()
 !===================================================================================================================================
-! Get the user defined variables 
+! Get the user defined variables
 !===================================================================================================================================
 ! MODULES
 USE iso_varying_string
@@ -584,7 +586,7 @@ IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 INTEGER                          :: i,j,nDefVars
 TYPE(Varying_String),ALLOCATABLE :: DefVar(:,:)
 TYPE(tString),POINTER            :: Str1  ! ?
@@ -610,7 +612,7 @@ DO i=1,nDefVars
   DO WHILE(ASSOCIATED(Str1))
     vStr=Str1%Str
     vStr2=Str1%Str
-    CALL Split(vStr2,vStr1,"=",back=.FALSE.) 
+    CALL Split(vStr2,vStr1,"=",back=.FALSE.)
     found=.FALSE.
     IF (INDEX(TRIM(CHAR(vStr2)),TRIM(CHAR(DefVar(1,i)))).NE.0) THEN
       found=.TRUE.
@@ -626,12 +628,12 @@ DO i=1,nDefVars
   END DO !WHILE Str1 associated
 END DO !i=1,nDefVars
 
-END SUBROUTINE UserDefinedVars 
+END SUBROUTINE UserDefinedVars
 
 
 SUBROUTINE GetDefVar(DefVar)
 !===================================================================================================================================
-! Get the user defined variables 
+! Get the user defined variables
 !===================================================================================================================================
 ! MODULES
 USE iso_varying_string
@@ -643,7 +645,7 @@ IMPLICIT NONE
 ! OUTPUT VARIABLES
 TYPE(Varying_String):: DefVar(2)   !Name, Value
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 CHARACTER(LEN=255)  :: HelpStr  ! ?
 CHARACTER(LEN=255)  :: aStr  ! ?
 CHARACTER(LEN=8)    :: DefMsg  ! ?
@@ -670,10 +672,10 @@ CALL Split(vStrtmp,vStr1,"~",back=.FALSE.) !first part in vStr1, second part in 
 CALL Split(vStrtmp,vStr_narr,"~",back=.TRUE.) !second part in VStr_narr, first part in VStrtmp
 CALL Split(vStr_narr,vStrTmp,")",back=.TRUE.) !first part VStr_narr
 
-DefVarIsInt      =(CHAR(vStr1).EQ.'(int)') 
+DefVarIsInt      =(CHAR(vStr1).EQ.'(int)')
 DefVarIsIntarray =(CHAR(vStr1).EQ.'(int') !array  must be of format (int~n)
-DefVarIsReal     =(CHAR(vStr1).EQ.'(real)') 
-DefVarIsRealarray=(CHAR(vStr1).EQ.'(real') 
+DefVarIsReal     =(CHAR(vStr1).EQ.'(real)')
+DefVarIsRealarray=(CHAR(vStr1).EQ.'(real')
 
 
 IF(.NOT.((DefVarIsInt).OR.(DefVarIsIntArray).OR.(DefVarIsReal).OR.(defVarIsRealarray) ))THEN
@@ -689,8 +691,8 @@ END IF
 
 !now take the second part of the definition ( nvar = xxx)
 vStr=VStr2
-CALL Split(vStr,vStr1,"=",back=.FALSE.) 
-CALL Split(vStr,vStr2,"=",back=.TRUE.) 
+CALL Split(vStr,vStr1,"=",back=.FALSE.)
+CALL Split(vStr,vStr2,"=",back=.TRUE.)
 DefVar(1)=vStr1
 DefVar(2)=vStr2
 aStr=CHAR(DefVar(2))
@@ -718,7 +720,7 @@ ELSE IF(DefVarIsRealArray)THEN
   DefVar(2)=aStr
 END IF
 
-END SUBROUTINE GetDefVar 
+END SUBROUTINE GetDefVar
 
 
 SUBROUTINE GetNewString(Str)
@@ -734,7 +736,7 @@ TYPE(tString),POINTER,INTENT(INOUT) :: Str ! New string
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 !===================================================================================================================================
 NULLIFY(Str)
 ALLOCATE(Str)
@@ -755,7 +757,7 @@ TYPE(tString),POINTER,INTENT(INOUT) :: Str         ! String to delete
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 !===================================================================================================================================
 IF (ASSOCIATED(Str%NextStr)) Str%NextStr%PrevStr=>Str%PrevStr
 IF (ASSOCIATED(Str,FirstString)) THEN
@@ -786,7 +788,7 @@ CHARACTER(LEN=*),OPTIONAL,INTENT(IN) :: Proposal    ! Default values as characte
 ! OUTPUT VARIABLES
 CHARACTER(LEN=*),INTENT(OUT)         :: Str         ! Parameter string without keyword
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 CHARACTER(LEN=LEN(Key))              :: TmpKey   ! ?
 TYPE(tString),POINTER                :: Str1  ! ?
 LOGICAL                              :: Found  ! ?
@@ -838,12 +840,12 @@ SUBROUTINE LowCase(Str1,Str2)
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT VARIABLES
-CHARACTER(LEN=*),INTENT(IN)  :: Str1 ! Input string 
+CHARACTER(LEN=*),INTENT(IN)  :: Str1 ! Input string
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 CHARACTER(LEN=*),INTENT(OUT) :: Str2 ! Output string, lower case letters only
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 INTEGER                      :: iLen,nLen,Upper  ! ?
 CHARACTER(LEN=*),PARAMETER   :: lc='abcdefghijklmnopqrstuvwxyz'  ! ?
 CHARACTER(LEN=*),PARAMETER   :: UC='ABCDEFGHIJKLMNOPQRSTUVWXYZ'  ! ?
@@ -875,7 +877,7 @@ CHARACTER(LEN=*),INTENT(INOUT) :: helpstr   ! Input character string
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(varying_string)      :: separator  ! ?
 TYPE(varying_string)      :: astr,bstr,cstr,dstr  ! ?
 CHARACTER(LEN=1000)       :: dummystr  ! ?
@@ -897,14 +899,14 @@ astr=var_str(helpstr)
 DO WHILE(.NOT. finished)
   !split sting at "@-occurences"
   CALL split(astr,bstr,"@",separator,back=.false.) !bStr is string in front of @
-  IF(len(char(separator)) .NE. 0)THEN 
+  IF(len(char(separator)) .NE. 0)THEN
     ! we have found something, bnow get the factor in front of @
     CALL split(bstr,cstr," ",separator,back=.true.)
     IF(LEN(char(cstr)) .EQ. 0)THEN
       !no factor
       adummy=1
     ELSE
-      !extract factor 
+      !extract factor
       dummystr=trim(char(cstr))
       READ(dummystr,*)adummy
     ENDIF
