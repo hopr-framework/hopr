@@ -368,8 +368,8 @@ REAL               :: WORK(dim1*dim1)  ! ?
   ! using partial pivoting with row interchanges.
   CALL DGETRF(dim1, dim1, Ainv, dim1, IPIV, INFO)
 
-  IF (INFO /= 0) THEN
-     STOP 'MATRIX IS NUMERICALLY SINGULAR!'
+  IF (INFO.NE.0) THEN
+    CALL abort(__STAMP__,'GetInverse(dim1,A): MATRIX IS NUMERICALLY SINGULAR! INFO = ',IntInfoOpt=INFO)
   END IF
 
   ! DGETRI computes the inverse of a matrix using the LU factorization
@@ -377,8 +377,8 @@ REAL               :: WORK(dim1*dim1)  ! ?
   lwork=dim1*dim1
   CALL DGETRI(dim1, Ainv, dim1, IPIV, WORK, lwork , INFO)
 
-  IF (INFO /= 0) THEN
-     STOP 'MATRIX INVERSION FAILED!'
+  IF (INFO.NE.0) THEN
+    CALL abort(__STAMP__,'GetInverse(dim1,A): MATRIX INVERSION FAILED! INFO = ',IntInfoOpt=INFO)
   END IF
 END FUNCTION GetInverse
 
