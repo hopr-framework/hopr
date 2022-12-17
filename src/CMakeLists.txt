@@ -105,3 +105,11 @@ CMAKE_DEPENDENT_OPTION(HOPR_UNITTESTS "Enable unit tests after build" ON "ACTIVA
 IF(HOPR_UNITTESTS)
   INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/unitTests/CMakeLists.txt)
 ENDIF()
+
+# =========================================================================
+# Build test at end of compilation: Run all tutorials
+# =========================================================================
+OPTION(HOPR_BUILDTESTS "Enable build tests (tutorial testing) after build" ON)
+IF(HOPR_BUILDTESTS)
+  INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/buildTests/CMakeLists.txt)
+ENDIF()
