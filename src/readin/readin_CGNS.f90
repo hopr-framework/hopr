@@ -237,7 +237,9 @@ INTEGER,ALLOCATABLE          :: nBCNodes(:),BCInds(:,:)
 INTEGER                      :: locInds(4),nUnique
 LOGICAL,ALLOCATABLE          :: BCFound(:)
 INTEGER                      :: GridLoc
+#if PP_CGNS_VERSION==v430
 INTEGER(CGSIZE_T),ALLOCATABLE:: connect_offsets(:)
+#endif /*PP_CGNS_VERSION==v430*/
 !===================================================================================================================================
 coordNameCGNS(1) = 'CoordinateX'
 coordNameCGNS(2) = 'CoordinateY'
@@ -309,12 +311,16 @@ DO iSect=1,nSect ! Vol. and Face elems
                              ! (nSectElems, Parent1 | Parent2 | ParentSide1 | ParentSide2)...but we don't use it
   ALLOCATE(ParentData(nSectElems,4))
   ! Read in local connectivity data
+#if (PP_CGNS_VERSION==v430)
   IF(SectionElemType .EQ. MIXED) THEN
     ALLOCATE(connect_offsets(nSectElems*9))
     CALL CG_POLY_ELEMENTS_READ_F(CGNSfile, CGNSBase, iZone, iSect, LocalConnect, connect_offsets, ParentData, iError)
   ELSE
     CALL CG_ELEMENTS_READ_F(CGNSfile,CGNSBase,iZone,iSect,LocalConnect,ParentData,iError)
   END IF
+#else
+  CALL CG_ELEMENTS_READ_F(CGNSfile,CGNSBase,iZone,iSect,LocalConnect,ParentData,iError)
+#endif /*(PP_CGNS_VERSION==v430)*/
 
   ! Check if 2D element is not oriented in z+, check only first element#
   IF(MeshDim .EQ. 2)THEN
@@ -400,7 +406,11 @@ DO iSect=1,nSect ! Vol. and Face elems
     END IF   ! LocDim .EQ. MeshDim
     iStart=iEnd+1
   END DO ! elements in section
-  DEALLOCATE(LocalConnect,ParentData,connect_offsets)
+  DEALLOCATE(LocalConnect)
+  DEALLOCATE(ParentData)
+#if PP_CGNS_VERSION==v430
+  DEALLOCATE(connect_offsets)
+#endif /*PP_CGNS_VERSION==v430*/
 END DO !sections
 
 ! Rebuild the elements of zone iZone
@@ -1108,7 +1118,9 @@ INTEGER                      :: CellDim, PhysDim                    ! Dimesnion 
 INTEGER                      :: iError                              ! Error flag
 CHARACTER(LEN=30)            :: coordNameCGNS(3)                 ! List of CGNS names for the coordinates
 PP_CGNS_INT_TYPE             :: one(1)                ! ?
+#if PP_CGNS_VERSION==v430
 INTEGER(CGSIZE_T),ALLOCATABLE:: connect_offsets(:)
+#endif /*PP_CGNS_VERSION==v430*/
 !===================================================================================================================================
 WRITE(UNIT_stdOut,*)'Read CGNS Surface File: ',TRIM(FileName)
 ! Open CGNS file
@@ -1201,12 +1213,16 @@ DO iZone=1,nCGNSZones
     ALLOCATE(LocalConnect(nSectElems))
     ALLOCATE(ParentData(nSectElems,4))
     ! Read in local connectivity data
+#if (PP_CGNS_VERSION==v430)
     IF(SectionElemType .EQ. MIXED) THEN
       ALLOCATE(connect_offsets(nSectElems*9))
       CALL CG_POLY_ELEMENTS_READ_F(CGNSfile, CGNSBase, iZone, iSect, LocalConnect, connect_offsets, ParentData, iError)
     ELSE
       CALL CG_ELEMENTS_READ_F(CGNSfile,CGNSBase,iZone,iSect,LocalConnect,ParentData,iError)
     END IF
+#else
+    CALL CG_ELEMENTS_READ_F(CGNSfile,CGNSBase,iZone,iSect,LocalConnect,ParentData,iError)
+#endif /*(PP_CGNS_VERSION==v430)*/
 
     nSectElems=1+IndMax-IndMin ! Important for surface elements only
                                ! (nSectElems, Parent1 | Parent2 | ParentSide1 | ParentSide2)...but we don't use it
@@ -1242,7 +1258,11 @@ DO iZone=1,nCGNSZones
       END IF
       iStart=iEnd+1
     END DO ! elements in section
-    DEALLOCATE(LocalConnect,ParentData,connect_offsets)
+    DEALLOCATE(LocalConnect)
+    DEALLOCATE(ParentData)
+#if PP_CGNS_VERSION==v430
+    DEALLOCATE(connect_offsets)
+#endif /*PP_CGNS_VERSION==v430*/
   END DO !sections
 
   ! Rebuild the elements of zone iZone
