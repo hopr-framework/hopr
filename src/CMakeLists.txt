@@ -83,3 +83,33 @@ IF(CTAGS_PATH)
   MESSAGE(STATUS "Found ctags: ${CTAGS_PATH}")
   ADD_DEPENDENCIES(hopr tags)
 ENDIF(CTAGS_PATH)
+
+# =========================================================================
+# Unit test at end of compilation
+# =========================================================================
+# Check is unit tests can be activated
+IF(BUILD_TYPE_LC MATCHES "sanitize" AND LIBS_USE_MPI)
+  SET(ACTIVATE_UNIT_TEST OFF)
+  # Check if unit tests were previously activated
+  IF(HOPR_UNITTESTS)
+    MESSAGE(WARNING "Unit tests automatically disabled (HOPR_UNITTESTS=OFF) with\n CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}\n LIBS_USE_MPI = ${LIBS_USE_MPI}\nas the tests will always fail due to memory errors returned from the MPI library.")
+    SET(HOPR_UNITTESTS OFF)
+  ENDIF()
+ELSE()
+  SET(ACTIVATE_UNIT_TEST ON)
+ENDIF()
+
+# Enable unit testing only when ACTIVATE_UNIT_TEST=ON
+CMAKE_DEPENDENT_OPTION(HOPR_UNITTESTS "Enable unit tests after build" ON "ACTIVATE_UNIT_TEST" OFF)
+
+IF(HOPR_UNITTESTS)
+  INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/unitTests/CMakeLists.txt)
+ENDIF()
+
+# =========================================================================
+# Build test at end of compilation: Run all tutorials
+# =========================================================================
+OPTION(HOPR_BUILDTESTS "Enable build tests (tutorial testing) after build" ON)
+IF(HOPR_BUILDTESTS)
+  INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/buildTests/CMakeLists.txt)
+ENDIF()

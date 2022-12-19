@@ -1,0 +1,35 @@
+\documentclass[varwidth]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[ruled,boxed,vlined]{algorithm2e}
+
+%\usepackage[paperwidth=17cm]{geometry} % max 15800 long
+
+\usepackage{varwidth}
+
+\begin{document}
+\hsize=17cm
+\setlength{\algomargin}{10pt}
+% ----------- END OF HEADER -------------
+
+\setcounter{algocf}{2}
+\begin{varwidth}{\linewidth}
+\begin{algorithm}[H]
+ \caption{Read attribute from File  \label{alg:hdfattr}}
+ \DontPrintSemicolon
+  \SetKwProg{myproc}{Procedure}{}{End}
+  \myproc{ReadAttribute}{
+ \KwIn{FileID, AttributeName, Dimsf(1)}
+ \KwOut{attribute}
+  \;
+  AttrID = H5Aopen(FileID, AttributeName) \;
+  typeID= H5Aget\_type(DsetID)\;
+  H5Dread( AttrID, typeID, attribute )\;
+  \;
+  H5Tclose(typeID)\;
+  H5Aclose(AttrID)\;
+  }
+\end{algorithm}
+\end{varwidth}
+
+% ----------- FOOTER -------------
+\end{document}
