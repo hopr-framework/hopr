@@ -385,14 +385,35 @@ IF (NOT LIBS_BUILD_CGNS)
     MESSAGE(STATUS "CGNS include dir: " ${CGNS_INCLUDE_DIR})
     LIST(INSERT linkedlibs 0 ${CGNS_LIBRARIES})
     INCLUDE_DIRECTORIES (${CGNS_INCLUDE_DIR})
+
+    # Find "^#define CGNS_VERSION" and get only the numbers and remove trailing line breaks
+    EXECUTE_PROCESS(COMMAND cat "${CGNS_INCLUDE_DIR}/cgnslib.h" COMMAND grep "^#define CGNS_VERSION" COMMAND grep -o "[[:digit:]]*" COMMAND tr -d '\n' OUTPUT_VARIABLE CGNS_VERSION)
+    MESSAGE(STATUS "Found CGNS version in cgnslib.h [${CGNS_VERSION}]")
+
   ELSE()
     MESSAGE(ERROR "CGNS not found")
   ENDIF()
 ELSE()
-  SET(LIBS_CGNS_DLDIR ${LIBS_EXTERNAL_LIB_DIR}/CGNS)
-  SET(LIBS_CGNS_DIR   ${LIBS_CGNS_DLDIR}/build)
 
-  IF (NOT EXISTS "${LIBS_CGNS_DIR}/lib/libcgns.a")
+  # Set CGNS_Tag
+  SET (LIBS_BUILD_CGNS_TAG "v4.3.0" CACHE STRING "CGNS version tag from ${CGNSDOWNLOAD}")
+  SET_PROPERTY(CACHE LIBS_BUILD_CGNS_TAG PROPERTY STRINGS "v3.4.1" "v4.0.0" "v4.3.0")
+  MESSAGE(STATUS "Compiling CGNS version tag: " ${LIBS_BUILD_CGNS_TAG})
+
+  IF("${LIBS_BUILD_CGNS_TAG}" MATCHES "v4.3.0")
+    SET(CGNS_VERSION 4300)
+  ELSEIF("${LIBS_BUILD_CGNS_TAG}" MATCHES "v4.0.0")
+    SET(CGNS_VERSION 4000)
+  ELSEIF("${LIBS_BUILD_CGNS_TAG}" MATCHES "v3.4.1")
+    SET(CGNS_VERSION 3401)
+  ELSE()
+    SET(CGNS_VERSION -1)
+  ENDIF()
+
+  SET(LIBS_CGNS_DLDIR ${LIBS_EXTERNAL_LIB_DIR}/CGNS${LIBS_BUILD_CGNS_TAG})
+  SET(LIBS_CGNS_DIR   ${LIBS_CGNS_DLDIR})
+
+  IF (NOT EXISTS "${LIBS_CGNS_DIR}/build/lib/libcgns.a")
     STRING(COMPARE EQUAL ${LIBS_BUILD_CGNS_INT} "64" LIBS_CGNS_64BIT)
 
     # Origin pointing to Github
@@ -401,9 +422,6 @@ ELSE()
     ELSE()
       SET (CGNSDOWNLOAD ${LIBS_DLPATH}libs/cgns.git )
     ENDIF()
-
-    # Set CGNS_Tag
-    SET (LIBS_BUILD_CGNS_TAG "v3.4.1" CACHE STRING "CGNS version tag")
 
     # Build CGNS with HDF5 support
     EXTERNALPROJECT_ADD(cgns
@@ -428,3 +446,6 @@ ELSE()
   LIST(INSERT linkedlibs 0 ${LIBS_CGNS_DIR}/build/lib/libcgns.a)
   INCLUDE_DIRECTORIES(   ${LIBS_CGNS_DIR}/build/include)
 ENDIF()
+
+# set pre-processor flag for CGNS version
+ADD_DEFINITIONS(-DPP_CGNS_VERSION=${CGNS_VERSION})

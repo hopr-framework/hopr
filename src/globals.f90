@@ -62,7 +62,7 @@ REAL,PARAMETER              :: FileVersion  = REAL(MajorVersion,8)+REAL(MinorVer
 
 
 INTERFACE Abort
-   MODULE PROCEDURE Abort
+   MODULE PROCEDURE AbortProg
 END INTERFACE
 
 INTERFACE Timer
@@ -101,7 +101,7 @@ END INTERFACE
 !===================================================================================================================================
 
 CONTAINS
-SUBROUTINE Abort(SourceFile,SourceLine,CompDate,CompTime,ErrorMessage,IntInfoOpt,RealInfoOpt)
+SUBROUTINE AbortProg(SourceFile,SourceLine,CompDate,CompTime,ErrorMessage,IntInfoOpt,RealInfoOpt)
 !===================================================================================================================================
 ! Terminate program correctly if an error has occurred (important in MPI mode!).
 !===================================================================================================================================
@@ -138,7 +138,7 @@ WRITE(UNIT_stdOut,*)
 WRITE(UNIT_stdOut,'(A,A,A,I6.6,A)')'See ',TRIM(ProjectName),'_ERRORS.out for more details'
 WRITE(UNIT_stdOut,*)
 STOP 0001
-END SUBROUTINE Abort
+END SUBROUTINE AbortProg
 
 SUBROUTINE Timer(start,unit_in)
 !===================================================================================================================================

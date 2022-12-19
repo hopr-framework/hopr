@@ -88,6 +88,7 @@ INTEGER                    :: iError             ! Error flag
 INTEGER                    :: md  ! ?
 INTEGER                    :: file_type  ! ?
 REAL(KIND=4)               :: version  ! ?
+INTEGER                    :: precision
 
 CHARACTER(LEN=32)          :: CGName             ! necessary data for CGNS
 INTEGER                    :: ZoneType  ! ?
@@ -102,22 +103,26 @@ nZonesGlob = 0
 DO iFile=1,nMeshFiles
   ! Check CGNS file (CG_IS_CGNS_F must NOT be performed after CG_OPEN_F (in OpenBase), leads to an error in the read-in of HDF5-based CGNS files)
   CALL CG_IS_CGNS_F(TRIM(MeshFileName(iFile)), file_type, iError)
-  IF (iError .NE. CG_OK) &
-    CALL abortCGNS(__STAMP__,CGNSFile)
-  ! Open CGNS file
-  CALL OpenBase(TRIM(MeshFileName(iFile)),MODE_READ,md,md,CGNSFile,CGNSBase,.TRUE.)
-  CALL CG_VERSION_F(CGNSFile, version, iError)
-  WRITE(UNIT_stdOut,*)'CGNS version:',version
+  IF (iError .NE. CG_OK) CALL abort(__STAMP__,'ERROR: Given CGNS file is not supported!')
 
+  ! Check CGNS file type (ADF/HDF5)
   SELECT CASE(file_type)
   CASE(CG_FILE_ADF)
     WRITE(UNIT_stdOut,*)'CGNS file type: ADF'
   CASE(CG_FILE_HDF5)
     WRITE(UNIT_stdOut,*)'CGNS file type: HDF5'
   CASE DEFAULT
-    CALL closeFile(CGNSFile)
-    CALL abort(__STAMP__,'CGNS file type is unknown!')
+    CALL abort(__STAMP__,'ERROR: CGNS file type is unknown!')
   END SELECT
+
+  ! CALL CG_SET_FILE_TYPE_F(CG_FILE_ADF2, iError);
+
+  ! Open CGNS file
+  CALL OpenBase(TRIM(MeshFileName(iFile)),MODE_READ,md,md,CGNSFile,CGNSBase,.TRUE.)
+  ! Output CGNS version and precision
+  CALL CG_VERSION_F(CGNSFile, version, iError)
+  CALL CG_PRECISION_F(CGNSFile,precision,iError)
+  WRITE(UNIT_stdOut,*)'CGNS version:', version, ' CGNS precision:', precision, 'Bit'
 
   ! Get number of bases in CGNS file
   CALL CG_NBASES_F(CGNSfile,nBases,iError)
@@ -210,9 +215,9 @@ INTEGER                      :: iBC, nCGNSBC  ! ?
 PP_CGNS_INT_TYPE             :: nBCElems  ! ?
 INTEGER                      :: BCTypeIndex             ! Index of boundary condition defined in parameter file
 PP_CGNS_INT_TYPE             :: LocDim          ! Dimension, type, number of nodes of local=section elements
-INTEGER                      :: LocType, nNodesLoc          ! Dimension, type, number of nodes of local=section elements
+INTEGER                      :: nNodesLoc          ! Dimension, type, number of nodes of local=section elements
 PP_CGNS_INT_TYPE             :: SizeZone(3)                         ! CGNS datastructure variables
-INTEGER                      :: SectionElemType                     ! Type of elements in CGNS file
+INTEGER(CGENUM_T)            :: SectionElemType, LocType            ! Type of elements in CGNS file
 INTEGER                      :: ParentDataFlag                      ! 0=no parent data for elems available, 1=parent data available
 INTEGER                      :: PntSetType                          ! BC data format (points or surface elemnents)
 PP_CGNS_INT_TYPE             :: NormalListFlag         ! CGNS datastructure variables
@@ -232,6 +237,9 @@ INTEGER,ALLOCATABLE          :: nBCNodes(:),BCInds(:,:)
 INTEGER                      :: locInds(4),nUnique
 LOGICAL,ALLOCATABLE          :: BCFound(:)
 INTEGER                      :: GridLoc
+#if PP_CGNS_VERSION>=4000
+INTEGER(CGSIZE_T),ALLOCATABLE:: connect_offsets(:)
+#endif /*PP_CGNS_VERSION>=4000*/
 !===================================================================================================================================
 coordNameCGNS(1) = 'CoordinateX'
 coordNameCGNS(2) = 'CoordinateY'
@@ -239,16 +247,14 @@ coordNameCGNS(3) = 'CoordinateZ'
 one=1
 ! Check dimensions of CGNS base
 CALL CG_BASE_READ_F(CGNSfile,CGNSBase,CGname,CellDim,PhysDim,iError)
-IF(iError .NE. CG_OK) &
-  CALL abortCGNS(__STAMP__,CGNSFile)
+IF(iError .NE. CG_OK) CALL abortCGNS(__STAMP__,CGNSFile)
 IF((INT(CellDim) .NE. MeshDim) .OR. (INT(PhysDim) .NE. MeshDim))THEN
   WRITE(UNIT_stdOut,*)'ERROR-Invalid dimensions in CGNS file: CellDim=',CellDim,', PhysDim=',PhysDim,'(MeshDim=',MeshDim,')'
-  STOP
+  CALL abortCGNS(__STAMP__,CGNSFile)
 END IF
 ! Start with reading zones: total number of Nodes and Elems
 CALL CG_ZONE_READ_F(CGNSfile,CGNSBase,iZone,CGname,SizeZone,iError)
-IF (iError .NE. CG_OK) &
-  CALL abortCGNS(__STAMP__,CGNSFile)
+IF (iError .NE. CG_OK) CALL abortCGNS(__STAMP__,CGNSFile)
 WRITE(UNIT_stdOut,*)'Read Zone ',TRIM(CGname)
 
 ! Read node coordinates
@@ -285,7 +291,6 @@ ALLOCATE(ElemMapping(nZoneElems))   ! Global element index -> volume / face elem
 ElemMapping(:)=0
 nElems=SizeZone(2)
 
-
 ! Read element connectivity
 ALLOCATE(Elems(nElems))
 ALLOCATE(ElemConnect(13,nElems)) ! max 8 + 1 schalter
@@ -306,7 +311,16 @@ DO iSect=1,nSect ! Vol. and Face elems
                              ! (nSectElems, Parent1 | Parent2 | ParentSide1 | ParentSide2)...but we don't use it
   ALLOCATE(ParentData(nSectElems,4))
   ! Read in local connectivity data
+#if (PP_CGNS_VERSION>=4000)
+  IF(SectionElemType .EQ. MIXED) THEN
+    ALLOCATE(connect_offsets(nSectElems*9))
+    CALL CG_POLY_ELEMENTS_READ_F(CGNSfile, CGNSBase, iZone, iSect, LocalConnect, connect_offsets, ParentData, iError)
+  ELSE
+    CALL CG_ELEMENTS_READ_F(CGNSfile,CGNSBase,iZone,iSect,LocalConnect,ParentData,iError)
+  END IF
+#else
   CALL CG_ELEMENTS_READ_F(CGNSfile,CGNSBase,iZone,iSect,LocalConnect,ParentData,iError)
+#endif /*(PP_CGNS_VERSION>=4000)*/
 
   ! Check if 2D element is not oriented in z+, check only first element#
   IF(MeshDim .EQ. 2)THEN
@@ -338,14 +352,13 @@ DO iSect=1,nSect ! Vol. and Face elems
       iEnd   =iEnd-1                ! Only nElemNodes values
     END IF
     CALL CG_NPE_F(LocType,nNodesLoc,iError) ! Get number of nodes for iElem
+    IF (iError .NE. CG_OK) CALL abortCGNS(__STAMP__,CGNSFile)
     iEnd=iEnd+nNodesLoc
 
     ! Check if the number of nodes is above the allocated and display the element type
     IF(nNodesLoc.GT.12) THEN
       CALL closeFile(CGNSFile)
-      CALL abort(__STAMP__,&
-        'ERROR: Number of nodes is greater than expected. Following element type (per CGNS standard) might not be supported: '&
-                &//TRIM(ElementTypeName(LocType)))
+      CALL abort(__STAMP__,'ERROR: Number of nodes is greater than expected. The element type is not supported!')
     END IF
 
     LocDim=1
@@ -358,8 +371,7 @@ DO iSect=1,nSect ! Vol. and Face elems
       IF(iVolElem.EQ.1) FirstElemInd=IndMin+iElem-1 !start of volume zone, only possible fro ONE VOLUME ZONE!
       IF(iVolElem .GT. nElems)THEN
         CALL closeFile(CGNSFile)
-        CALL abort(__STAMP__,&
-                       'Something wrong with element numbers in CGNS File zone :',INT(iZone))
+        CALL abort(__STAMP__, 'Something wrong with element numbers in CGNS File zone :',INT(iZone))
       END IF
 
       ElemConnect(1            ,iVolElem)=LocType
@@ -382,8 +394,7 @@ DO iSect=1,nSect ! Vol. and Face elems
       iSurfElem=iSurfElem+1
       IF(iSurfElem.GT.nSurfElems)THEN
         CALL closeFile(CGNSFile)
-        CALL abort(__STAMP__,&
-                       'Something wrong with surf element numbers in CGNS File zone :',INT(iZone))
+        CALL abort(__STAMP__,'Something wrong with surf element numbers in CGNS File zone :',INT(iZone))
       END IF
 
       SurfElemConnect(1            ,iSurfElem)=LocType
@@ -393,7 +404,11 @@ DO iSect=1,nSect ! Vol. and Face elems
     END IF   ! LocDim .EQ. MeshDim
     iStart=iEnd+1
   END DO ! elements in section
-  DEALLOCATE(LocalConnect,ParentData)
+  DEALLOCATE(LocalConnect)
+  DEALLOCATE(ParentData)
+#if (PP_CGNS_VERSION>=4000)
+  DEALLOCATE(connect_offsets)
+#endif /*(PP_CGNS_VERSION>=4000)*/
 END DO !sections
 
 ! Rebuild the elements of zone iZone
@@ -1101,6 +1116,9 @@ INTEGER                      :: CellDim, PhysDim                    ! Dimesnion 
 INTEGER                      :: iError                              ! Error flag
 CHARACTER(LEN=30)            :: coordNameCGNS(3)                 ! List of CGNS names for the coordinates
 PP_CGNS_INT_TYPE             :: one(1)                ! ?
+#if PP_CGNS_VERSION>=4000
+INTEGER(CGSIZE_T),ALLOCATABLE:: connect_offsets(:)
+#endif /*PP_CGNS_VERSION>=4000*/
 !===================================================================================================================================
 WRITE(UNIT_stdOut,*)'Read CGNS Surface File: ',TRIM(FileName)
 ! Open CGNS file
@@ -1193,7 +1211,16 @@ DO iZone=1,nCGNSZones
     ALLOCATE(LocalConnect(nSectElems))
     ALLOCATE(ParentData(nSectElems,4))
     ! Read in local connectivity data
+#if (PP_CGNS_VERSION>=4000)
+    IF(SectionElemType .EQ. MIXED) THEN
+      ALLOCATE(connect_offsets(nSectElems*9))
+      CALL CG_POLY_ELEMENTS_READ_F(CGNSfile, CGNSBase, iZone, iSect, LocalConnect, connect_offsets, ParentData, iError)
+    ELSE
+      CALL CG_ELEMENTS_READ_F(CGNSfile,CGNSBase,iZone,iSect,LocalConnect,ParentData,iError)
+    END IF
+#else
     CALL CG_ELEMENTS_READ_F(CGNSfile,CGNSBase,iZone,iSect,LocalConnect,ParentData,iError)
+#endif /*(PP_CGNS_VERSION>=4000)*/
 
     nSectElems=1+IndMax-IndMin ! Important for surface elements only
                                ! (nSectElems, Parent1 | Parent2 | ParentSide1 | ParentSide2)...but we don't use it
@@ -1229,7 +1256,11 @@ DO iZone=1,nCGNSZones
       END IF
       iStart=iEnd+1
     END DO ! elements in section
-    DEALLOCATE(LocalConnect,ParentData)
+    DEALLOCATE(LocalConnect)
+    DEALLOCATE(ParentData)
+#if PP_CGNS_VERSION>=4000
+    DEALLOCATE(connect_offsets)
+#endif /*PP_CGNS_VERSION>=4000*/
   END DO !sections
 
   ! Rebuild the elements of zone iZone
