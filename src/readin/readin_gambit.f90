@@ -9,7 +9,7 @@
 ! /____//   /____//  /______________//  /____//           /____//   |_____/)    ,X`      XXX`
 ! )____)    )____)   )______________)   )____)            )____)    )_____)   ,xX`     .XX`
 !                                                                           xxX`      XXx
-! Copyright (C) 2015  Prof. Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
+! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
 ! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
@@ -80,11 +80,12 @@ INTEGER                :: BCind  ! ?
 INTEGER,ALLOCATABLE    :: iDummyArray2(:,:),iDummyArray3(:)  ! ?
 CHARACTER(LEN=99)      :: formstr,BinaryFile  ! ?
 CHARACTER(LEN=100)     :: cdummy,cdummy2   ! ?
-CHARACTER(LEN=255)     :: strBC  ! ?
+CHARACTER(LEN=255)     :: strBC,strBCName  ! ?
 LOGICAL                :: foundBC  ! ?
 INTEGER                :: HexNodeMap(8)  = (/3,2,7,6,4,1,8,5/)  ! ?
 INTEGER                :: HexSideMap(6)  = (/1,2,6,4,3,5/)  ! ?
 INTEGER                :: PyraNodeMap(5) = (/1,2,4,3,5/)  ! ?
+INTEGER                :: TetraNodeMap(4) = (/3,1,4,2/)  ! ?
 !===================================================================================================================================
 WRITE(UNIT_stdOut,'(132("~"))')
 CALL Timer(.TRUE.)
@@ -180,6 +181,8 @@ DO iFile=1,nMeshFiles
       actualNode%ind=iDummyArray2(iElem,iNode)
       ! for some elements, gambit ordering is INCOMPATIBLE to standard (!!)
       SELECT CASE(actualElem%nnodes)
+      CASE(4) ! Tetra
+        actualElem%Node(TetraNodeMap(iNode))%np=>actualNode
       CASE(5) ! Pyra
         actualElem%Node(PyraNodeMap(iNode))%np=>actualNode
       CASE(8) ! Hex
@@ -256,6 +259,9 @@ DO iFile=1,nMeshFiles
     DO i=1,nUserDefinedBoundaries
       dummy1=INDEX(TRIM(strBC),TRIM(BoundaryName(i)))
       IF(dummy1.NE.0) THEN
+        strBCName=TRIM(ADJUSTL(strBC(1:dummy1+LEN(TRIM(BoundaryName(i))))))  ! Get the boundary name
+        ! Check if it is really the same BC and not a partial match
+        IF(TRIM(strBCName).NE.TRIM(BoundaryName(i))) CYCLE
         foundBC=.TRUE. 
         BCType     = BoundaryType(i,1)
         curveIndex = BoundaryType(i,2)
@@ -263,9 +269,10 @@ DO iFile=1,nMeshFiles
         BCalphaInd = BoundaryType(i,4)
         BCind      = i
         WRITE(*,*)'BC found: ',TRIM(strBC)
-        WRITE(*,*)'              -->  mapped to:',TRIM(BoundaryName(i))
+        WRITE(*,*)'              -->  mapped to: ', TRIM(BoundaryName(i))
         strBC=strBC(dummy1+LEN(TRIM(BoundaryName(i))):LEN(strBC))  ! First we need to cut off the boundary name...
-        READ(strBC,'(I8,I8,I8,I8)')dummy1,dummy2,nBCElems,dummy3  ! ...before we can read the number of BC elements
+        READ(strBC,'(I10,I10,I10,I10)')dummy1,nBCElems,dummy2,dummy3  ! ...before we can read the number of BC elements
+        WRITE(*,*)'                   nBCElems = ', nBCElems
         EXIT
       END IF
     END DO

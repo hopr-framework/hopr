@@ -1,0 +1,72 @@
+\documentclass[varwidth,border=25pt]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[ruled,boxed,vlined]{algorithm2e}
+
+%\usepackage[paperwidth=17cm]{geometry} % max 15800 long
+
+\usepackage{varwidth}
+\usepackage{amsmath,amssymb}
+\begin{document}
+\hsize=17cm
+\setlength{\algomargin}{10pt}
+% ----------- END OF HEADER -------------
+
+
+\setcounter{algocf}{8}
+\begin{varwidth}{\linewidth}
+\begin{algorithm}[H]
+\small
+ \caption{Mapping between the element curved node list and the CGNS corner nodes   \label{alg:cornermapping}}
+ \DontPrintSemicolon
+  \SetKwProg{myproc}{Procedure}{}{End}
+  \myproc{CornerNodeMapping}{
+ \KwIn{$N$,nCornerNodes [,MapInv]}
+ \KwOut{CGNSCornerMap(nCornerNodes)}
+  \;
+    \Switch{nCornerNodes}{
+      \Case{4 \textit{(Tetrahedron)}}{ 
+      \begin{tabular}{lll}
+        CGNSCornerMap(1) & $\leftarrow$ 1                    &   [=MapInv(0,0,0)] \; \\
+        CGNSCornerMap(2) & $\leftarrow$ (N+1)                &   [=MapInv(N,0,0)] \; \\
+        CGNSCornerMap(3) & $\leftarrow$ (N+1)*(N+2)/2        &   [=MapInv(0,N,0)] \; \\
+        CGNSCornerMap(4) & $\leftarrow$ (N+1)*(N+2)*(N+3)/6  &   [=MapInv(0,0,N)] \; \\
+      \end{tabular}
+      }                                                                       
+      \Case{5 \textit{(Pyramid)}}{                                         
+      \begin{tabular}{lll}
+        CGNSCornerMap(1) & $\leftarrow$ 1                    &   [=MapInv(0,0,0)] \; \\
+        CGNSCornerMap(2) & $\leftarrow$ (N+1)                &   [=MapInv(N,0,0)] \; \\
+        CGNSCornerMap(3) & $\leftarrow$ (N+1)**2             &   [=MapInv(N,N,0)] \; \\
+        CGNSCornerMap(4) & $\leftarrow$ N*(N+1)+1            &   [=MapInv(0,N,0)] \; \\
+        CGNSCornerMap(5) & $\leftarrow$ (N+1)*(N+2)*(2*N+3)/6&   [=MapInv(0,0,N)] \; \\
+      \end{tabular}
+      }                                                                       
+      \Case{6 \textit{(Prism)}}{                                           
+      \begin{tabular}{lll}
+        CGNSCornerMap(1) & $\leftarrow$ 1                    &   [=MapInv(0,0,0)] \; \\
+        CGNSCornerMap(2) & $\leftarrow$ (N+1)                &   [=MapInv(N,0,0)] \; \\
+        CGNSCornerMap(3) & $\leftarrow$ (N+1)*(N+2)/2        &   [=MapInv(0,N,0)] \; \\
+        CGNSCornerMap(4) & $\leftarrow$ N*(N+1)*(N+2)/2+ 1   &   [=MapInv(0,0,N)] \; \\
+        CGNSCornerMap(5) & $\leftarrow$ N*(N+1)*(N+2)/2+(N+1)&   [=MapInv(N,0,N)] \; \\
+        CGNSCornerMap(6) & $\leftarrow$ (N+1)**2*(N+2)/2     &   [=MapInv(0,N,N)] \; \\
+      \end{tabular}
+      }                                                                       
+      \Case{8 \textit{(Hexa)}}{                                            
+      \begin{tabular}{lll}
+        CGNSCornerMap(1) & $\leftarrow$ 1                    &   [=MapInv(0,0,0)] \; \\
+        CGNSCornerMap(2) & $\leftarrow$ (N+1)                &   [=MapInv(N,0,0)] \; \\
+        CGNSCornerMap(3) & $\leftarrow$ (N+1)**2             &   [=MapInv(N,N,0)] \; \\
+        CGNSCornerMap(4) & $\leftarrow$ N*(N+1)+1            &   [=MapInv(0,N,0)] \; \\
+        CGNSCornerMap(5) & $\leftarrow$ N*(N+1)**2+1         &   [=MapInv(0,0,N)] \; \\
+        CGNSCornerMap(6) & $\leftarrow$ N*(N+1)**2+(N+1)     &   [=MapInv(N,0,N)] \; \\
+        CGNSCornerMap(7) & $\leftarrow$ (N+1)**3             &   [=MapInv(N,N,N)] \; \\
+        CGNSCornerMap(8) & $\leftarrow$ N*(N+1)*(N+2)+1      &   [=MapInv(0,N,N)] \; \\
+      \end{tabular}
+       }
+    }
+  }
+\end{algorithm}
+\end{varwidth}
+
+% ----------- FOOTER -------------
+\end{document}

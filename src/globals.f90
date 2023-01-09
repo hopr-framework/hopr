@@ -9,7 +9,7 @@
 ! /____//   /____//  /______________//  /____//           /____//   |_____/)    ,X`      XXX`
 ! )____)    )____)   )______________)   )____)            )____)    )_____)   ,xX`     .XX`
 !                                                                           xxX`      XXx
-! Copyright (C) 2015  Prof. Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
+! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
 ! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
@@ -54,10 +54,15 @@ INTEGER, PARAMETER          :: UNIT_logOut = 100          ! For logging
 CHARACTER(LEN=255)          :: ProjectName                ! necessary data for in/output and name used to generate filenames from
 LOGICAL                     :: Logging                    ! Set .TRUE. to activate logging function for each processor
 
+INTEGER,PARAMETER           :: MajorVersion = 1                     !> FileVersion number saved in each hdf5 file with hdf5 header
+INTEGER,PARAMETER           :: MinorVersion = 0                     !> FileVersion number saved in each hdf5 file with hdf5 header
+INTEGER,PARAMETER           :: PatchVersion = 0                     !> FileVersion number saved in each hdf5 file with hdf5 header
+REAL,PARAMETER              :: FileVersion  = REAL(MajorVersion,8)+REAL(MinorVersion,8)/10.+REAL(PatchVersion,8)/100. !> FileVersion
+
 
 
 INTERFACE Abort
-   MODULE PROCEDURE Abort
+   MODULE PROCEDURE AbortProg
 END INTERFACE
 
 INTERFACE Timer
@@ -96,7 +101,7 @@ END INTERFACE
 !===================================================================================================================================
 
 CONTAINS
-SUBROUTINE Abort(SourceFile,SourceLine,CompDate,CompTime,ErrorMessage,IntInfoOpt,RealInfoOpt)
+SUBROUTINE AbortProg(SourceFile,SourceLine,CompDate,CompTime,ErrorMessage,IntInfoOpt,RealInfoOpt)
 !===================================================================================================================================
 ! Terminate program correctly if an error has occurred (important in MPI mode!).
 !===================================================================================================================================
@@ -133,7 +138,7 @@ WRITE(UNIT_stdOut,*)
 WRITE(UNIT_stdOut,'(A,A,A,I6.6,A)')'See ',TRIM(ProjectName),'_ERRORS.out for more details'
 WRITE(UNIT_stdOut,*)
 STOP 0001
-END SUBROUTINE Abort
+END SUBROUTINE AbortProg
 
 SUBROUTINE Timer(start,unit_in)
 !===================================================================================================================================
@@ -363,8 +368,8 @@ REAL               :: WORK(dim1*dim1)  ! ?
   ! using partial pivoting with row interchanges.
   CALL DGETRF(dim1, dim1, Ainv, dim1, IPIV, INFO)
 
-  IF (INFO /= 0) THEN
-     STOP 'MATRIX IS NUMERICALLY SINGULAR!'
+  IF (INFO.NE.0) THEN
+    CALL abort(__STAMP__,'GetInverse(dim1,A): MATRIX IS NUMERICALLY SINGULAR! INFO = ',IntInfoOpt=INFO)
   END IF
 
   ! DGETRI computes the inverse of a matrix using the LU factorization
@@ -372,8 +377,8 @@ REAL               :: WORK(dim1*dim1)  ! ?
   lwork=dim1*dim1
   CALL DGETRI(dim1, Ainv, dim1, IPIV, WORK, lwork , INFO)
 
-  IF (INFO /= 0) THEN
-     STOP 'MATRIX INVERSION FAILED!'
+  IF (INFO.NE.0) THEN
+    CALL abort(__STAMP__,'GetInverse(dim1,A): MATRIX INVERSION FAILED! INFO = ',IntInfoOpt=INFO)
   END IF
 END FUNCTION GetInverse
 

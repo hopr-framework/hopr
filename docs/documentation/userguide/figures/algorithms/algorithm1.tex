@@ -1,0 +1,33 @@
+\documentclass[varwidth]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[ruled,boxed,vlined]{algorithm2e}
+
+%\usepackage[paperwidth=17cm]{geometry} % max 15800 long
+
+\usepackage{varwidth}
+
+\begin{document}
+\hsize=17cm
+\setlength{\algomargin}{10pt}
+% ----------- END OF HEADER -------------
+
+
+\begin{varwidth}{\linewidth}
+\begin{algorithm}[H]
+ \caption{Open HDF5 File for read access in parallel and setup file access property list with parallel I/O (MPI)\label{alg:hdfopen}}
+ \DontPrintSemicolon
+  \SetKwProg{myproc}{Procedure}{}{End}
+  \myproc{OpenDataFile}{
+ \KwIn{FileName}
+ \KwOut{FileID}\;
+ 
+  plist= H5Pcreate(H5P\_FILE\_ACCESS)\;
+  H5Pset\_fapl\_mpio(plist, MPI\_COMM\_WORLD, MPIInfo)\;
+  FileID = H5Fopen(FileName,H5F\_ACC\_RDWR,plist ) \;
+  H5Pclose(plist)\;
+}
+\end{algorithm}
+\end{varwidth}
+
+% ----------- FOOTER -------------
+\end{document}

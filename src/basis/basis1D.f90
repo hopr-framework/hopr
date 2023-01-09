@@ -9,7 +9,7 @@
 ! /____//   /____//  /______________//  /____//           /____//   |_____/)    ,X`      XXX`
 ! )____)    )____)   )______________)   )____)            )____)    )_____)   ,xX`     .XX`
 !                                                                           xxX`      XXx
-! Copyright (C) 2015  Prof. Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
+! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
 ! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
@@ -349,6 +349,7 @@ END SUBROUTINE GradVandermonde1D
 !==================================================================================================================================
 FUNCTION INV(A) RESULT(AINV)
 ! MODULES
+USE MOD_Globals, ONLY: abort
 IMPLICIT NONE
 !----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT/OUTPUT VARIABLES
@@ -372,7 +373,7 @@ n = size(A,1)
 CALL DGETRF(n, n, Ainv, n, ipiv, info)
 
 IF(info.NE.0)THEN
-   STOP 'Matrix is numerically singular!'
+   CALL abort(__STAMP__,'INV(A): Matrix is numerically singular! INFO = ',IntInfoOpt=INFO)
 END IF
 
 ! DGETRI computes the inverse of a matrix using the LU factorization
@@ -380,7 +381,7 @@ END IF
 CALL DGETRI(n, Ainv, n, ipiv, work, n, info)
 
 IF(info.NE.0)THEN
-   STOP 'Matrix inversion failed!'
+   CALL abort(__STAMP__,'INV(A): ratrix inversion failed! INFO = ',IntInfoOpt=INFO)
 END IF
 END FUNCTION INV
 

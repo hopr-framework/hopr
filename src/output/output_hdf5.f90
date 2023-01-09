@@ -10,7 +10,7 @@
 ! )____)    )____)   )______________)   )____)            )____)    )_____)   ,xX`     .XX`
 !                                                                           xxX`      XXx
 ! Copyright (C) 2017  Florian Hindenlang <hindenlang@gmail.com>
-! Copyright (C) 2015  Prof. Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
+! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
 ! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
@@ -43,11 +43,7 @@ INTERFACE SpaceFillingCurve
   MODULE PROCEDURE SpaceFillingCurve
 END INTERFACE
 
-INTERFACE WriteAttribute
-  MODULE PROCEDURE WriteAttribute
-END INTERFACE
-
-PUBLIC::WriteMeshToHDF5,SpaceFillingCurve,WriteAttribute
+PUBLIC::WriteMeshToHDF5,SpaceFillingCurve
 !===================================================================================================================================
 
 CONTAINS
@@ -77,6 +73,7 @@ INTEGER                        :: locnSides
 INTEGER                        :: iNode,i,iMortar
 LOGICAL                        :: found
 CHARACTER(LEN=26)              :: ElemTypeName(1:11)
+CHARACTER(LEN=10)              :: hilf
 !===================================================================================================================================
 WRITE(UNIT_stdOut,'(132("~"))')
 CALL Timer(.TRUE.)
@@ -277,7 +274,9 @@ CALL getMeshInfo() !allocates and fills ElemInfo,SideInfo,NodeInfo,NodeCoords
 CALL OpenHDF5File(FileString,create=.TRUE.)  
 
 !attributes 
-CALL WriteAttribute(File_ID,'Version',1,RealScalar=1.0)
+WRITE(UNIT=hilf,FMT='(I0,A1,I0,A1,I0)') MajorVersion,".",MinorVersion,".",PatchVersion
+CALL WriteAttribute(File_ID,'VersionStr',1,StrScalar=TRIM(hilf))
+CALL WriteAttribute(File_ID,'Version',1,RealScalar=FileVersion)
 CALL WriteAttribute(File_ID,'Ngeo',1,IntScalar=N)
 CALL WriteAttribute(File_ID,'nElems',1,IntScalar=nElems)
 CALL WriteAttribute(File_ID,'nSides',1,IntScalar=nSides)

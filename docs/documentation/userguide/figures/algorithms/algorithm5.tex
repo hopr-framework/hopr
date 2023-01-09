@@ -1,0 +1,44 @@
+\documentclass[varwidth]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[ruled,boxed,vlined]{algorithm2e}
+
+%\usepackage[paperwidth=17cm]{geometry} % max 15800 long
+
+\usepackage{varwidth}
+\usepackage{amsmath,amssymb}
+\begin{document}
+\hsize=17cm
+\setlength{\algomargin}{10pt}
+% ----------- END OF HEADER -------------
+
+\setcounter{algocf}{4}
+\begin{varwidth}{\linewidth}
+\begin{algorithm}[H]
+ \caption{Parallel non-overlapping read-in of an array. Note that arrays start a 0 in HDF5! \label{alg:hdfarray}}
+ \DontPrintSemicolon
+  \SetKwProg{myproc}{Procedure}{}{End}
+  \myproc{ReadArray}{
+ \KwIn{FileID, ArrayName, Rank, Dimsf(rank), offset(rank)}
+ \KwOut{subarray}
+  \;
+  MemSpace = H5Screate\_simple(rank, Dimsf) \;
+  DsetID = H5Dopen(FileID, ArrayName) \;
+  FileSpace = H5Dget\_space(DsetID) \;
+  H5Sselect\_hyperslab(FileSpace, H5Sselect\_hyperslab, offset,Dimsf) \;
+  plist= H5Pcreate(H5P\_DATASET\_XFER) \tcc*{create property list}
+  H5Pset\_dxpl\_mpio(plist, H5FD\_MPIO\_COLLECTIVE) \tcc*{collective read}
+  typeID= H5Dget\_type(DsetID)\;
+  \tcc{read local data array} 
+  H5Dread( DsetID, typeID, MemSpace, FileSpace, plist, subarray )\;
+  \;
+  H5Tclose(typeID)\;
+  H5Pclose(plist)\;
+  H5Sclose(FileSpace)\;
+  H5Dclose(DSetID)\;
+  H5Sclose(MemSpace)\;  
+}
+\end{algorithm}
+\end{varwidth}
+
+% ----------- FOOTER -------------
+\end{document}

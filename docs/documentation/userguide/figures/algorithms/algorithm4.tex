@@ -1,0 +1,35 @@
+\documentclass[varwidth]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[ruled,boxed,vlined]{algorithm2e}
+
+%\usepackage[paperwidth=17cm]{geometry} % max 15800 long
+
+\usepackage{varwidth}
+\usepackage{amsmath,amssymb}
+\begin{document}
+\hsize=17cm
+\setlength{\algomargin}{10pt}
+% ----------- END OF HEADER -------------
+
+\setcounter{algocf}{3}
+\begin{varwidth}{\linewidth}
+\begin{algorithm}[H]
+ \caption{Simple Domain Decomposition:   Assign local number of elements of  domain \textit{myDom}$\in[0;\text{\textit{nDomains}}-1]$ and element ranges for all domains \label{alg:dode}}
+ \DontPrintSemicolon
+  \SetKwProg{myproc}{Procedure}{}{End}
+  \myproc{DomainDecomp}{
+ \KwIn{nElems, nDomains, myDom}
+ \KwOut{offsetElem(0:nDomains)}
+  \;
+  nLocalElems  $\leftarrow$ nElems/nDomains \;    
+  remainElems $\leftarrow$ nElems-nLocalElems * nDomains\;
+  \For{$iDom = 0$ \KwTo  nDomains-1}{
+  offsetElem(iDom)$\leftarrow$ iDom * nLocalElems + MIN(iDom,remainElems)\;
+   }
+   offsetElem(nDomains)$\leftarrow$nElems \;
+  }  
+\end{algorithm}
+\end{varwidth}
+
+% ----------- FOOTER -------------
+\end{document}
