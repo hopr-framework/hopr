@@ -151,6 +151,8 @@ Sometimes errors occur during installation, for which standard fixes may apply.
 (sec:hdf5-root-problem)=
 ### Wrongly set HDF5_ROOT variable
 
+**Requirements:** The cmake options `LIBS_BUILD_HDF5 = ON` and `LIBS_BUILD_CGNS = ON` have been set.
+
 The output error might look like this during compilation
 
     [ 6%] Building C object src/CMakeFiles/cgns_static.dir/cgns_internals.c.o
@@ -158,13 +160,6 @@ The output error might look like this during compilation
     68 | #include <mpi.h>
     | ^~~~~~~
     compilation terminated.
-
-or this
-
-    CMake Error at CMakeLists.txt:210 (add_executable):
-    add_executable cannot create imported target "h5dump" because another
-    target with the same name already exists.
-
 
 or the build test might fail with the following message
 
@@ -182,12 +177,29 @@ or the build test might fail with the following message
     #19  0xffffffffffffffff in ???
 
 
-In all these cases, `LIBS_BUILD_HDF5 = ON` and `LIBS_BUILD_CGNS = ON` has been set.
-Additionally, `export HDF5_ROOT=/opt/hdf5/vX.X.X/...` is set, which leads
+The cause of the problem is that `export HDF5_ROOT=/opt/hdf5/vX.X.X/...` sets the `HDF5_ROOT` environment variable, which leads
 to HDF5 being built with possibly a different version (or compiler settings) for HOPR and CGNS.
-Here, it does not matter if the correct path is exported via `export HDF5_DIR=...` if the variable **HDF5_ROOT** is used.
+The variable is also exposed in cmake
+
+    HDF5_ROOT                        /opt/hdf5/1.12.2/gcc/12.2.0/openmpi/4.1.4
+
+Note that it does not matter if the correct path is exported via `export HDF5_DIR=...` if the variable **HDF5_ROOT** is also set as
+CGNS automatically searches for the latter.
 
 **To fix this problem**, set `export HDF5_ROOT=` in the installation terminal.
+
+### Pre-compiled HDF5 via Spack and/or cmake
+**Requirements:** The cmake options `LIBS_BUILD_HDF5 = OFF` and `LIBS_BUILD_CGNS = ON` have been set. Furthermore, it is not clear
+whether the pre-installed HDF5 library is installed using Spack **AND/OR** built via cmake.
+
+The output error might look like this during compilation
+
+    CMake Error at CMakeLists.txt:210 (add_executable):
+    add_executable cannot create imported target "h5dump" because another
+    target with the same name already exists.
+
+**To fix this problem**, pre-compile HDF5 using **configure** instead of **cmake** **AND/OR** do not use Spack. Otherwise compile
+HDF5 using `LIBS_BUILD_HDF5 = ON` and do not forget to clear the `HDF5_ROOT` variable, see {ref}`sec:hdf5-root-problem`.
 
 ## Testing HOPR
 After compiling, you can test HOPR by going to the `tutorials` directory and running the script `executeall.sh`, which will run
