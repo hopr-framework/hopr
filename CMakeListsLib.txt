@@ -87,6 +87,9 @@ STRING(TOLOWER ${LIB_TYPE} SEARCH_TYPE)
 # a) the version built using configure scripts and b) using CMake
 # Support for CMake-built HDF5 is limited to version >1.10.2 which require at CMake >3.10
 
+# Check for env variable HDF5_ROOT as this can cause problems with subsequent building of cmake
+SET(HDF5_ROOT "$ENV{HDF5_ROOT}" CACHE STRING "Expose HDF5_ROOT environment variable (cannot be changed here). Use 'export HDF5_ROOT=' to clear the variable." FORCE)
+
 # Use system HDF5
 IF(NOT LIBS_BUILD_HDF5)
   # Try to find the CMake version
