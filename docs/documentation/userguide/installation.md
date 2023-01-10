@@ -130,7 +130,7 @@ Depending whether HDF5 was installed using *configure* or *CMake*, different set
 
 * Configure
 
-        export HDF5_DIR = /opt/hdf5/1.X.X/
+        export HDF5_DIR = /opt/hdf5/1.X.X
 
 * CMake
 
@@ -138,7 +138,7 @@ Depending whether HDF5 was installed using *configure* or *CMake*, different set
 
 If your CMake version is above 3.9.X, CMake uses a new `findPackage` routine, requiring that `HDF5_ROOT` is set
 
-    export HDF5_ROOT=/opt/hdf5/1.10.0-patch1/mpi/
+    export HDF5_ROOT=/opt/hdf5/1.X.X
 
 For convenience, you can add these lines to your `.bashrc`.
 
@@ -181,7 +181,7 @@ The cause of the problem is that `export HDF5_ROOT=/opt/hdf5/vX.X.X/...` sets th
 to HDF5 being built with possibly a different version (or compiler settings) for HOPR and CGNS.
 The variable is also exposed in cmake
 
-    HDF5_ROOT                        /opt/hdf5/1.12.2/gcc/12.2.0/openmpi/4.1.4
+    HDF5_ROOT                        /opt/hdf5/1.X.X
 
 Note that it does not matter if the correct path is exported via `export HDF5_DIR=...` if the variable **HDF5_ROOT** is also set as
 CGNS automatically searches for the latter.
