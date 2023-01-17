@@ -26,7 +26,7 @@ RUN apt-get update && \
 WORKDIR /home
 
 #compile HOPR and install into home/hopr/bin/hopr , then clean-up
-#RUN git clone https://github.com/hopr-framework/hopr.git && \
-#    cd hopr && mkdir build && \
-#    cd build && cmake ../ && make && make install && \
-#    cd .. && rm -rf build share/GNU
+RUN git clone https://github.com/hopr-framework/hopr.git && \
+    cd hopr && mkdir build && \
+    cd build && cmake ../ && make && make install && \
+    cd .. && rm -rf build share/GNU
