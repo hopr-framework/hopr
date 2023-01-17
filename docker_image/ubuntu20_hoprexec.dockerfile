@@ -20,9 +20,8 @@ LABEL org.opencontainers.image.source="https://github.com/hopr-framework/hopr"
 # Update the image and install packages needed (option "--no-install-recommends" could reduce image size in apt-get install, but generates problems)
 RUN apt-get update && \
     apt-get clean && \
-    apt-get install -y vim git cmake 
-#    apt-get install -y vim git cmake gcc g++ gfortran liblapack3 liblapack-dev zlib1g-dev  && \
-#    rm -rf /var/lib/apt/lists/* 
+    apt-get install -y vim git cmake gcc g++ gfortran liblapack3 liblapack-dev zlib1g-dev  && \
+    rm -rf /var/lib/apt/lists/* 
 
 WORKDIR /home
 
