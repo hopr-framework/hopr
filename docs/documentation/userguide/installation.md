@@ -88,13 +88,13 @@ HOPR supports CMake as a build system, which should be available on most systems
 `FC` (as well as their corresponding MPI counterparts `MPICC`and `MPIFC` if compiling with MPI support) point to the correct compiler.
 
 For compiling HOPR, create a new sub-directory, e.g. "build" . Inside that directory execute
- 
-    ccmake ..
+ 
+   ccmake ..
 
 Here you can specify library paths and options. If no preinstallied libraries for HDF5 and CGNS are found these libraries will be
 downloaded and built automatically. Press `c` to configure and `g` to create the Makefiles. Finally compile HOPR by typing `make`.
 
-If the user does not need the cgns library (i.e. HOPR mesh is not built via a cgns input meshfile), the cmake option `LIBS_USE_CGNS` can be set to `OFF`, which skips the installation of the cgns library. Note that the tests using cgns files will then fail.  
+If the user does not need the cgns library (i.e. HOPR mesh is not built via a cgns input meshfile), the cmake option `LIBS_USE_CGNS` can be set to `OFF`, which skips the installation of the cgns library. Note that the cmake tests that depend on CGNS will not be executed. 
 
 (sec:hdf5-installation)=
 ### Installing/setting up HDF5
@@ -147,5 +147,4 @@ For convenience, you can add these lines to your `.bashrc`.
 (sec:optaining-the-source)=
 
 ## Testing HOPR
-After compiling, you can test HOPR by going to the `tutorials` directory and running the script `executeall.sh`, which will run
-HOPR for all tutorial cases.
+After compiling, tests are automatically run for each parameterfile provided in sub-directories of the `tutorials` directory. The runs are pre-built by cmake in the `build/buildTests` directory and executed there.
