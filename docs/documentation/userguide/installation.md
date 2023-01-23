@@ -88,7 +88,7 @@ HOPR supports CMake as a build system, which should be available on most systems
 `FC` (as well as their corresponding MPI counterparts `MPICC`and `MPIFC` if compiling with MPI support) point to the correct compiler.
 
 For compiling HOPR, create a new sub-directory, e.g. "build" . Inside that directory execute
- 
+
    ccmake ..
 
 Here you can specify library paths and options. If no preinstallied libraries for HDF5 and CGNS are found these libraries will be
@@ -104,7 +104,7 @@ compilation of HDF5 during the **HOPR** compilation has to be turned off (`LIBS_
 HDF5 will be downloaded and compiled. However, this means that every time a clean compilation of **HOPR** is performed, HDF5 will
 be recompiled. It is preferred to either install HDF5 on your system locally or utilize the packages provided on your cluster.
 
-The recommended HDF5 version to use with **HOPR** is **1.10.0-patch1**. In the following a manual installation of HDF5 is described,
+The recommended HDF5 version to use with **HOPR** is **hdf5-1_12_0**. In the following a manual installation of HDF5 is described,
 if HDF5 is already available on your system you can skip to the next section {ref}`sec:setting-env-vars`.
 
 #### Manual HDF5 installation
@@ -132,19 +132,76 @@ Depending whether HDF5 was installed using *configure* or *CMake*, different set
 
 * Configure
 
-        export HDF5_DIR = /opt/hdf5/1.X.X/
+        export HDF5_DIR = /opt/hdf5/1.X.X
 
 * CMake
 
         export HDF5_DIR = /opt/hdf5/1.X.X/shared/cmake/XXX
 
-If your CMake version is above 3.9.X, CMake uses a new findPackage routine, requiring that **HDF5_ROOT** is set
+If your CMake version is above 3.9.X, CMake uses a new `findPackage` routine, requiring that `HDF5_ROOT` is set
 
-    export HDF5_ROOT=/opt/hdf5/1.10.0-patch1/mpi/
+    export HDF5_ROOT=/opt/hdf5/1.X.X
 
 For convenience, you can add these lines to your `.bashrc`.
 
-(sec:optaining-the-source)=
+**IMPORTANT:** Note that `HDF5_ROOT` must be cleared or set to the correct path when using `LIBS_BUILD_HDF5 = ON` to prevent cmake from compiling
+hopr and cgns with different HDF5 versions. Otherwise, an error might occur, see {ref}`sec:hdf5-root-problem`.
+
+## Troubleshooting
+Sometimes errors occur during installation, for which standard fixes may apply.
+
+(sec:hdf5-root-problem)=
+### Wrongly set HDF5_ROOT variable
+
+**Requirements:** The cmake options `LIBS_BUILD_HDF5 = ON` and `LIBS_BUILD_CGNS = ON` have been set.
+
+The output error might look like this during compilation
+
+    [ 6%] Building C object src/CMakeFiles/cgns_static.dir/cgns_internals.c.o
+    /hdf5/hdf5-1.12.2/include/H5public.h:68:10: fatal error: mpi.h: No such file or directory
+    68 | #include <mpi.h>
+    | ^~~~~~~
+    compilation terminated.
+
+or the build test might fail with the following message
+
+    WRITING THE DEBUGMESH...
+       #Elements          113
+       WRITE DATA TO CGNS FILE... SPHERE_CURVED_Debugmesh.cgnsWarning! ***HDF5 library version mismatched error***
+    ...
+    ...
+    ...
+    #16  0x149524759d8f in __libc_start_call_main
+         at ../sysdeps/nptl/libc_start_call_main.h:58
+    #17  0x149524759e3f in __libc_start_main_impl
+         at ../csu/libc-start.c:392
+    #18  0x4047d4 in ???
+    #19  0xffffffffffffffff in ???
+
+
+The cause of the problem is that `export HDF5_ROOT=/opt/hdf5/vX.X.X/...` sets the `HDF5_ROOT` environment variable, which leads
+to HDF5 being built with possibly a different version (or compiler settings) for HOPR and CGNS.
+The variable is also exposed in cmake
+
+    HDF5_ROOT                        /opt/hdf5/1.X.X
+
+Note that it does not matter if the correct path is exported via `export HDF5_DIR=...` if the variable **HDF5_ROOT** is also set as
+CGNS automatically searches for the latter.
+
+**To fix this problem**, set `export HDF5_ROOT=` in the installation terminal.
+
+### Pre-compiled HDF5 via Spack and/or cmake
+**Requirements:** The cmake options `LIBS_BUILD_HDF5 = OFF` and `LIBS_BUILD_CGNS = ON` have been set. Furthermore, it is not clear
+whether the pre-installed HDF5 library is installed using Spack **AND/OR** built via cmake.
+
+The output error might look like this during compilation
+
+    CMake Error at CMakeLists.txt:210 (add_executable):
+    add_executable cannot create imported target "h5dump" because another
+    target with the same name already exists.
+
+**To fix this problem**, pre-compile HDF5 using **configure** instead of **cmake** **AND/OR** do not use Spack. Otherwise compile
+HDF5 using `LIBS_BUILD_HDF5 = ON` and do not forget to clear the `HDF5_ROOT` variable, see {ref}`sec:hdf5-root-problem`.
 
 ## Testing HOPR
 After compiling, tests are automatically run for each parameterfile provided in sub-directories of the `tutorials` directory. The runs are pre-built by cmake in the `build/buildTests` directory and executed there.
