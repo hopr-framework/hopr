@@ -42,7 +42,8 @@ INTEGER                            :: tetMapCGNSToGMSH(4),pyrMapCGNSToGMSH(5),pr
 INTEGER                            :: quadMapCGNSToGMSH(4)
 INTEGER                            :: GMSH_TYPES(6,131)
 INTEGER                            :: nBCs_GMSH
-INTEGER,ALLOCATABLE                :: MapEntityToBC(:)
+INTEGER,ALLOCATABLE                :: MapEntityToBC(:)          ! MeshFormat: 4.1
+INTEGER,ALLOCATABLE                :: MapBC(:),MapBCInd(:)      ! MeshFormat: 2.2
 
 CONTAINS
 SUBROUTINE buildTypes()
