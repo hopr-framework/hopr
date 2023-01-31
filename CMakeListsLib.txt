@@ -87,6 +87,9 @@ STRING(TOLOWER ${LIB_TYPE} SEARCH_TYPE)
 # a) the version built using configure scripts and b) using CMake
 # Support for CMake-built HDF5 is limited to version >1.10.2 which require at CMake >3.10
 
+# Check for env variable HDF5_ROOT as this can cause problems with subsequent building of cmake
+SET(HDF5_ROOT "$ENV{HDF5_ROOT}" CACHE STRING "Expose HDF5_ROOT environment variable (cannot be changed here). Use 'export HDF5_ROOT=' to clear the variable." FORCE)
+
 # Use system HDF5
 IF(NOT LIBS_BUILD_HDF5)
   # Try to find the CMake version
@@ -423,6 +426,10 @@ ELSE()
       SET (CGNSDOWNLOAD ${LIBS_DLPATH}libs/cgns.git )
     ENDIF()
 
+    # Fallback for disabling HDF5 for CGNS compilation
+    OPTION(LIBS_BUILD_CGNS_ENABLE_HDF5 "Build CGNS library with -DCGNS_ENABLE_HDF5=ON" ON)
+    MESSAGE(STATUS "Build CGNS library with -DCGNS_ENABLE_HDF5=" ${LIBS_BUILD_CGNS_ENABLE_HDF5})
+
     # Build CGNS with HDF5 support
     EXTERNALPROJECT_ADD(cgns
       GIT_REPOSITORY ${CGNSDOWNLOAD}
@@ -432,7 +439,8 @@ ELSE()
       PREFIX ${LIBS_CGNS_DIR}
       CMAKE_ARGS  -DCMAKE_INSTALL_PREFIX=${LIBS_CGNS_DIR}/build -DCMAKE_PREFIX_PATH=${LIBS_HDF5_DIR} /
       -DCGNS_ENABLE_FORTRAN=ON   -DCGNS_ENABLE_64BIT=${LIBS_CGNS_64BIT} -DCGNS_BUILD_SHARED=OFF -DCGNS_USE_SHARED=OFF /
-      -DCMAKE_BUILD_TYPE=Release -DCGNS_BUILD_CGNSTOOLS=OFF -DCGNS_ENABLE_HDF5=ON -DCGNS_ENABLE_PARALLEL=OFF -DCGNS_ENABLE_TESTS=OFF -DCMAKE_SKIP_RPATH=ON /
+      -DCMAKE_BUILD_TYPE=Release -DCGNS_BUILD_CGNSTOOLS=OFF -DCGNS_ENABLE_HDF5=${LIBS_BUILD_CGNS_ENABLE_HDF5} /
+      -DCGNS_ENABLE_PARALLEL=OFF -DCGNS_ENABLE_TESTS=OFF -DCMAKE_SKIP_RPATH=ON /
     )
     # If HDF5 is built in HOPR, it must occur before the CGNS compilation (for the support of HDF5-based CGNS files)
     IF(LIBS_BUILD_HDF5)
