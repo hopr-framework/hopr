@@ -60,19 +60,31 @@ ENABLE_TESTING()
 INCLUDE(ProcessorCount)
 PROCESSORCOUNT(N)
 SET(ENV{CTEST_PARALLEL_LEVEL} "${N}")
-#SET(ENV{CTEST_PARALLEL_LEVEL} "1")
 MESSAGE(STATUS "Executing build tests with $ENV{CTEST_PARALLEL_LEVEL} processes")
 
-# Add the build tests
-#add_build_test(buildTest:Tutorial1   /tutorials/1-01-cartbox/)
-
-# Loop all directories in the tutorials folder
+# Get all directories in the tutorials folder
 SUBDIRLIST(TUTORIALS ${CMAKE_CURRENT_SOURCE_DIR}/tutorials)
+# Loop over list of all directories in the tutorials folder
 FOREACH(TUTORIAL ${TUTORIALS})
+  # Get list of all .ini files within each tutorial folder
   FILE(GLOB PARAMETER_INI_FILES ${CMAKE_CURRENT_SOURCE_DIR}/tutorials/${TUTORIAL}/*.ini)
+  # Get list of all .cgns files within each tutorial folder
+  FILE(GLOB CGNS_FILES ${CMAKE_CURRENT_SOURCE_DIR}/tutorials/${TUTORIAL}/*.cgns)
+  # Check if list if empty or not and set boolean accordingly
+  IF(CGNS_FILES)
+    SET(FOUND_CGNS_TUTORIAL ON)
+  ELSE()
+    SET(FOUND_CGNS_TUTORIAL OFF)
+  ENDIF()
+  # Loop over the list of all .ini files within each tutorial folder
   FOREACH(PARAMETER_INI_PATH ${PARAMETER_INI_FILES})
+    # Get the name of the .ini file
     GET_FILENAME_COMPONENT(PARAMETER_INI ${PARAMETER_INI_PATH} NAME)
-    add_build_test(buildTest:${TUTORIAL}:${PARAMETER_INI}   ${PARAMETER_INI_PATH})
+    # Create test named "buildTest:1-06-curved-postdeform:parameter3.ini"
+    # Within the function add_build_test(), create a separate sub-directory in which the test is executed separately for each .ini file
+    IF(LIBS_USE_CGNS OR (NOT LIBS_USE_CGNS AND NOT FOUND_CGNS_TUTORIAL))
+      add_build_test(buildTest:${TUTORIAL}:${PARAMETER_INI} ${PARAMETER_INI_PATH})
+    ENDIF()
   ENDFOREACH()
 ENDFOREACH()
 
