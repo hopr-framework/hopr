@@ -289,7 +289,7 @@ END IF  !(nVV .GT. 0)
 
 ! 2.5D mesh
 MeshDim=3
-IF((MeshMode .EQ. 2) .OR. (MeshMode .EQ. 3))THEN
+IF((MeshMode .EQ. 2) .OR. (MeshMode .EQ. 3).OR. (MeshMode .EQ. 5))THEN
  ! 2.5D mesh: convert 2D mesh to 3D mesh (gambit and cgns mesh only)
   MeshDim=GETINT('MeshDim','3')
 END IF
@@ -491,6 +491,7 @@ SELECT CASE (MeshMode)
     CALL readStar()       ! Read Star file (ANSA)
   CASE(5)
     CALL readGMSH()       ! Read .MSH file (GMSH)
+    IF(MeshDim .EQ. 2) CALL fill25DMesh() ! Build 3D mesh
   CASE(6)
     MeshDim=3 !overwrite, build first 3D element layer in readin
     CALL readSpecMesh2D()
@@ -722,7 +723,7 @@ IMPLICIT NONE
 ! LOCAL VARIABLES
 TYPE(tElem),POINTER  :: Elem,newElem,FirstElem_loc,lastElem,firstNewElem,lastNewElem  ! ?
 TYPE(tSide),POINTER  :: Side,TempSide  ! ?
-REAL                 :: zPos  ! ?
+REAL                 :: zPos, zMin
 INTEGER              :: iNode,BCData(8,5),nNodes  ! ?
 LOGICAL              :: LowerBCSide,UpperBCSide,ConnectionSide,copyBC  ! ?
 !===================================================================================================================================
@@ -746,7 +747,8 @@ DO WHILE(ASSOCIATED(Elem))
 END DO
 
 MeshDim = 3  ! only 3D elements
-zPos         = DZ
+zPos         = DZ                   ! zLength / nElemZ
+zMin         = FirstElem%firstSide%Node(1)%np%x(3)
 NULLIFY(newElem,lastElem,firstNewElem,lastNewElem)
 
 FirstElem_loc => FirstElem
@@ -758,9 +760,9 @@ DO WHILE(ASSOCIATED(Elem))
     ConnectionSide = .TRUE.
     UpperBCSide    = .TRUE.
     DO iNode=1,Side%nNodes
-      IF(ABS( Side%Node(iNode)%np%x(3))          .GT. (PP_MeshTolerance*SpaceQuandt)) LowerBCSide    = .FALSE.
-      IF(ABS((Side%Node(iNode)%np%x(3)-zLength)) .GT. (PP_MeshTolerance*SpaceQuandt)) UpperBCSide    = .FALSE.
-      IF(ABS((Side%Node(iNode)%np%x(3)-zPos))    .GT. (PP_MeshTolerance*SpaceQuandt)) ConnectionSide = .FALSE.
+      IF(ABS(Side%Node(iNode)%np%x(3) - zMin) .GT. (PP_MeshTolerance*SpaceQuandt)) LowerBCSide    = .FALSE.
+      IF(ABS(Side%Node(iNode)%np%x(3) - zMin - zLength) .GT. (PP_MeshTolerance*SpaceQuandt)) UpperBCSide    = .FALSE.
+      IF(ABS(Side%Node(iNode)%np%x(3) - zMin - zPos).GT.(PP_MeshTolerance*SpaceQuandt)) ConnectionSide = .FALSE.
     END DO
     IF(.NOT.(LowerBCSide.OR.UpperBCSide.OR.ConnectionSide))THEN
       Side=>Side%nextElemSide

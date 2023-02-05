@@ -282,7 +282,7 @@ CHARACTER(LEN=255),ALLOCATABLE :: BoundaryName(:)        ! Name of boundary cond
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! 2.5D MESH 
 !-----------------------------------------------------------------------------------------------------------------------------------
-REAL                           :: zLength                ! 2.5D mesh: lenght in z-direction
+REAL                           :: zLength                ! 2.5D mesh: length in z-direction
 REAL                           :: dz                     ! MESH%zLength/MESH%nElemsZ
 INTEGER                        :: MeshDim                ! Mesh dimesnions: does not need to be equal to nDim (2.5D mesh)
 INTEGER                        :: n2dNodes=0             ! Number of nodes in the 2D mesh

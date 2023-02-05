@@ -39,9 +39,11 @@ PUBLIC
 INTEGER                            :: bOrd
 INTEGER,ALLOCATABLE                :: tetMapGMSH(:,:,:),  pyrMapGMSH(:,:,:),  priMapGMSH(:,:,:),  hexMapGMSH(:,:,:)
 INTEGER                            :: tetMapCGNSToGMSH(4),pyrMapCGNSToGMSH(5),priMapCGNSToGMSH(6),hexMapCGNSToGMSH(8)
+INTEGER                            :: quadMapCGNSToGMSH(4)
 INTEGER                            :: GMSH_TYPES(6,131)
 INTEGER                            :: nBCs_GMSH
-INTEGER,ALLOCATABLE                :: MapBC(:),MapBCInd(:)
+INTEGER,ALLOCATABLE                :: MapEntityToBC(:)          ! MeshFormat: 4.1
+INTEGER,ALLOCATABLE                :: MapBC(:),MapBCInd(:)      ! MeshFormat: 2.2
 
 CONTAINS
 SUBROUTINE buildTypes()
@@ -216,6 +218,8 @@ tetMapCGNSToGMSH = (/1,4,2,3/)
 pyrMapCGNSToGMSH = (/1,2,3,4,5/)
 priMapCGNSToGMSH = (/1,2,3,4,5,6/)
 hexMapCGNSToGMSH = (/4,3,7,8,1,2,6,5/)
+
+quadMapCGNSToGMSH = (/2,3,4,1/)
 
 SELECT CASE(bOrd)
 CASE(2)
