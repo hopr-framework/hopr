@@ -27,7 +27,9 @@ MODULE MOD_Output_CGNS
 ! Module for generic data output in CGNS format
 !===================================================================================================================================
 ! MODULES
+#ifdef PP_USE_CGNS
 USE CGNS
+#endif
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 PRIVATE
@@ -67,6 +69,7 @@ CHARACTER(LEN=*),INTENT(IN)   :: FileString              ! Output file name
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES
+#ifdef PP_USE_CGNS
 INTEGER            :: CGNSFile, CGNSBase, CGNSZone, CGNSCoords, CGNSsection, CGNSFlowSol, CGNSFieldInd ! ?
 PP_CGNS_INT_TYPE   :: one, iSize(1,1:3)  ! ?
 INTEGER            :: zero
@@ -77,7 +80,12 @@ INTEGER            :: NodeIDElem  ! ?
 PP_CGNS_INT_TYPE   :: ElemConn(1:2**dim1,1:NPlot**dim1,1:nElems)  ! ?
 CHARACTER(LEN=255) :: CGName  ! ?
 CHARACTER(LEN=32)  :: VarNames32(nVal)                   ! CGNS uses only 32 characters for (variable-)names
+#endif /*defined PP_USE_CGNS*/
 !===================================================================================================================================
+#ifndef PP_USE_CGNS
+CALL ABORT(__STAMP__, &
+          'WriteDataToCGNS needs compilation with USE_CGNS flag!')
+#else
 WRITE(UNIT_stdOut,'(A)',ADVANCE='NO')"   WRITE DATA TO CGNS FILE... "//TRIM(FileString)
 one=1
 zero=0
@@ -184,11 +192,11 @@ END DO
 CALL cg_close_f(CGNSfile,iErr)
 IF (iErr .NE. CG_OK) CALL my_cg_error_exit('Error closing CGNS File.',CGNSFile)
 WRITE(UNIT_stdOut,'(A)',ADVANCE='YES')"  DONE"
+#endif /*defined PP_USE_CGNS*/
 END SUBROUTINE WriteDataToCGNS
 
 
-
-
+#ifdef PP_USE_CGNS
 SUBROUTINE my_cg_error_exit(ErrorMessage,CGNSFile)
 !===================================================================================================================================
 ! Provides a controlled code abort in case of an CGNS error
@@ -218,5 +226,6 @@ WRITE(Unit_StdOut,'(A)') CGNSmessage
 CALL abort(__STAMP__, &
           'CGNS error!')
 END SUBROUTINE my_cg_error_exit
+#endif /*defined PP_USE_CGNS*/
 
 END MODULE MOD_Output_CGNS

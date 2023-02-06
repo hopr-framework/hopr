@@ -566,6 +566,21 @@ DO WHILE(EOF.NE.IOSTAT_END)
     END IF
 END DO
 CLOSE(103)
+
+!find line continuation "&" and merge strings (can be multiple lines)
+Str1=>FirstString
+DO WHILE (ASSOCIATED(Str1))
+  IF(INDEX(CHAR(Str1%str),'&').NE.0)THEN !found "&"
+    CALL Split(Str1%Str,aStr,"&") !take part in front of "&"
+    Str2=>Str1%nextStr
+    Str1%Str=Var_str(CHAR(aStr)//CHAR(Str2%Str))
+    CALL deleteString(Str2) 
+    !do not go to next  string as long as there are "&" in the string  
+  ELSE
+    Str1=>Str1%NextStr !nothing to be done
+  END IF
+END DO
+
 ReadInDone=.TRUE.
 
 CALL UserDefinedVars()
