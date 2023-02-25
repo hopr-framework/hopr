@@ -238,6 +238,8 @@ END DO
 
 CALL Timer(.FALSE.)
 END SUBROUTINE OrientElemsToZ
+
+
 SUBROUTINE zcorrection()
 !===================================================================================================================================
 ! ?
@@ -247,7 +249,7 @@ USE MOD_Mesh_Vars,ONLY:FirstElem,tElem,tSide
 USE MOD_Mesh_Vars,ONLY:zstart,dz,zLength,zPeriodic,nElemsZ
 USE MOD_Mesh_Vars,ONLY:BoundaryType
 USE MOD_Mesh_Tolerances,ONLY:SAMEPOINT
-USE MOD_Mesh_Vars,ONLY:N,nMeshElems
+USE MOD_Mesh_Vars,ONLY:N,nMeshElems,nVV,VV
 USE MOD_Basis_Vars,ONLY:HexaMapInv
 USE MOD_ReadInTools
 ! IMPLICIT VARIABLE HANDLING
@@ -269,6 +271,7 @@ LOGICAL                     :: firstLayer                                       
 LOGICAL                     :: dominant                                                      ! ?
 LOGICAL                     :: found                                                         ! ?
 INTEGER                     :: iNode,fNode,nPeriodicSides                                    ! ?
+INTEGER                     :: zAlpha,i
 !===================================================================================================================================
 WRITE(UNIT_stdOut,'(A)') ' PERFORMING Z CORRECTION...'
 CALL Timer(.TRUE.)
@@ -301,6 +304,19 @@ DO WHILE(ASSOCIATED(Elem))
   END DO
   Elem=>Elem%nexTElem
 END DO
+
+! check if any of the periodic vectors is already aligned with z
+zAlpha = 0
+IF(nVV .GT. 0)THEN
+  DO i=1,nVV
+    IF (ABS(DOT_PRODUCT(VV(:,i),(/0.,0.,1./))) .GT. PP_MeshTolerance) THEN
+      zAlpha = i
+      EXIT
+    END IF
+  END DO ! i=1,nVV
+END IF
+! no periodic vector previously aligned with z
+IF (zAlpha .EQ. 0) zAlpha = nVV + 1
 
 whichdirArr=0
 orientArr  =2
@@ -460,13 +476,13 @@ DO WHILE(ASSOCIATED(lastElem))
         nPeriodicSides=nPeriodicSides+2
         !set BC to periodic between the two sides
         zminusSide%BC%BCType=1
-        zminusSide%BC%BCalphaInd=1
+        zminusSide%BC%BCalphaInd=zAlpha
         BoundaryType(zminusSide%BC%BCIndex,1)=1
-        BoundaryType(zminusSide%BC%BCIndex,4)=1
+        BoundaryType(zminusSide%BC%BCIndex,4)=zAlpha
         zplusSide%BC%BCType=1
-        zplusSide%BC%BCalphaInd=-1
+        zplusSide%BC%BCalphaInd=-zAlpha
         BoundaryType(zplusSide%BC%BCIndex,1)=1
-        BoundaryType(zplusSide%BC%BCIndex,4)=-1
+        BoundaryType(zplusSide%BC%BCIndex,4)=-zAlpha
         zminusSide%connection=>zplusSide
         zplusSide%connection=>zminusSide
         !adjustOrientednodes
