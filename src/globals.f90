@@ -54,10 +54,11 @@ INTEGER, PARAMETER          :: UNIT_logOut = 100          ! For logging
 CHARACTER(LEN=255)          :: ProjectName                ! necessary data for in/output and name used to generate filenames from
 LOGICAL                     :: Logging                    ! Set .TRUE. to activate logging function for each processor
 
-INTEGER,PARAMETER           :: MajorVersion = 1                     !> FileVersion number saved in each hdf5 file with hdf5 header
-INTEGER,PARAMETER           :: MinorVersion = 0                     !> FileVersion number saved in each hdf5 file with hdf5 header
-INTEGER,PARAMETER           :: PatchVersion = 0                     !> FileVersion number saved in each hdf5 file with hdf5 header
-REAL,PARAMETER              :: FileVersion  = REAL(MajorVersion,8)+REAL(MinorVersion,8)/10.+REAL(PatchVersion,8)/100. !> FileVersion
+INTEGER,PARAMETER           :: MajorVersion = 1           !> HoprVersion saved in each hdf5 file with hdf5 header
+INTEGER,PARAMETER           :: MinorVersion = 0           !> HoprVersion saved in each hdf5 file with hdf5 header
+INTEGER,PARAMETER           :: PatchVersion = 0           !> HoprVersion saved in each hdf5 file with hdf5 header
+INTEGER,PARAMETER           :: HoprVersionInt = PatchVersion+MinorVersion*100+MajorVersion*10000 !> Hopr version number saved in each hdf5 file with hdf5 header
+CHARACTER(LEN=10)           :: HoprVersionStr             !> Hopr version string saved in each hdf5 file with hdf5 header
 
 
 
