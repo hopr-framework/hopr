@@ -4,7 +4,7 @@ The container is launched from an [image](https://docs.docker.com/get-started/ov
 
 
 ### Install docker
-To be able to run a docker container, you must  [Install Docker Desktop](https://docs.docker.com/desktop/) and start it. 
+To be able to run a docker container, you must  [Install Docker Desktop](https://docs.docker.com/desktop/) and start it.
 
 On Mac, it is recommended to read the [Mac OS permission requirements](https://docs.docker.com/desktop/mac/permission-requirements/)
 
@@ -35,9 +35,9 @@ On Linux, if you do not want to preface the docker command with `sudo`, you can 
     ```
   The option ``-i`` stands for interactive while ``-t`` gives you a terminal.
 
-- start an image an mirror a local folder into the container (path on container is created)
+- start an image and mirror a local folder into the container (path on container is created)
     ```
-    docker run -it -v path_on_host:path_on_container <imageID> 
+    docker run -it -v path_on_host:path_on_container <imageID>
     ```
 - list all containers
     ```
@@ -54,7 +54,7 @@ On Linux, if you do not want to preface the docker command with `sudo`, you can 
     ```
 - locally build new image from file called "Dockerfile" that must lie in the current directory (which must also be passed by `.`)
     ```
-    docker build -t imagerepo:tag -f Dockerfile . 
+    docker build -t imagerepo:tag -f Dockerfile .
     ```
 - locally make a new image from a container
     ```
