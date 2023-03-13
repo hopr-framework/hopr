@@ -12,7 +12,7 @@
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -31,15 +31,15 @@ USE MOD_Globals
 IMPLICIT NONE
 PRIVATE
 !-----------------------------------------------------------------------------------------------------------------------------------
-! GLOBAL VARIABLES 
+! GLOBAL VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! Private Part ---------------------------------------------------------------------------------------------------------------------
 ! Public Part ----------------------------------------------------------------------------------------------------------------------
-INTERFACE OrientElemsToZ 
+INTERFACE OrientElemsToZ
   MODULE PROCEDURE OrientElemsToZ
 END INTERFACE
 
-INTERFACE zcorrection 
+INTERFACE zcorrection
   MODULE PROCEDURE zcorrection
 END INTERFACE
 
@@ -47,9 +47,10 @@ PUBLIC::OrientElemsToZ,zcorrection
 !===================================================================================================================================
 
 CONTAINS
+
 SUBROUTINE OrientElemsToZ()
 !===================================================================================================================================
-! called when using zcorrection, orientates zeta  of element with z direction 
+! called when using zcorrection, orientates zeta  of element with z direction
 !===================================================================================================================================
 ! MODULES
 USE MOD_Mesh_Vars,ONLY:FirstElem,tElem,tNodePtr,tSidePtr,tSide
@@ -141,7 +142,7 @@ DO WHILE(ASSOCIATED(Elem))
   DO whichdir=1,3
     scalprod=SUM(dir(whichdir,:)*(/0.,0.,1./))
     IF(ABS(scalprod).GT.0.95) THEN
-      found=.TRUE.     
+      found=.TRUE.
       EXIT
     END IF
   END DO
@@ -165,7 +166,7 @@ DO WHILE(ASSOCIATED(Elem))
   DO iSide=1,6
     NULLIFY(Sides(iSide)%sp%nextElemSide)
   END DO
-  !Reassign Side pointers 
+  !Reassign Side pointers
   im=MapSides(1,switch,whichdir)
   Elem%firstSide=>Sides(im)%sp
   Side=>Elem%firstSide
@@ -237,6 +238,8 @@ END DO
 
 CALL Timer(.FALSE.)
 END SUBROUTINE OrientElemsToZ
+
+
 SUBROUTINE zcorrection()
 !===================================================================================================================================
 ! ?
@@ -246,7 +249,7 @@ USE MOD_Mesh_Vars,ONLY:FirstElem,tElem,tSide
 USE MOD_Mesh_Vars,ONLY:zstart,dz,zLength,zPeriodic,nElemsZ
 USE MOD_Mesh_Vars,ONLY:BoundaryType
 USE MOD_Mesh_Tolerances,ONLY:SAMEPOINT
-USE MOD_Mesh_Vars,ONLY:N,nMeshElems
+USE MOD_Mesh_Vars,ONLY:N,nMeshElems,nVV,VV
 USE MOD_Basis_Vars,ONLY:HexaMapInv
 USE MOD_ReadInTools
 ! IMPLICIT VARIABLE HANDLING
@@ -257,17 +260,18 @@ IMPLICIT NONE
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES
-TYPE(tElem),POINTER         :: Elem,lastElem  ! ?
-TYPE(tSide),POINTER         :: Side,zminusSide,zplusSide  ! ?
-INTEGER                     :: whichdirArr(nMeshElems),orientArr(nMeshElems)  ! ?
-INTEGER                     :: Map(4,2),SideMap(2)  ! ?
-INTEGER                     :: p,q,l,l1,l2,iSide  ! ?
-INTEGER                     :: switch, switch2, zcounter, whichdir  ! ?
-REAL                        :: scalprod,dir(3,3), displ1(3,0:N), displ2(3,0:N), displ(3,0:N)  ! ?
-LOGICAL                     :: firstLayer  ! ?
-LOGICAL                     :: dominant  ! ?
-LOGICAL                     :: found     ! ?
-INTEGER                     :: iNode,fNode,nPeriodicSides  ! ?
+TYPE(tElem),POINTER         :: Elem,lastElem                                                 ! ?
+TYPE(tSide),POINTER         :: Side,zminusSide,zplusSide                                     ! ?
+INTEGER                     :: whichdirArr(nMeshElems),orientArr(nMeshElems)                 ! ?
+INTEGER                     :: Map(4,2),SideMap(2)                                           ! ?
+INTEGER                     :: p,q,l,l1,l2,iSide                                             ! ?
+INTEGER                     :: switch, switch2, zcounter, whichdir                           ! ?
+REAL                        :: scalprod,dir(3,3), displ1(3,0:N), displ2(3,0:N), displ(3,0:N) ! ?
+LOGICAL                     :: firstLayer                                                    ! ?
+LOGICAL                     :: dominant                                                      ! ?
+LOGICAL                     :: found                                                         ! ?
+INTEGER                     :: iNode,fNode,nPeriodicSides                                    ! ?
+INTEGER                     :: zAlpha,i
 !===================================================================================================================================
 WRITE(UNIT_stdOut,'(A)') ' PERFORMING Z CORRECTION...'
 CALL Timer(.TRUE.)
@@ -300,6 +304,19 @@ DO WHILE(ASSOCIATED(Elem))
   END DO
   Elem=>Elem%nexTElem
 END DO
+
+! check if any of the periodic vectors is already aligned with z
+zAlpha = 0
+IF(nVV .GT. 0)THEN
+  DO i=1,nVV
+    IF (ABS(DOT_PRODUCT(VV(:,i),(/0.,0.,1./))) .GT. PP_MeshTolerance) THEN
+      zAlpha = i
+      EXIT
+    END IF
+  END DO ! i=1,nVV
+END IF
+! no periodic vector previously aligned with z
+IF (zAlpha .EQ. 0) zAlpha = nVV + 1
 
 whichdirArr=0
 orientArr  =2
@@ -359,7 +376,7 @@ DO WHILE(ASSOCIATED(lastElem))
     Side => oppSide(Side)
   END DO !while not associated BC
   zminusSide=>Side
-  ! now we are at a side and the corresponding cell at z=zmin, start the correction from here  
+  ! now we are at a side and the corresponding cell at z=zmin, start the correction from here
   ! correction  of nodes all elements in opposite direction (+z)
   Side => oppSide(Side)
   Elem=>Side%Elem
@@ -368,8 +385,8 @@ DO WHILE(ASSOCIATED(lastElem))
   DO  !correct element
     whichdir=whichdirArr(Elem%ind)
     switch=orientArr(Elem%ind)
-   
-    !Map for corner nodes (CGNS standard) 
+
+    !Map for corner nodes (CGNS standard)
     SELECT CASE(whichdir)
     CASE(1) !dir1 is periodic direction
       Map(:,1)=(/1,5,8,4/) !ximinus
@@ -421,7 +438,7 @@ DO WHILE(ASSOCIATED(lastElem))
 
     !curved
     IF(ASSOCIATED(Elem%CurvedNode))THEN
-      IF(switch.EQ.1)THEN !scalprod is positive 
+      IF(switch.EQ.1)THEN !scalprod is positive
         l1=1; l2=N;   iSide=0; displ=displ1
       ELSE !scalprod<0
         l1=0; l2=N-1; iSide=N; displ=displ2
@@ -436,7 +453,7 @@ DO WHILE(ASSOCIATED(lastElem))
             END IF
           CASE(2)
             IF(Elem%curvedNode(HexaMapInv(p,l,q))%np%tmp .NE. 0) THEN
-               Elem%curvedNode(HexaMapInv(p,l,q))%np%x=Elem%curvedNode(HexaMapInv(p,iSide,q))%np%x + displ(:,l) 
+               Elem%curvedNode(HexaMapInv(p,l,q))%np%x=Elem%curvedNode(HexaMapInv(p,iSide,q))%np%x + displ(:,l)
                Elem%curvedNode(HexaMapInv(p,l,q))%np%tmp=0
             END IF
           CASE(3)
@@ -459,13 +476,13 @@ DO WHILE(ASSOCIATED(lastElem))
         nPeriodicSides=nPeriodicSides+2
         !set BC to periodic between the two sides
         zminusSide%BC%BCType=1
-        zminusSide%BC%BCalphaInd=1
+        zminusSide%BC%BCalphaInd=zAlpha
         BoundaryType(zminusSide%BC%BCIndex,1)=1
-        BoundaryType(zminusSide%BC%BCIndex,4)=1
+        BoundaryType(zminusSide%BC%BCIndex,4)=zAlpha
         zplusSide%BC%BCType=1
-        zplusSide%BC%BCalphaInd=-1
+        zplusSide%BC%BCalphaInd=-zAlpha
         BoundaryType(zplusSide%BC%BCIndex,1)=1
-        BoundaryType(zplusSide%BC%BCIndex,4)=-1
+        BoundaryType(zplusSide%BC%BCIndex,4)=-zAlpha
         zminusSide%connection=>zplusSide
         zplusSide%connection=>zminusSide
         !adjustOrientednodes
@@ -502,13 +519,14 @@ DO WHILE(ASSOCIATED(lastElem))
       Side => oppSide(Side)
       zcounter=zcounter+1
     END IF
-     
+
   END DO !correct element
   lastElem=>lastElem%nextElem
 END DO
 IF(zPeriodic) WRITE(UNIT_StdOut,*)'Number of Periodic sides built:' ,nPeriodicSides
 CALL Timer(.FALSE.)
 END SUBROUTINE zcorrection
+
 
 FUNCTION oppSide(Side)
 !===================================================================================================================================
@@ -535,7 +553,6 @@ DO WHILE(ASSOCIATED(OppSide))
   IF(OppSide%LocSide .EQ. oppSideMap(Side%LocSide)) EXIT
   OppSide=>OppSide%nextElemSide
 END DO
-END FUNCTION oppSide 
-
+END FUNCTION oppSide
 
 END MODULE MOD_zcorrection

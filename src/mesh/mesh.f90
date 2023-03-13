@@ -79,16 +79,16 @@ IF(.NOT.OutputInitDone)THEN
 END IF
 
 ! Curved
-useCurveds      = GETLOGICAL('useCurveds','.FALSE.')   ! Use / reconstruct spline boundaries
+useCurveds = GETLOGICAL('useCurveds','.FALSE.')   ! Use / reconstruct spline boundaries
 IF(useCurveds)THEN
   N = GETINT('BoundaryOrder','4')-1     ! Get spline order / type
 ELSE
-  N=1
+  N = 1
 END IF
 
 ! Mesh mode: 0=HDF5 input, 1=Internal cartesian, 2=Gambit, 3=CGNS, 4=ANSA, 5=GMSH
-MeshMode=GETINT('Mode')
-meshIsAlreadyCurved=.FALSE.
+MeshMode = GETINT('Mode')
+meshIsAlreadyCurved = .FALSE.
 IF (MeshMode .EQ. 1) THEN
   ! ---------- INTERNAL CARTESIAN MESH ---------------------------------------------------------------------------------------------
   IF(useCurveds) THEN
@@ -97,39 +97,39 @@ IF (MeshMode .EQ. 1) THEN
     InnerElemStretch = .FALSE.
   END IF
   IF(InnerElemStretch) MeshIsAlreadyCurved=.TRUE.
-  nZones  =GETINT('nZones')
+  nZones = GETINT('nZones')
   ALLOCATE(CartMeshes(nZones))
   DO i=1,nZones
     ALLOCATE(CartMeshes(i)%CM)
-    buf=GETREALARRAY('Corner',24)  ! Corner nodes of zone
+    buf = GETREALARRAY('Corner',24)  ! Corner nodes of zone
     DO j=1,8
-      CartMeshes(i)%CM%Corner(:,j)=buf((j-1)*3+1:j*3)
+      CartMeshes(i)%CM%Corner(:,j) = buf((j-1)*3+1:j*3)
     END DO
-    CartMeshes(i)%CM%BCIndex =GETINTARRAY('BCIndex',6)  ! Boundary type
-    CartMeshes(i)%CM%nElems  =GETINTARRAY('nElems',3)   ! No of elems in each direction
-    CartMeshes(i)%CM%l0      =GETREALARRAY('l0',3,'0.,0.,0.') ! first length (+/-) = direction
-    CartMeshes(i)%CM%factor  =GETREALARRAY('factor',3,'0.,0.,0.') ! stretch factor (+/-) = direction
-    CartMeshes(i)%CM%ElemType=GETINT('elemtype') ! Element type
-    CartMeshes(i)%CM%meshTemplate=GETINT('meshTemplate','1') ! Element type
+    CartMeshes(i)%CM%BCIndex       = GETINTARRAY('BCIndex',6)            ! Boundary type
+    CartMeshes(i)%CM%nElems        = GETINTARRAY('nElems',3)             ! No of elems in each direction
+    CartMeshes(i)%CM%l0            = GETREALARRAY('l0',3,'0.,0.,0.')     ! first length (+/-)   = direction
+    CartMeshes(i)%CM%factor        = GETREALARRAY('factor',3,'0.,0.,0.') ! stretch factor (+/-) = direction
+    CartMeshes(i)%CM%ElemType      = GETINT('elemtype')                  ! Element type
+    CartMeshes(i)%CM%meshTemplate  = GETINT('meshTemplate','1')          ! Element type
   END DO
 ELSEIF (MeshMode .EQ. 11) THEN
   ! ---------- INTERNAL 1 BLOCK CURVED CARTESIAN MESH -----------------------------------------------------------------
-  nZones  =GETINT('nZones')
-  stretchType = GETINTARRAY('stretchType',3,'0,0,0')
-  fac = GETREALARRAY('fac',3,'1.,1.,1.')
+  nZones         = GETINT('nZones')
+  stretchType    = GETINTARRAY('stretchType',3,'0,0,0')
+  fac            = GETREALARRAY('fac',3,'1.,1.,1.')
   WRITE(DefStr,'(E21.11,A1,E21.11,A1,E21.11)')fac(1),',',fac(2),',',fac(3)
-  fac2 = GETREALARRAY('fac2',3,TRIM(DefStr))
-  DxmaxToDxmin = GETREALARRAY('DxmaxToDxmin',3,'1.,1.,1.')
+  fac2           = GETREALARRAY('fac2',3,TRIM(DefStr))
+  DxmaxToDxmin   = GETREALARRAY('DxmaxToDxmin',3,'1.,1.,1.')
   !read in Mesh Parameters
   CurvedMeshType = GETINT('Meshtype','1')
-  BCIndex =GETINTARRAY('BCIndex',6)  ! Boundary type
-  nElems  =GETINTARRAY('nElems',3)   ! No of elems in each direction
+  BCIndex        = GETINTARRAY('BCIndex',6)  ! Boundary type
+  nElems         = GETINTARRAY('nElems',3)   ! No of elems in each direction
   ! rescale the factor if innercell stretching is used, so the same factor can be supplied
   ! in parameter file for cell and innercell stretching
   DO i=1,3
     IF(stretchType(i).EQ.6) THEN
-      fac(i)=fac(i)**(nElems(i))
-      fac2(i)=fac2(i)**(nElems(i))
+      fac(i)  = fac( i)**(nElems(i))
+      fac2(i) = fac2(i)**(nElems(i))
     END IF
   END DO
   SELECT CASE(CurvedmeshType)
@@ -169,41 +169,41 @@ ELSEIF (MeshMode .EQ. 11) THEN
       R_0   = GETREAL('R_0','0.1') ! height of bump
       R_INF = GETREAL('R_INF','1.') ! length of bump
     END SELECT ! WhichMapping
-  END SELECT !MEshType
+  END SELECT !MeshType
   meshisAlreadyCurved=.TRUE.
 ELSE
   ! ---------- EXTERNAL MESH -------------------------------------------------------------------------------------------------------
   nMeshFiles=1
   SELECT CASE(MeshMode)
   CASE(-1,0)   ! HDF5 input file (-1: old for conversion)
-    nMeshFiles=GETINT('nMeshFiles','1') ! Number of mesh files: each mesh file = one zone
-    meshIsAlreadyCurved=.TRUE.
-  CASE(2)   ! Gambit
-    nMeshFiles=GETINT('nMeshFiles','1') ! Number of mesh files: each mesh file = one zone
-    useBinary =GETLOGICAL('useBinary','.FALSE.')  ! Read binary mesh file (.halo files) instead of ASCII
-  CASE(3)   ! CGNS mesh
+    nMeshFiles = GETINT('nMeshFiles','1')           ! Number of mesh files: each mesh file = one zone
+    meshIsAlreadyCurved = .TRUE.
+  CASE(2)      ! Gambit
+    nMeshFiles = GETINT('nMeshFiles','1')           ! Number of mesh files: each mesh file = one zone
+    useBinary  = GETLOGICAL('useBinary','.FALSE.')  ! Read binary mesh file (.halo files) instead of ASCII
+  CASE(3)      ! CGNS mesh
     meshIsAlreadyCurved = GETLOGICAL('meshIsAlreadyCurved','.FALSE.')  ! build curveds by agglomeration (only block structured)
-    nskipZ=GETINT('nskipZ','1') !skip every nskip point (=1, nothing is skipped)
+    nskipZ = GETINT('nskipZ','1')                   ! skip every nskip point (=1, nothing is skipped)
     WRITE(DefStr,*) N
-    NBlock=GETINT('NBlock',TRIM(DefStr)) !initial polynomial degree of block structured mesh
-    nskip=GETINT('nskip','1') !skip every nskip point (=1, nothing is skipped)
+    NBlock = GETINT('NBlock',TRIM(DefStr))          ! initial polynomial degree of block structured mesh
+    nskip  = GETINT('nskip','1')                    ! skip every nskip point (=1, nothing is skipped)
     !nSkip=1 ! TODO: integrate into reader or remove
-    nMeshFiles=GETINT('nMeshFiles','1') ! Number of mesh files: each mesh file = one zone
-    BugFix_ANSA_CGNS=GETLOGICAL('BugFix_ANSA_CGNS','.FALSE.')
-  CASE(5)   ! GMSH file
-    meshIsAlreadyCurved=.TRUE.
+    nMeshFiles       = GETINT('nMeshFiles','1')     ! Number of mesh files: each mesh file = one zone
+    BugFix_ANSA_CGNS = GETLOGICAL('BugFix_ANSA_CGNS','.FALSE.')
+  CASE(5)       ! GMSH file
+    meshIsAlreadyCurved = .TRUE.
   END SELECT
   ALLOCATE(MeshFileName(nMeshFiles))
   DO i=1,nMeshFiles
-    MeshFileName(i)=GETSTR('FileName') ! Read file name
+    MeshFileName(i) = GETSTR('FileName') ! Read file name
   END DO
 END IF
 
 ! Geometry
-postScale=GETLOGICAL('postScaleMesh','.FALSE.') ! apply scaling either after readin or before output
-MeshScale=GETREAL('meshScale','1.0')           ! scaling factor applied to node coordinates during read in
-doScale  = (ABS(MeshScale-1.).GT.PP_RealTolerance)
-SpaceQuandt=GETREAL('SpaceQuandt','0.1')
+postScale   = GETLOGICAL('postScaleMesh','.FALSE.') ! apply scaling either after readin or before output
+MeshScale   = GETREAL('meshScale','1.0')            ! scaling factor applied to node coordinates during read in
+doScale     = (ABS(MeshScale-1.).GT.PP_RealTolerance)
+SpaceQuandt = GETREAL('SpaceQuandt','0.1')
 
 ! Curved
 IF(useCurveds) THEN
@@ -221,28 +221,28 @@ IF(useCurveds) THEN
       SELECT CASE(normalsType)
       CASE(1) ! normals by reconstruction
       CASE(2) ! CAD normals
-        NormalVectFile=GETSTR('NormalVectFile')
-        minNormalAngle=GETREAL('minNormalAngle','2.')
-        minNormalAngle=COS(minNormalAngle*PI/180.)
+        NormalVectFile = GETSTR('NormalVectFile')
+        minNormalAngle = GETREAL('minNormalAngle','2.')
+        minNormalAngle = COS(minNormalAngle*PI/180.)
       CASE(3) ! exact normals
-        N=3
-        tmpInt=GETINT('nExactNormals')
+        N      = 3
+        tmpInt = GETINT('nExactNormals')
         ALLOCATE(ExactNormals(tmpInt*2))
-        ExactNormals=GETINTARRAY('exactNormals',tmpInt*2) !(Curvedindex,exactnormaltype,...)
+        ExactNormals = GETINTARRAY('exactNormals',tmpInt*2) !(Curvedindex,exactnormaltype,...)
         ! >0 if an analytical normal can be used (see curved.f90,exactNormals)
       CASE DEFAULT
         CALL abort(__STAMP__,&
           'No normal type specified.')
       END SELECT
     CASE(3) ! refined surface elements (only ANSA readin)
-      SplitElemFile=GETSTR('SplitElemFile')
+      SplitElemFile = GETSTR('SplitElemFile')
       IF(INDEX(TRIM(SplitElemFile),'.cgns').NE.0)THEN
-        SplitMeshMode=4
+        SplitMeshMode = 4
       ELSE
-        SplitMeshMode=3
+        SplitMeshMode = 3
       END IF
     CASE(4) ! ICEM spectral elements
-      SpecElemFile=GETSTR('specelemfile')
+      SpecElemFile = GETSTR('specelemfile')
     CASE DEFAULT
       CALL abort(__STAMP__,&
         'Specified curving method does not exist. =1: NormalVectors, =3: SplitElemFile, =4: SpecElemFile')
@@ -273,8 +273,8 @@ IF(nUserDefinedBoundaries .GT. 0)THEN
   ALLOCATE(BoundaryName(nUserDefinedBoundaries))
   ALLOCATE(BoundaryType(nUserDefinedBoundaries,4))
   DO i=1,nUserDefinedBoundaries
-    BoundaryName(i)  =GETSTR('BoundaryName')
-    BoundaryType(i,:)=GETINTARRAY('BoundaryType',4)
+    BoundaryName(i)   = GETSTR('BoundaryName')
+    BoundaryType(i,:) = GETINTARRAY('BoundaryType',4)
   END DO
 END IF
 
@@ -297,12 +297,12 @@ END IF
 IF((MeshMode .EQ. 6)) MeshDim=2
 
 IF(MeshDim .EQ. 2)THEN
-  zLength=GETREAL('zLength')
-  nElemsZ=GETINT('nElemsZ')
-  dz      = zLength/DBLE(nElemsZ)
-  zLength = dz*DBLE(nElemsZ)
-  lowerZ_BC=GETINTARRAY('lowerZ_BC',4)
-  upperZ_BC=GETINTARRAY('upperZ_BC',4)
+  zLength   = GETREAL('zLength')
+  nElemsZ   = GETINT('nElemsZ')
+  dz        = zLength/DBLE(nElemsZ)
+  zLength   = dz*DBLE(nElemsZ)
+  lowerZ_BC = GETINTARRAY('lowerZ_BC',4)
+  upperZ_BC = GETINTARRAY('upperZ_BC',4)
   ALLOCATE(BC_NameDummy(nUserDefinedBoundaries))
   ALLOCATE(BC_TypeDummy(nUserDefinedBoundaries,4))
   BC_NameDummy=BoundaryName
@@ -312,29 +312,29 @@ IF(MeshDim .EQ. 2)THEN
   nUserDefinedBoundaries=nUserDefinedBoundaries+2
   ALLOCATE(BoundaryName(nUserDefinedBoundaries))
   ALLOCATE(BoundaryType(nUserDefinedBoundaries,4))
-  BoundaryName(1:nUserDefinedBoundaries-2    )=BC_NameDummy(:)
-  BoundaryType(1:nUserDefinedBoundaries-2,1:4)=BC_TypeDummy(:,1:4)
-  BoundaryName(nUserDefinedBoundaries-1      )='LowerZ_BC'
-  BoundaryType(nUserDefinedBoundaries-1,1:4  )=lowerZ_BC
-  BoundaryName(nUserDefinedBoundaries        )='UpperZ_BC'
-  BoundaryType(nUserDefinedBoundaries  ,1:4  )=upperZ_BC
-  lowerZ_BC_Ind=nUserDefinedBoundaries-1
-  upperZ_BC_Ind=nUserDefinedBoundaries
+  BoundaryName(1:nUserDefinedBoundaries-2    ) = BC_NameDummy(:)
+  BoundaryType(1:nUserDefinedBoundaries-2,1:4) = BC_TypeDummy(:,1:4)
+  BoundaryName(nUserDefinedBoundaries-1      ) = 'LowerZ_BC'
+  BoundaryType(nUserDefinedBoundaries-1,1:4  ) = lowerZ_BC
+  BoundaryName(nUserDefinedBoundaries        ) = 'UpperZ_BC'
+  BoundaryType(nUserDefinedBoundaries  ,1:4  ) = upperZ_BC
+  lowerZ_BC_Ind = nUserDefinedBoundaries-1
+  upperZ_BC_Ind = nUserDefinedBoundaries
   DEALLOCATE(BC_NameDummy,BC_TypeDummy)
 END IF  ! MeshDim=2
 
 ! zcorrection
-doZcorrection=GETLOGICAL('doZcorrection','.FALSE.')
-OrientZ=GETLOGICAL('OrientZ','.FALSE.')
+doZcorrection = GETLOGICAL('doZcorrection','.FALSE.')
+OrientZ       = GETLOGICAL('OrientZ','.FALSE.')
 IF(doZcorrection)THEN
-  zLength=GETREAL('zLength')
-  nElemsZ=GETINT('nElemsZ')
-  zstart=GETREAL('zstart')
-  zPeriodic=GETLOGICAL('zPeriodic','.FALSE.')
+  zLength   = GETREAL('zLength')
+  nElemsZ   = GETINT('nElemsZ')
+  zstart    = GETREAL('zstart')
+  zPeriodic = GETLOGICAL('zPeriodic','.FALSE.')
 END IF
 !splitting of elements
-SplitToHex=GETLOGICAL('SplitToHex','.FALSE.')   ! split all elements to hexa
-nFineHexa=GETINT('nFineHexa','1')               ! split all hexa by a factor
+SplitToHex = GETLOGICAL('SplitToHex','.FALSE.')   ! split all elements to hexa
+nFineHexa  = GETINT('nFineHexa','1')               ! split all hexa by a factor
 
 nSplitBoxes=CNTSTR('SplitBox','0')
 ALLOCATE(SplitBoxes(3,2,nSplitBoxes))
@@ -349,13 +349,13 @@ doRebuildMortarGeometry=GETLOGICAL('doRebuildMortarGeometry','.TRUE.')
 
 meshPostDeform=GETINT('MeshPostDeform','0')
 IF(meshPostDeform.GT.0) THEN
-  PostDeform_useGL=GETLOGICAL('PostDeform_useGL','.TRUE.')
-  PostDeform_R0=GETREAL('PostDeform_R0','1.')
-  PostDeform_Lz=GETREAL('PostDeform_Lz','1.')
-  PostDeform_sq=GETREAL('PostDeform_sq','0.')
-  PostDeform_Rtorus=GETREAL('PostDeform_Rtorus','-1.') !from cyl-> torus
+  PostDeform_useGL  = GETLOGICAL('PostDeform_useGL','.TRUE.')
+  PostDeform_R0     = GETREAL('PostDeform_R0','1.')
+  PostDeform_Lz     = GETREAL('PostDeform_Lz','1.')
+  PostDeform_sq     = GETREAL('PostDeform_sq','0.')
+  PostDeform_Rtorus = GETREAL('PostDeform_Rtorus','-1.') !from cyl-> torus
 
-  postConnect=GETINT('postConnect','0')
+  postConnect       = GETINT('postConnect','0')
   IF(postConnect.EQ.3)THEN
     IF(nVV.GT.0)THEN
       tmpInt=  CNTSTR('postVV','0')
@@ -680,14 +680,14 @@ END IF
 
 IF(MeshPostDeform.NE.0)THEN
   CALL PostDeform()
-  
+
   SELECT CASE(postConnect)
   CASE(0) !do nothing
   CASE(1) !reconnect all sides
     CALL Connect(reconnect=.TRUE.,deletePeriodic=.FALSE.)                           ! Create connection between elements
   CASE(2) !reconnect all sides, delete periodic connections (sides on top by postdeform)
-    CALL Connect(reconnect=.TRUE.,deletePeriodic=.TRUE.)                           ! Create connection between elements
-  CASE(3) !reconnect all sides, overwrite periodic connections 
+    CALL Connect(reconnect=.TRUE.,deletePeriodic=.TRUE.)                            ! Create connection between elements
+  CASE(3) !reconnect all sides, overwrite periodic connections
     DO i=1,nVV
       vv(:,i)=postVV(:,i)
     END DO
@@ -778,9 +778,9 @@ DO WHILE(ASSOCIATED(Elem))
     ConnectionSide = .TRUE.
     UpperBCSide    = .TRUE.
     DO iNode=1,Side%nNodes
-      IF(ABS(Side%Node(iNode)%np%x(3) - zMin) .GT. (PP_MeshTolerance*SpaceQuandt)) LowerBCSide    = .FALSE.
+      IF(ABS(Side%Node(iNode)%np%x(3) - zMin)           .GT. (PP_MeshTolerance*SpaceQuandt)) LowerBCSide    = .FALSE.
       IF(ABS(Side%Node(iNode)%np%x(3) - zMin - zLength) .GT. (PP_MeshTolerance*SpaceQuandt)) UpperBCSide    = .FALSE.
-      IF(ABS(Side%Node(iNode)%np%x(3) - zMin - zPos).GT.(PP_MeshTolerance*SpaceQuandt)) ConnectionSide = .FALSE.
+      IF(ABS(Side%Node(iNode)%np%x(3) - zMin - zPos)    .GT.(PP_MeshTolerance*SpaceQuandt))  ConnectionSide = .FALSE.
     END DO
     IF(.NOT.(LowerBCSide.OR.UpperBCSide.OR.ConnectionSide))THEN
       Side=>Side%nextElemSide
