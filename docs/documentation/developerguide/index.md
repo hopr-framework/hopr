@@ -13,6 +13,7 @@ git_workflow.md
 styleguide.md
 building_guide.md
 compiler.md
+appimage.md
 examples.md
 ```
 
@@ -25,7 +26,7 @@ the simulation code's features from a developer's point of view.
   such as how the header of functions and subroutines look like.
 * Chapter {ref}`developerguide/building_guide:Building the Documentation` describes how to build the html and pdf files
   locally before committing changes to the repository.
-* Chapter {ref}`developerguide/compiler:Compiler Options` gives an overview of compiler options that are used in PICLas and their
-  purpose.
+* Chapter {ref}`developerguide/compiler:Compiler Options` gives an overview of compiler options that are used in HOPR and their purpose.
+* Chapter {ref}`developerguide/appimage:Building the AppImage Executable` described how an AppImage executable of HOPR is created.
 * Chapter {ref}`developerguide/examples:Markdown Examples` gives a short overview of how to include code, equations, figures, tables
   etc. in the user and developer guides in Markdown.

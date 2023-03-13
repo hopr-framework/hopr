@@ -1,9 +1,24 @@
 # Installation
 
-The following chapter describes the installation procedure on a Linux machine requiring root access.
-This includes the installation of required prerequisites, e.g., setting up HDF5.
+The following chapter describes the installation procedure on a Linux machine, possibly requiring root access.
+This may include the installation of required prerequisites, e.g., setting up HDF5.
 Please note that high-performance clusters usually have a module environment, where you have to load the appropriate modules
 instead of compiling them yourself.
+
+## Executable download
+
+HOPR can be installed on a Linux machine without the need of compiling the source code.
+Currently there are two ways by which HOPR is distributed, as a *docker container* and as an *AppImage* executable.
+
+### Docker
+
+Install the package via
+
+    docker pull ghcr.io/hopr-framework/docker-ubuntu20-hopr-exec:latest
+
+### AppImage
+
+Download the executable from ...
 
 ## Prerequisites
 **HOPR** supports Linux-based systems only, requires a x86_64 compliant platform and has been tested on the following platforms
