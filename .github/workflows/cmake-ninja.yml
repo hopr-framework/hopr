@@ -14,6 +14,7 @@ jobs:
     # Use centos7
     container:
       image: centos:7
+      options: --privileged
 
     steps:
     - uses: actions/checkout@v3
@@ -28,7 +29,10 @@ jobs:
         rpm -U --quiet p7zip-16.02-20.el7.x86_64.rpm
         rpm -U --quiet p7zip-plugins-16.02-20.el7.x86_64.rpm
         yum install -y epel-release
-        yum install -y make libasan gcc-gfortran gcc-c++ unzip git openblas-devel lapack-devel zlib-devel
+        yum install -y make libasan gcc-gfortran gcc-c++ unzip git openblas-devel lapack-devel zlib-devel tree fuse-sshfs fuse-libs file
+        groupadd fuse
+        user="$(whoami)"
+        usermod -a -G fuse "$user"
         curl -L -O https://github.com/ninja-build/ninja/releases/download/v1.11.1/ninja-linux.zip
         unzip ninja-linux.zip
         mv ./ninja /usr/bin
@@ -40,18 +44,32 @@ jobs:
       #run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
       # hdf5-openmpi-devel on centos7 probably broken
       #run: cmake -G Ninja -B ${{github.workspace}}/build -DLIBS_BUILD_HDF5=OFF -DCMAKE_BUILD_TYPE=Release -DLIBS_USE_MPI=OFF
-      run: cmake -G Ninja -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release -DLIBS_USE_MPI=OFF
+      #run: cmake -G Ninja -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release -DLIBS_USE_MPI=OFF  -DCMAKE_INSTALL_PREFIX=/usr
+      run: cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release -DLIBS_USE_MPI=OFF  -DCMAKE_INSTALL_PREFIX=/usr
 
     - name: Build
       shell: bash
       # Build your program with the given configuration
       #run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-      run: cmake --build ${{github.workspace}}/build
+      run: cmake --build build
+
+    - name: Create AppImage
+      shell: bash
+      run: |
+        cd build
+        DESTDIR=AppDir ninja install
+        mkdir -p AppDir/usr/share/icons
+        cp ../docs/Meshformat/pics/HOPR_logo.png AppDir/usr/share/icons/hopr.png
+        curl -L -O https://github.com/linuxdeploy/linuxdeploy/releases/download/1-alpha-20220822-1/linuxdeploy-x86_64.AppImage
+        # curl -L -O https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+        chmod +x linuxdeploy-x86_64.AppImage
+        tree AppDir
+        ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage --desktop-file=../hopr.desktop
 
     - name: Create archive
       run: |
         mkdir artifact
-        7z a artifact/hopr.zip ${{github.workspace}}/build/bin/hopr
+        7z a artifact/hopr.zip build/hopr*x86_64.AppImage
 
     # Upload hopr binary archive as an artifact
     - name: Upload artifact
