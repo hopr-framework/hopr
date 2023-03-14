@@ -1,0 +1,83 @@
+\documentclass[varwidth,border=50pt]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[ruled,boxed,vlined]{algorithm2e}
+
+%\usepackage[paperwidth=17cm]{geometry} % max 15800 long
+
+\usepackage{varwidth}
+\usepackage{amsmath,amssymb}
+\begin{document}
+\hsize=17cm
+\setlength{\algomargin}{10pt}
+% ----------- END OF HEADER -------------
+
+\setcounter{algocf}{7}
+\begin{varwidth}{\linewidth}
+\begin{algorithm}[H]
+\small
+ \caption{Mapping between the list of high order nodes to i,j,k positions: given the polynomial degree $N$ and the number of corner nodes of the element  \label{alg:ijkmapping}}
+ \DontPrintSemicolon
+  \SetKwProg{myproc}{Procedure}{}{End}
+  \myproc{CurvedNodeMapping}{
+ \KwIn{$N$,nCornerNodes}
+ \KwOut{nCurvedNodes,Map(3,nElemNodes),MapInv(0:N,0:N,0:N),refPos(3,nElemNodes)}
+    $\ell=0$\; 
+    \Switch{nCornerNodes}{
+      \Case{4 \textit{(Tetrahedron)}}{ 
+        nCurvedNodes$=(N+1)*(N+2)*(N+3)/6$\;
+        \For{$k=0$ \KwTo $N$ }{
+        \For{$j=0$ \KwTo $N-k$ }{
+        \For{$i=0$ \KwTo $N-j-k$ }{
+          $\ell \leftarrow \ell+1$\;
+          Map$(:,\ell)$ $\leftarrow (i,j,k)$ \;
+          MapInv$(i,j,k)$ $\leftarrow \ell$ \;
+        }
+        }
+        }
+      }
+      \Case{5 \textit{(Pyramid)}}{
+        nCurvedNodes$=(N+1)*(N+2)*(2N+3)/6$\;
+        \For{$k=0$ \KwTo $N$ }{
+        \For{$j=0$ \KwTo $N-k$ }{
+        \For{$i=0$ \KwTo $N-k$ }{
+          $\ell \leftarrow \ell+1$\;
+          Map$(:,\ell)$ $\leftarrow (i,j,k)$ \;
+          MapInv$(i,j,k)$ $\leftarrow \ell$ \;
+        }
+        }
+        }
+      }
+      \Case{6 \textit{(Prism)}}{
+        nCurvedNodes$=(N+1)*(N+1)*(N+2)/2$\;
+        \For{$k=0$ \KwTo $N$ }{
+        \For{$j=0$ \KwTo $N$ }{
+        \For{$i=0$ \KwTo $N-j$ }{
+          $\ell \leftarrow \ell+1$\;
+          Map$(:,\ell)$ $\leftarrow (i,j,k)$ \;
+          MapInv$(i,j,k)$ $\leftarrow \ell$ \;
+        }
+        }
+        }
+      }
+      \Case{8 \textit{(Hexa)}}{
+        nCurvedNodes$=(N+1)*(N+1)*(N+1)$\;
+        \For{$k=0$ \KwTo $N$ }{
+        \For{$j=0$ \KwTo $N$ }{
+        \For{$i=0$ \KwTo $N$ }{
+          $\ell \leftarrow \ell+1$\;
+          Map$(:,\ell)$ $\leftarrow (i,j,k)$ \;
+          MapInv$(i,j,k)$ $\leftarrow \ell$ \;
+        }
+        }
+        }
+       }
+    }
+  \For{$\ell=1$ \KwTo nCurvedNodes }{
+  refPos$(:,\ell)$ $\leftarrow$ -1+ 2/N * Map$(:,\ell)$\;
+  }
+  }
+\end{algorithm}
+\end{varwidth}
+
+% ----------- FOOTER -------------
+\end{document}

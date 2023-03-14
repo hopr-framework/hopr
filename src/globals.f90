@@ -54,10 +54,16 @@ INTEGER, PARAMETER          :: UNIT_logOut = 100          ! For logging
 CHARACTER(LEN=255)          :: ProjectName                ! necessary data for in/output and name used to generate filenames from
 LOGICAL                     :: Logging                    ! Set .TRUE. to activate logging function for each processor
 
+INTEGER,PARAMETER           :: MajorVersion = 1           !> HoprVersion saved in each hdf5 file with hdf5 header
+INTEGER,PARAMETER           :: MinorVersion = 0           !> HoprVersion saved in each hdf5 file with hdf5 header
+INTEGER,PARAMETER           :: PatchVersion = 0           !> HoprVersion saved in each hdf5 file with hdf5 header
+INTEGER,PARAMETER           :: HoprVersionInt = PatchVersion+MinorVersion*100+MajorVersion*10000 !> Hopr version number saved in each hdf5 file with hdf5 header
+CHARACTER(LEN=10)           :: HoprVersionStr             !> Hopr version string saved in each hdf5 file with hdf5 header
+
 
 
 INTERFACE Abort
-   MODULE PROCEDURE Abort
+   MODULE PROCEDURE AbortProg
 END INTERFACE
 
 INTERFACE Timer
@@ -100,7 +106,7 @@ END INTERFACE
 !===================================================================================================================================
 
 CONTAINS
-SUBROUTINE Abort(SourceFile,SourceLine,CompDate,CompTime,ErrorMessage,IntInfoOpt,RealInfoOpt)
+SUBROUTINE AbortProg(SourceFile,SourceLine,CompDate,CompTime,ErrorMessage,IntInfoOpt,RealInfoOpt)
 !===================================================================================================================================
 ! Terminate program correctly if an error has occurred (important in MPI mode!).
 !===================================================================================================================================
@@ -137,7 +143,7 @@ WRITE(UNIT_stdOut,*)
 WRITE(UNIT_stdOut,'(A,A,A,I6.6,A)')'See ',TRIM(ProjectName),'_ERRORS.out for more details'
 WRITE(UNIT_stdOut,*)
 STOP 0001
-END SUBROUTINE Abort
+END SUBROUTINE AbortProg
 
 SUBROUTINE Timer(start,unit_in)
 !===================================================================================================================================
@@ -367,8 +373,8 @@ REAL               :: WORK(dim1*dim1)  ! ?
   ! using partial pivoting with row interchanges.
   CALL DGETRF(dim1, dim1, Ainv, dim1, IPIV, INFO)
 
-  IF (INFO /= 0) THEN
-     STOP 'MATRIX IS NUMERICALLY SINGULAR!'
+  IF (INFO.NE.0) THEN
+    CALL abort(__STAMP__,'GetInverse(dim1,A): MATRIX IS NUMERICALLY SINGULAR! INFO = ',IntInfoOpt=INFO)
   END IF
 
   ! DGETRI computes the inverse of a matrix using the LU factorization
@@ -376,8 +382,8 @@ REAL               :: WORK(dim1*dim1)  ! ?
   lwork=dim1*dim1
   CALL DGETRI(dim1, Ainv, dim1, IPIV, WORK, lwork , INFO)
 
-  IF (INFO /= 0) THEN
-     STOP 'MATRIX INVERSION FAILED!'
+  IF (INFO.NE.0) THEN
+    CALL abort(__STAMP__,'GetInverse(dim1,A): MATRIX INVERSION FAILED! INFO = ',IntInfoOpt=INFO)
   END IF
 END FUNCTION GetInverse
 

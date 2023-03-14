@@ -1,0 +1,30 @@
+\documentclass[varwidth]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage[ruled,boxed,vlined]{algorithm2e}
+
+%\usepackage[paperwidth=17cm]{geometry} % max 15800 long
+
+\usepackage{varwidth}
+
+\begin{document}
+\hsize=17cm
+\setlength{\algomargin}{10pt}
+% ----------- END OF HEADER -------------
+
+\setcounter{algocf}{1}
+\begin{varwidth}{\linewidth}
+\begin{algorithm}[H]
+ \caption{Close HDF5 File \label{alg:hdfclose}}
+ \DontPrintSemicolon
+  \SetKwProg{myproc}{Procedure}{}{End}
+  \myproc{CloseDataFile}{
+ \KwIn{FileID}
+ \KwOut{}
+  \;
+  H5Close(FileID)\;
+}
+\end{algorithm}
+\end{varwidth}
+
+% ----------- FOOTER -------------
+\end{document}

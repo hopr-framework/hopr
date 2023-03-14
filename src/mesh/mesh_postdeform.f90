@@ -468,6 +468,22 @@ CASE(3) ! 2D box, x,y in [-1,1]^2, to cylinder with radius PostDeform_R0 z  [0,1
     xout(3)=x(3)*PostDeform_Lz 
     X_out(:,i)=xout(:)
   END DO !i=1,nTotal
+CASE(300) ! planar Annulus: tensor-product mapping: input 2*pi*x=>theta must be  [-1,1] y => height in z ,z=> radius
+  DO i=1,nTotal
+    x(:)=x_in(:,i)
+    xout(1)=PostDeform_R0*x(3)*COS(pi*x(1))
+    xout(2)=PostDeform_R0*x(3)*SIN(pi*x(1))
+    xout(3)=x(2)
+    X_out(:,i)=xout(:)
+  END DO !i=1,nTotal
+CASE(310) ! spherical Annulus: tensor-product mapping: input pi*x=>theta must be  [-1,1] Pi*y => phi ,z=> radius
+  DO i=1,nTotal
+    x(:)=x_in(:,i)
+    xout(1)=PostDeform_R0*x(3)*COS(pi*x(1))*COS(pi*x(2))
+    xout(2)=PostDeform_R0*x(3)*SIN(pi*x(1))*COS(pi*x(2))
+    xout(3)=PostDeform_R0*x(3)*SIN(pi*x(2))
+    X_out(:,i)=xout(:)
+  END DO !i=1,nTotal
 CASE(4) ! 3D box, x,y in [-1,1]^3, to Sphere with radius PostDeform_R0 
         ! all points outside [-1,1]^3 and inside [-4,4]^3 are smoothly mapped back to a cube of 
         ! of size [-4,4]*PostDeform_R0/sqrt(3)
@@ -784,6 +800,25 @@ CASE(34) ! cos3D (1.5Pi) [-1;1]^3
   x_out(1,:) = x_in(1,:)+ 0.1*COS(1.5*Pi*x_in(1,:))*COS(1.5*Pi*x_in(2,:))*COS(1.5*Pi*x_in(3,:))
   x_out(2,:) = x_in(2,:)+ 0.1*COS(1.5*Pi*x_in(1,:))*COS(1.5*Pi*x_in(2,:))*COS(1.5*Pi*x_in(3,:))
   x_out(3,:) = x_in(3,:)+ 0.1*COS(1.5*Pi*x_in(1,:))*COS(1.5*Pi*x_in(2,:))*COS(1.5*Pi*x_in(3,:))
+CASE(40) ! cos with coupling  [-1;1]^3 (from https://arxiv.org/pdf/1809.01178.pdf, page 20) 
+  x_out(2,:) = x_in(2,:)+ 0.15*COS(1.5*Pi*x_in( 1,:))*COS(0.5*Pi*x_in( 2,:))*COS(0.5*Pi*x_in(3,:))
+  x_out(1,:) = x_in(1,:)+ 0.15*COS(0.5*Pi*x_in( 1,:))*SIN(2.0*Pi*x_out(2,:))*COS(0.5*Pi*x_in(3,:))
+  x_out(3,:) = x_in(3,:)+ 0.15*COS(0.5*Pi*x_out(1,:))*COS(    Pi*x_out(2,:))*COS(0.5*Pi*x_in(3,:))
+CASE(41) ! cos in xy with coupling  [-1;1]^2 (from https://arxiv.org/pdf/1809.01178.pdf, page 18) 
+  x_out(1,:) = x_in(1,:)+ 0.15*COS(0.5*Pi*x_in( 1,:))*COS(1.5*Pi*x_in( 2,:))
+  x_out(2,:) = x_in(2,:)+ 0.15*COS(2.0*Pi*x_out(1,:))*COS(0.5*Pi*x_in( 2,:))
+  x_out(3,:) = x_in(3,:)
+CASE(42) ! cos in xz with coupling  [-1;1]^2 (from https://arxiv.org/pdf/1809.01178.pdf, page 18) 
+  x_out(1,:) = x_in(1,:)+ 0.15*COS(0.5*Pi*x_in( 1,:))*COS(1.5*Pi*x_in( 3,:))
+  x_out(2,:) = x_in(2,:)
+  x_out(3,:) = x_in(3,:)+ 0.15*COS(2.0*Pi*x_out(1,:))*COS(0.5*Pi*x_in( 3,:))
+CASE(43) ! cos in yz with coupling  [-1;1]^2 (from https://arxiv.org/pdf/1809.01178.pdf, page 18) 
+  x_out(1,:) = x_in(1,:)
+  x_out(2,:) = x_in(2,:)+ 0.15*COS(0.5*Pi*x_in( 2,:))*COS(1.5*Pi*x_in( 3,:))
+  x_out(3,:) = x_in(3,:)+ 0.15*COS(2.0*Pi*x_out(2,:))*COS(0.5*Pi*x_in( 3,:))
+CASE(1000) !do nothing
+  x_out(:,:)=x_in(:,:)
+
 END SELECT
 
 END SUBROUTINE PostDeformFunc
