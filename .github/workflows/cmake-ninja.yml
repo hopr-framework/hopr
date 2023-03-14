@@ -1,4 +1,4 @@
-name: AppImage.yml
+name: cmake-ninja
 
 on:
   push:
