@@ -255,7 +255,7 @@ LOGICAL                        :: useCurveds             ! switch .TRUE.= we wan
 LOGICAL                        :: rebuildCurveds         ! switch .TRUE.= if curveds are already present in the mesh, delete them
                                                          ! and rebuild them using our methods
 LOGICAL                        :: meshIsAlreadyCurved    ! flag: mesh is already curved (GMSH, HDF5, block CGNS)
-LOGICAL                        :: useRBF                 ! Volume curving using interpolation of surface curving by 
+LOGICAL                        :: useRBF                 ! Volume curving using interpolation of surface curving by
                                                          ! radial basis functions
 INTEGER                        :: nRBFBoxes              ! Number of RBF Bounding Boxes
 INTEGER,ALLOCATABLE            :: RBFType(:)             ! Type of radial basis function of each RBFBoundingBox
@@ -303,7 +303,6 @@ INTEGER                        :: upperZ_BC_Ind          ! Boundary condition in
 LOGICAL                        :: doZcorrection 
 REAL                           :: zstart 
 LOGICAL                        :: zPeriodic 
-LOGICAL                        :: InitZOrient
 INTEGER,ALLOCATABLE            :: whichdirArr(:),orientArr(:)
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! Splitting of Elements 

@@ -410,16 +410,16 @@ REAL               :: WORK(dim1*dim1)  ! ?
 ! using partial pivoting with row interchanges. A will be overwritten with LU factorization.
 CALL DGETRF(dim1, dim1, A, dim1, IPIV, INFO)
 
-IF (INFO /= 0) THEN
-   STOP 'MATRIX IS NUMERICALLY SINGULAR!'
+IF (INFO.NE.0) THEN
+  CALL abort(__STAMP__,'SolveLinSys(dim1,nRHS,A,B): MATRIX A IS NUMERICALLY SINGULAR! INFO = ',IntInfoOpt=INFO)
 END IF
 
 ! DGETRES computes the solution to the liner system A*X=B using the factorization
 ! computed by DGETRF.
 CALL DGETRS('N', dim1, nRHS, A, dim1, IPIV, B, dim1, INFO)
 
-IF (INFO /= 0) THEN
-   STOP 'LINEAR SYSTEM SOLUTION INVERSION FAILED!'
+IF (INFO.NE.0) THEN
+  CALL abort(__STAMP__,'SolveLinSys(dim1,nRHS,A,B): SOLVING LINEAR SYSTEM FAILED! INFO = ',IntInfoOpt=INFO)
 END IF
 END SUBROUTINE SolveLinSys
 

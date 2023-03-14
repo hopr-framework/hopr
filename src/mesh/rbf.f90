@@ -390,7 +390,7 @@ WRITE(*,*) 'Solving RBF system... '
 ! Build the RBF matrix
 ! Upper left part: M_i,j = phi(abs(X(i)-X(j)))
 DO j=1,nBP; DO i=1,nBP
-  dist = Distance(RefCoordinates(:,i),RefCoordinates(:,j))
+  dist = NORM2(RefCoordinates(:,i)-RefCoordinates(:,j))
   RBFMatrix(i,j) = EvaluateRBF(dist,SupportRadius(iRBFBox),RBFType(iRBFBox))
 END DO; END DO ! j,i=1,nBP
 ! Upper right part: P_b - row i equal to [1 x_i y_i z_i]
@@ -431,21 +431,15 @@ DO WHILE(ASSOCIATED(Elem))
   xCornerVol(:,HexaMapInvLinear(0,1,1)) = Elem%CurvedNode(HexaMapInv(0,N,N))%np%x
   xCornerVol(:,HexaMapInvLinear(1,0,1)) = Elem%CurvedNode(HexaMapInv(N,0,N))%np%x
   xCornerVol(:,HexaMapInvLinear(1,1,1)) = Elem%CurvedNode(HexaMapInv(N,N,N))%np%x
-  ! Get a guess for the center of the current element by averaging the corner nodes
-  xBary(:) = Elem%CurvedNode(HexaMapInv(0,0,0))%np%x &
-           + Elem%CurvedNode(HexaMapInv(0,N,0))%np%x &
-           + Elem%CurvedNode(HexaMapInv(N,0,0))%np%x &
-           + Elem%CurvedNode(HexaMapInv(N,N,0))%np%x &
-           + Elem%CurvedNode(HexaMapInv(0,0,N))%np%x &
-           + Elem%CurvedNode(HexaMapInv(0,N,N))%np%x &
-           + Elem%CurvedNode(HexaMapInv(N,0,N))%np%x &
-           + Elem%CurvedNode(HexaMapInv(N,N,N))%np%x
-  xBary(:) = xBary(:) / 8.
-  ! Cycle if the bary center is not inside of the bounding box (thus only all or no points of an element are curved)
-  IF ((xBary(1).LT.xMin).OR.(xBary(1).GT.xMax).OR.(xBary(2).LT.yMin).OR.(xBary(2).GT.yMax)) THEN
+
+  ! Check whether the current Elem could be within RBF domain, where the displacement could be unequal zero. Otherwise cycle!
+  IF ( (MAXVAL(xCornerVol(1,:)).LT.xMin).OR.(MINVAL(xCornerVol(1,:)).GT.xMax) .AND. & ! Outside RBF zone in x
+       (MAXVAL(xCornerVol(2,:)).LT.yMin).OR.(MINVAL(xCornerVol(2,:)).GT.yMax)       & ! Outside RBF zone in y
+     ) THEN
     Elem=>Elem%nextElem
     CYCLE
   END IF
+
   ! Then, apply Vandermonde matrix, e.g. evaluate bi-linear mapping on all curved side nodes
   xTriLinear(1,:) = MATMUL(Vdm_VolTriLinear,xCornerVol(1,:))
   xTriLinear(2,:) = MATMUL(Vdm_VolTriLinear,xCornerVol(2,:))
@@ -455,7 +449,7 @@ DO WHILE(ASSOCIATED(Elem))
     x = xTriLinear(:,i)
     xTmp = x
     DO iBP=1,nBP
-      dist = Distance(x,RefCoordinates(:,iBP))
+      dist = NORM2(x-RefCoordinates(:,iBP))
       RBFValue = EvaluateRBF(dist,supportRadius(iRBFBox),RBFType(iRBFBox))
       xTmp(1) = xTmp(1) + RBFValue*RBFRHS(iBP,1)
       xTmp(2) = xTmp(2) + RBFValue*RBFRHS(iBP,2)
@@ -497,7 +491,8 @@ REAL            :: EvaluateRBF
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES
 REAL             :: xi
-REAL,PARAMETER   :: a=10E-3
+REAL,PARAMETER   :: a  =1.E-4   ! shape parameter for type 10 and 11 (see function description above)
+REAL,PARAMETER   :: eps=1.E-12
 !===================================================================================================================================
 ! normalized distance
 xi = dist/supportRadius
@@ -537,28 +532,34 @@ CASE(5)
 CASE(6)
   IF (xi.GT.1.) THEN
     EvaluateRBF = 0.
+  ELSE IF (xi.LT.eps) THEN
+    EvaluateRBF = 1.
   ELSE
     EvaluateRBF = 1.+(80./3.)*(xi**2.)-40.*(xi**3.)+15.*(xi**4.)-(8./3.)*(xi**5.)+20.*(xi**2.)*LOG(xi)
   END IF
-  IF (xi.LT.10E-13) EvaluateRBF=1.
 CASE(7)
   IF (xi.GT.1.) THEN
     EvaluateRBF = 0.
+  ELSE IF (xi.LT.eps) THEN
+    EvaluateRBF = 1.
   ELSE
     EvaluateRBF = 1.-30.*(xi**2.)-10.*(xi**3.)+45.*(xi**4.)-6.*(xi**5.)-60.*(xi**3.)*LOG(xi)
   END IF
-  IF (xi.LT.10E-13) EvaluateRBF=1.
 CASE(8)
   IF (xi.GT.1.) THEN
     EvaluateRBF = 0.
+  ELSE IF (xi.LT.eps) THEN
+    EvaluateRBF = 1.
   ELSE
     EvaluateRBF = 1.-20.*(xi**2.)+80.*(xi**3.)-45.*(xi**4.)-16.*(xi**5.)+60.*(xi**4.)*LOG(xi)
   END IF
-  IF (xi.LT.10E-13) EvaluateRBF=1.
 ! Global support RBFs
 CASE(9)
-  EvaluateRBF = (xi**2.)*LOG(xi)
-  IF (xi.LT.10E-13) EvaluateRBF=0.
+  IF (xi.LT.eps) THEN
+    EvaluateRBF = 0.
+  ELSE
+    EvaluateRBF = (xi**2.)*LOG(xi)
+  END IF
 CASE(10)
   EvaluateRBF = SQRT((a**2.)+(xi**2.))
 CASE(11)
@@ -574,24 +575,6 @@ CASE DEFAULT
 END SELECT
 
 END FUNCTION EvaluateRBF
-
-
-FUNCTION Distance(x,y)
-!===================================================================================================================================
-! Calculate euclidean distance between two points.
-!===================================================================================================================================
-! INPUT VARIABLES
-REAL,INTENT(IN) :: x(1:3)    ! Coordinates of first point
-REAL,INTENT(IN) :: y(1:3)    ! Coordinates of second point
-!-----------------------------------------------------------------------------------------------------------------------------------
-! OUTPUT VARIABLES
-REAL            :: Distance
-!===================================================================================================================================
-
-! d(x,y) = \|x-y\|_2 = \sqrt{(x_{1} - y_{1})^2 + \cdots + (x_{n} - y_{n})^2} = \sqrt{\sum_{i=1}^n (x_i-y_i)^2}
-Distance = SQRT((x(1)-y(1))**2.+(x(2)-y(2))**2.+(x(3)-y(3))**2.)
-
-END FUNCTION Distance
 
 
 END MODULE MOD_RBF

@@ -240,7 +240,7 @@ CALL Timer(.FALSE.)
 END SUBROUTINE OrientElemsToZ
 
 
-SUBROUTINE zcorrection()
+SUBROUTINE zcorrection(InitZOrient_In)
 !===================================================================================================================================
 ! ?
 !===================================================================================================================================
@@ -250,20 +250,20 @@ USE MOD_Mesh_Vars,ONLY:zstart,dz,zLength,zPeriodic,nElemsZ
 USE MOD_Mesh_Vars,ONLY:BoundaryType
 USE MOD_Mesh_Tolerances,ONLY:SAMEPOINT
 USE MOD_Mesh_Vars,ONLY:N,nMeshElems,nVV,VV
-USE MOD_Mesh_Vars,ONLY:InitZOrient,whichdirArr,orientArr
+USE MOD_Mesh_Vars,ONLY:whichdirArr,orientArr
 USE MOD_Basis_Vars,ONLY:HexaMapInv
 USE MOD_ReadInTools
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT VARIABLES
+LOGICAL,INTENT(IN),OPTIONAL :: InitZOrient_In    ! Determines whether the quantities related to the ZOrient should be allocated
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES
 TYPE(tElem),POINTER         :: Elem,lastElem                                                 ! ?
 TYPE(tSide),POINTER         :: Side,zminusSide,zplusSide                                     ! ?
-INTEGER                     :: whichdirArr(nMeshElems),orientArr(nMeshElems)                 ! ?
 INTEGER                     :: Map(4,2),SideMap(2)                                           ! ?
 INTEGER                     :: p,q,l,l1,l2,iSide                                             ! ?
 INTEGER                     :: switch, switch2, zcounter, whichdir                           ! ?
@@ -271,11 +271,16 @@ REAL                        :: scalprod,dir(3,3), displ1(3,0:N), displ2(3,0:N), 
 LOGICAL                     :: firstLayer                                                    ! ?
 LOGICAL                     :: dominant                                                      ! ?
 LOGICAL                     :: found                                                         ! ?
+LOGICAL                     :: InitZOrient                                                   ! ?
 INTEGER                     :: iNode,fNode,nPeriodicSides                                    ! ?
 INTEGER                     :: zAlpha,i
 !===================================================================================================================================
 WRITE(UNIT_stdOut,'(A)') ' PERFORMING Z CORRECTION...'
 CALL Timer(.TRUE.)
+
+InitZOrient = .TRUE. ! Standard value
+IF (PRESENT(InitZOrient_In)) InitZOrient = InitZOrient_In
+
 dz=zLength/REAL(nElemsZ)
 DO l=0,N
  displ1(:,l) = REAL(l)  /REAL(N) * (/0.,0.,dz/)
