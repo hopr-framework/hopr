@@ -2,8 +2,7 @@ name: AppImage.yml
 
 on:
   push:
-  pull_request:
-
+    #pull_request:
 
 jobs:
   build:
@@ -20,21 +19,28 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Dependencies
-      run: curl -L -O https://github.com/Kitware/CMake/releases/download/v3.16.4/cmake-3.16.4-Linux-x86_64.sh
+      run: |
+        curl -L -O https://github.com/Kitware/CMake/releases/download/v3.16.4/cmake-3.16.4-Linux-x86_64.sh
         chmod +x cmake-3.16.4-Linux-x86_64.sh
         ./cmake-3.16.4-Linux-x86_64.sh --skip-license --prefix=/usr/local
         curl -L -O https://www.mirrorservice.org/sites/dl.fedoraproject.org/pub/epel/7/x86_64/Packages/p/p7zip-16.02-20.el7.x86_64.rpm
         curl -L -O https://www.mirrorservice.org/sites/dl.fedoraproject.org/pub/epel/7/x86_64/Packages/p/p7zip-plugins-16.02-20.el7.x86_64.rpm
         rpm -U --quiet p7zip-16.02-20.el7.x86_64.rpm
         rpm -U --quiet p7zip-plugins-16.02-20.el7.x86_64.rpm
-        yum install -y make libasan gcc-c++
+        yum install -y epel-release
+        yum install -y make libasan gcc-gfortran gcc-c++ unzip git openblas-devel lapack-devel zlib-devel
+        curl -L -O https://github.com/ninja-build/ninja/releases/download/v1.11.1/ninja-linux.zip
+        unzip ninja-linux.zip
+        mv ./ninja /usr/bin
 
     - name: Configure CMake
       shell: bash
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       #run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release -DLIBS_USE_MPI=OFF
+      # hdf5-openmpi-devel on centos7 probably broken
+      #run: cmake -G Ninja -B ${{github.workspace}}/build -DLIBS_BUILD_HDF5=OFF -DCMAKE_BUILD_TYPE=Release -DLIBS_USE_MPI=OFF
+      run: cmake -G Ninja -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release -DLIBS_USE_MPI=OFF
 
     - name: Build
       shell: bash
@@ -43,8 +49,9 @@ jobs:
       run: cmake --build ${{github.workspace}}/build
 
     - name: Create archive
-      run: mkdir artifact
-        7z a artifact/hopr.zip ./build/bin/hopr
+      run: |
+        mkdir artifact
+        7z a artifact/hopr.zip ${{github.workspace}}/build/bin/hopr
 
     # Upload hopr binary archive as an artifact
     - name: Upload artifact
