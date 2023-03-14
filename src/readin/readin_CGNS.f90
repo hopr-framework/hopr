@@ -421,7 +421,7 @@ DO iSect=1,nSect ! Vol. and Face elems
   DEALLOCATE(LocalConnect)
   DEALLOCATE(ParentData)
 #if (PP_CGNS_VERSION>=4000)
-  DEALLOCATE(connect_offsets)
+  IF(SectionElemType .EQ. MIXED) DEALLOCATE(connect_offsets)
 #endif /*(PP_CGNS_VERSION>=4000)*/
 END DO !sections
 
@@ -1280,7 +1280,7 @@ DO iZone=1,nCGNSZones
     DEALLOCATE(LocalConnect)
     DEALLOCATE(ParentData)
 #if PP_CGNS_VERSION>=4000
-    DEALLOCATE(connect_offsets)
+    IF(SectionElemType .EQ. MIXED) DEALLOCATE(connect_offsets)
 #endif /*PP_CGNS_VERSION>=4000*/
   END DO !sections
 
