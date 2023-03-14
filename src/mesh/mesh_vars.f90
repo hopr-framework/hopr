@@ -288,7 +288,7 @@ CHARACTER(LEN=255),ALLOCATABLE :: BoundaryName(:)        ! Name of boundary cond
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! 2.5D MESH 
 !-----------------------------------------------------------------------------------------------------------------------------------
-REAL                           :: zLength                ! 2.5D mesh: lenght in z-direction
+REAL                           :: zLength                ! 2.5D mesh: length in z-direction
 REAL                           :: dz                     ! MESH%zLength/MESH%nElemsZ
 INTEGER                        :: MeshDim                ! Mesh dimesnions: does not need to be equal to nDim (2.5D mesh)
 INTEGER                        :: n2dNodes=0             ! Number of nodes in the 2D mesh
@@ -324,9 +324,14 @@ LOGICAL                        :: OrientZ
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! Post deformation functions deform a domain (typically [-1,1]^3) to arbirary other domain
 !-----------------------------------------------------------------------------------------------------------------------------------
-INTEGER                        :: MeshPostDeform ! Function index (off: 0) 
-INTEGER                        :: PostConnect
-LOGICAL                        :: PostDeform_useGL
+INTEGER                        :: MeshPostDeform    ! Function index (off: 0) 
+INTEGER                        :: PostConnect       ! only used when MeshPostDeform >0. =0: no reconnect after postdeform.
+                                                    ! =1, reconnect after postdeform,
+                                                    ! =2, reconnect after postdeform& deleta periodic sides, 
+                                                    ! =3: reconnect and redefine vv =postvv
+REAL,POINTER                   :: PostVV(:,:)       ! for postconnect=3, to overwrite vv vectors for periodic BCs before reconnect
+                                                    ! parameter for postdeform:
+LOGICAL                        :: PostDeform_useGL  ! change from equidistant to GL points before postdeform (interp. more accurate)
 REAL                           :: PostDeform_R0  
 REAL                           :: PostDeform_Lz  
 REAL                           :: PostDeform_sq  

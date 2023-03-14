@@ -13,7 +13,7 @@
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -32,7 +32,7 @@ USE MOD_IO_HDF5
 IMPLICIT NONE
 PRIVATE
 !-----------------------------------------------------------------------------------------------------------------------------------
-! GLOBAL VARIABLES 
+! GLOBAL VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 
 INTERFACE WriteMeshToHDF5
@@ -43,11 +43,7 @@ INTERFACE SpaceFillingCurve
   MODULE PROCEDURE SpaceFillingCurve
 END INTERFACE
 
-INTERFACE WriteAttribute
-  MODULE PROCEDURE WriteAttribute
-END INTERFACE
-
-PUBLIC::WriteMeshToHDF5,SpaceFillingCurve,WriteAttribute
+PUBLIC::WriteMeshToHDF5,SpaceFillingCurve
 !===================================================================================================================================
 
 CONTAINS
@@ -136,8 +132,8 @@ DO WHILE(ASSOCIATED(Elem))
       IF(Side%MortarType.EQ.0)THEN
         nSideIDs=nSideIDs+1
         Side%ind=-88888
-        IF(ASSOCIATED(Side%connection))THEN      
-          Side%connection%ind = -88888 ! count inner and periodic sides only once 
+        IF(ASSOCIATED(Side%connection))THEN
+          Side%connection%ind = -88888 ! count inner and periodic sides only once
         END IF
       ELSEIF(Side%MortarType.GT.0)THEN
         locnSides = locnSides + Side%nMortars
@@ -147,7 +143,7 @@ DO WHILE(ASSOCIATED(Elem))
           IF(Side%MortarSide(iMortar)%sp%ind.EQ.0)THEN
             nSideIDs=nSideIDs+1
             Side%MortarSide(iMortar)%sp%ind=-88888
-          END IF 
+          END IF
         END DO !iMortar
       ELSE
         nSideIDs=nSideIDs+1
@@ -182,7 +178,7 @@ SideID=0
 NodeID=0
 Elem=>firstElem
 DO WHILE(ASSOCIATED(Elem))
-  ElemID=ElemID+1 
+  ElemID=ElemID+1
   Elem%ind=ElemID
   ElemBarycenters(ElemID,:)=0.
   DO i=1,Elem%nNodes
@@ -200,12 +196,12 @@ DO WHILE(ASSOCIATED(Elem))
 
   Side=>Elem%firstSide
   DO WHILE(ASSOCIATED(Side))
-    IF(side%ind.EQ.-88888) THEN  ! assign side ID 
+    IF(side%ind.EQ.-88888) THEN  ! assign side ID
       IF(Side%MortarType.EQ.0)THEN
         SideID=SideID+1
         Side%ind=SideID
-        IF(ASSOCIATED(Side%connection))THEN      
-          IF(Side%connection%ind.EQ.-88888) Side%connection%ind=SideID ! count inner and periodic sides only once 
+        IF(ASSOCIATED(Side%connection))THEN
+          IF(Side%connection%ind.EQ.-88888) Side%connection%ind=SideID ! count inner and periodic sides only once
         END IF
       ELSEIF(Side%MortarType.GT.0)THEN
         SideID=SideID+1
@@ -214,7 +210,7 @@ DO WHILE(ASSOCIATED(Elem))
           IF(Side%MortarSide(iMortar)%sp%ind.EQ.-88888)THEN
             SideID=SideID+1
             Side%MortarSide(iMortar)%sp%ind=SideID
-          END IF 
+          END IF
         END DO !iMortar
       ELSE
         SideID=SideID+1
@@ -234,7 +230,7 @@ IF(ElemID.NE.nElems) CALL abort(__STAMP__,&
                      'Sanity check: max(elemID <> nElems!')
 
 
-!set Side Flip 
+!set Side Flip
 Elem=>firstElem
 DO WHILE(ASSOCIATED(Elem))
   Side=>Elem%firstSide
@@ -259,7 +255,7 @@ DO WHILE(ASSOCIATED(Elem))
           found=.TRUE.
           EXIT
         END IF
-      END DO 
+      END DO
       IF(.NOT.found) STOP 'Flip not found'
       Side%flip=iNode
       IF(.NOT.ASSOCIATED(Side%connection)) CALL ABORT(__STAMP__, &
@@ -274,10 +270,12 @@ END DO
 CALL getMeshInfo() !allocates and fills ElemInfo,SideInfo,NodeInfo,NodeCoords
 
 ! Create the file
-CALL OpenHDF5File(FileString,create=.TRUE.)  
+CALL OpenHDF5File(FileString,create=.TRUE.)
 
 !attributes 
-CALL WriteAttribute(File_ID,'Version',1,RealScalar=1.0)
+WRITE(UNIT=HoprVersionStr,FMT='(I0,A1,I0,A1,I0)') MajorVersion,".",MinorVersion,".",PatchVersion
+CALL WriteAttribute(File_ID,'HoprVersion',1,StrScalar=TRIM(HoprVersionStr))
+CALL WriteAttribute(File_ID,'HoprVersionInt',1,IntScalar=HoprVersionInt)
 CALL WriteAttribute(File_ID,'Ngeo',1,IntScalar=N)
 CALL WriteAttribute(File_ID,'nElems',1,IntScalar=nElems)
 CALL WriteAttribute(File_ID,'nSides',1,IntScalar=nSides)
@@ -285,11 +283,11 @@ CALL WriteAttribute(File_ID,'nNodes',1,IntScalar=nNodes)
 CALL WriteAttribute(File_ID,'nUniqueSides',1,IntScalar=nSideIDs)
 CALL WriteAttribute(File_ID,'nUniqueNodes',1,IntScalar=nNodeIDs)
 
-!WRITE ElemInfo,into (1,nElems)  
+!WRITE ElemInfo,into (1,nElems)
 CALL WriteArrayToHDF5(File_ID,'ElemInfo',2,(/ElemInfoSize,nElems/),IntegerArray=ElemInfo)
 DEALLOCATE(ElemInfo)
 
-!WRITE SideInfo,into (1,nSides)   
+!WRITE SideInfo,into (1,nSides)
 CALL WriteArrayToHDF5(File_ID,'SideInfo',2,(/SideInfoSize,nSides/),IntegerArray=SideInfo)
 DEALLOCATE(SideInfo)
 
@@ -303,10 +301,10 @@ nBCs=nUserDefinedBoundaries
 ALLOCATE(BCNames(nBCs))
 ALLOCATE(BCType(4,nBCs))
 DO i=1,nBCs
-  BCNames(i)=BoundaryName(i) 
-  BCType(:,i)=BoundaryType(i,:) 
+  BCNames(i)=BoundaryName(i)
+  BCType(:,i)=BoundaryType(i,:)
 END DO
-! WRITE BC 
+! WRITE BC
 CALL WriteAttribute(File_ID,'nBCs',1,IntScalar=nBCs)
 
 CALL WriteArrayToHDF5(File_ID,'BCNames',1,(/nBCs/),StrArray=BCNames)
@@ -315,7 +313,7 @@ CALL WriteArrayToHDF5(File_ID,'BCType',2,(/4,nBcs/),IntegerArray=BCType)
 DEALLOCATE(BCNames)
 DEALLOCATE(BCType)
 
-!WRITE ElemWeight,into (1,nElems)  
+!WRITE ElemWeight,into (1,nElems)
 CALL WriteArrayToHDF5(File_ID,'ElemBarycenters',2,(/3,nElems/),RealArray=TRANSPOSE(ElemBarycenters))
 DEALLOCATE(ElemBarycenters)
 
@@ -384,14 +382,14 @@ INTEGER                        :: locnNodes,locnSides
 INTEGER                        :: iNode,iSide,iElem,i,iMortar
 TYPE(tSide),POINTER            :: aSide
 !===================================================================================================================================
-!fill ElementInfo. 
+!fill ElementInfo.
 ALLOCATE(ElemInfo(ElemInfoSize,1:nElems))
 ALLOCATE(ElemWeight(1:nElems))
 ElemInfo=0
 ElemWeight=1.  !equal weight for all elements
 Elemcounter=0
 Elemcounter(1,:)=(/104,204,105,115,205,106,116,206,108,118,208/)
-iNode  = 0 
+iNode  = 0
 iSide  = 0
 iElem  = 0
 Elem=>firstElem
@@ -403,7 +401,7 @@ DO WHILE(ASSOCIATED(Elem))
   DO WHILE(ASSOCIATED(aSide))
     locnSides = locnSides + aSide%nMortars
     aSide=>aSide%nextElemSide
-  END DO 
+  END DO
 
 
   IF(N.EQ.1)THEN
@@ -448,8 +446,8 @@ END DO
 
 
 !fill SideInfo
-ALLOCATE(SideInfo(SideInfoSize,1:nSides)) 
-SideInfo=0 
+ALLOCATE(SideInfo(SideInfoSize,1:nSides))
+SideInfo=0
 iSide=0
 Elem=>firstElem
 DO WHILE(ASSOCIATED(Elem))
@@ -463,7 +461,7 @@ DO WHILE(ASSOCIATED(Elem))
       ELSE
         IF(Side%nNodes.EQ.3)THEN
           SideInfo(SIDE_Type,iSide)=3
-        ELSE  
+        ELSE
           SideInfo(SIDE_Type,iSide)=10+Side%nNodes        ! Side Type: bilinear quad
         END IF
       END IF
@@ -472,30 +470,30 @@ DO WHILE(ASSOCIATED(Elem))
     END IF
     !Side ID
     SideInfo(SIDE_ID,iSide)=Side%ind
-    IF(.NOT.ISORIENTED(Side)) SideInfo(SIDE_ID,iSide)=-SideInfo(SIDE_ID,iSide)           
+    IF(.NOT.ISORIENTED(Side)) SideInfo(SIDE_ID,iSide)=-SideInfo(SIDE_ID,iSide)
     !BCID
     IF (ASSOCIATED(Side%BC)) THEN
       SideInfo(SIDE_BCID,    iSide)= Side%BC%BCIndex
       IF(Side%BC%BCIndex.EQ.0) WRITE(*,*)'DEBUG, Warning, BC ind =0'
-    ELSE 
+    ELSE
       SideInfo(SIDE_BCID,    iSide)= 0
     END IF
-      
+
     IF (Side%MortarType.GT.0) THEN ! Mortar master side (only implemented for Quad-sides!!!)
       IF(ASSOCIATED(Side%Connection)) CALL abort(__STAMP__,&
                                                  'Mortar master with connection is not allowed')
       IF(Side%flip.NE.0) STOP 'Problem with flip on mortar'
       SideInfo(SIDE_nbElemID,iSide)= -Side%MortarType
       SideInfo(SIDE_nbLocSide_flip,iSide)=0
-      DO iMortar=1,Side%nMortars 
+      DO iMortar=1,Side%nMortars
         iSide=iSide+1
-        SideInfo(SIDE_Type,    iSide)= MERGE(104,204,N.EQ.1) 
+        SideInfo(SIDE_Type,    iSide)= MERGE(104,204,N.EQ.1)
         SideInfo(SIDE_ID,      iSide)= Side%MortarSide(iMortar)%sp%ind       ! small are always master
         SideInfo(SIDE_nbElemID,iSide)= Side%MortarSide(iMortar)%sp%Elem%ind  ! neighbour Element ID
         SideInfo(SIDE_nbLocSide_flip,iSide)=0
         IF (ASSOCIATED(Side%MortarSide(iMortar)%sp%BC)) THEN
           SideInfo(SIDE_BCID,    iSide)= Side%MortarSide(iMortar)%sp%BC%BCIndex
-        ELSE 
+        ELSE
           SideInfo(SIDE_BCID,    iSide)= 0
         END IF
       END DO
@@ -545,8 +543,8 @@ ELSE ! CurvedNodes
     END DO
     Elem=>Elem%nextElem
   END DO
-END IF 
-  
+END IF
+
 IF(iNode.NE.nNodes) CALL abort(__STAMP__,&
                      'Sanity check: nNodes not equal to total number of nodes!')
 
@@ -577,15 +575,15 @@ INTEGER                        :: IDlist(1:nElems_in)  ! ?
 TYPE(tElemPtr)                 :: Elems(1:nElems_in)  ! ?
 REAL                           :: ElemBary(1:nElems_in,3)  ! ?
 INTEGER                        :: ElemID  ! ?
-INTEGER                        :: iNode 
+INTEGER                        :: iNode
 !===================================================================================================================================
 
 Elems(1)%ep=>firstElem
-DO ElemID=2,nElems_in 
+DO ElemID=2,nElems_in
   Elems(ElemID)%ep=>Elems(ElemID-1)%ep%nextElem
 END DO
 DO ElemID=1,nElems_in
-  IDList(ElemID)=ElemID 
+  IDList(ElemID)=ElemID
   ElemBary(ElemID,:)=0.
   DO iNode=1,Elems(ElemID)%ep%nNodes
     ElemBary(ElemID,:)=ElemBary(ElemID,:)+Elems(ElemID)%ep%Node(iNode)%np%x
@@ -593,7 +591,7 @@ DO ElemID=1,nElems_in
   ElemBary(ElemID,:)=ElemBary(ElemID,:)/REAL(Elems(ElemID)%ep%nNodes)
 END DO
 
-IF((MeshMode.EQ.11).AND. (.NOT.AdaptedMesh))THEN 
+IF((MeshMode.EQ.11).AND. (.NOT.AdaptedMesh))THEN
   ! for Meshmode=11: if no splitting was done, this is a structured single block, elem_IJK already defined
   CALL SortElemsBySpaceFillingCurve(nElems_in,REAL(Elem_IJK),IDList,1) !use IJK for space filling curve
 ELSE
@@ -602,24 +600,24 @@ END IF
 
 NULLIFY(Elems(IDlist(1))%ep%prevElem)
 firstElem=>Elems(IDlist(1))%ep
-DO ElemID=2,nElems_in 
+DO ElemID=2,nElems_in
   Elems(IDlist(ElemID-1))%ep%nextElem=>Elems(IDList(ElemID))%ep
   Elems(IDlist(ElemID))%ep%prevElem  =>Elems(IDList(ElemID-1))%ep
 END DO
-DO ElemID=1,nElems_in 
+DO ElemID=1,nElems_in
   Elems(IDlist(ElemID))%ep%ind=ElemID
 END DO
 IF(DebugVisu)THEN
   WRITE(*,*)'write space filling curve to sfc.dat'
   OPEN(UNIT=200,FILE='sfc.dat',STATUS='REPLACE')
-  DO ElemID=1,nElems_in 
+  DO ElemID=1,nElems_in
     WRITE(200,'(3E21.6)')ElemBary(IDlist(ElemID),:)
   END DO
   CLOSE(200)
 END IF
 IF(ALLOCATED(ElemBarycenters)) DEALLOCATE(ElemBarycenters)
 ALLOCATE(ElemBarycenters(1:nElems_in,3))
-DO ElemID=1,nElems_in 
+DO ElemID=1,nElems_in
   ElemBarycenters(ElemID,:)=ElemBary(IDlist(ElemID),:)
 END DO
 NULLIFY(Elems(IDlist(nElems_in))%ep%nextElem)
@@ -652,7 +650,7 @@ INTEGER(HID_T), INTENT(IN)     :: Loc_ID                                ! HDF5 f
 CHARACTER(LEN=*), INTENT(IN)   :: ArrayName                             ! Name of the array
 INTEGER,INTENT(IN)             :: Rank                                  ! number of dimensions
 INTEGER,INTENT(IN)             :: nVal(Rank)                            ! dimensions of the array
-REAL              ,DIMENSION(Rank),OPTIONAL,INTENT(IN) :: RealArray     ! Real array  
+REAL              ,DIMENSION(Rank),OPTIONAL,INTENT(IN) :: RealArray     ! Real array
 INTEGER           ,DIMENSION(Rank),OPTIONAL,INTENT(IN) :: IntegerArray  ! Integer array
 CHARACTER(LEN=255),DIMENSION(Rank),OPTIONAL,INTENT(IN) :: StrArray      ! String array
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -686,7 +684,7 @@ CALL H5SCLOSE_F(FileSpace, iError)
 
 ! Each process defines dataset in memory and writes it to the hyperslab in the file.
 Dimsf=nVal  ! Now we need the local array size
-offset=0  !ONLY SINGLE 
+offset=0  !ONLY SINGLE
 ! Create the data space in the memory
 IF(Dimsf(1) .NE. 0)THEN
   CALL H5SCREATE_SIMPLE_F(Rank, Dimsf, MemSpace, iError)

@@ -298,10 +298,12 @@ percent=0
 nextNode=1
 DO iNode=1,nTotalNodes
   ! output of progress in %
-  IF((nTotalNodes.GT.100000).AND.(MOD(iNode,(nTotalNodes/100)).EQ.0)) THEN
-    percent=percent+1
-    WRITE(0,'(I4,A23,A1)',ADVANCE='NO')percent, ' % of nodes evaluated...',ACHAR(13)
-  END IF
+  IF(nTotalNodes.GT.100000)THEN
+    IF(MOD(iNode,(nTotalNodes/100)).EQ.0)THEN
+      percent=percent+1
+      WRITE(0,'(I4,A23,A1)',ADVANCE='NO')percent, ' % of nodes evaluated...',ACHAR(13)
+    END IF ! MOD(iNode,(nTotalNodes/100)).EQ.0
+  END IF ! nTotalNodes.GT.100000
   Node=>Nodes(iNode)%np
   IF(Node%tmp.GT.0) CYCLE ! node already checked
   Node%tmp=iNode !check this node

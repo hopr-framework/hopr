@@ -1,4 +1,9 @@
 # HOPR
+
+[![Slack](https://img.shields.io/badge/chat-slack-e01e5a)](https://join.slack.com/t/hopr-framework/shared_invite/zt-tvhyqwwj-7r_neuU~VWHt6AKyzf6oKg)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPLv3-success.svg)](https://opensource.org/licenses/GPL-3.0)
+
+
            _____     _____    _______________    _______________   _______________
           /    /)   /    /)  /    _____     /)  /    _____     /) /    _____     /)
          /    //   /    //  /    /)___/    //  /    /)___/    // /    /)___/    //
@@ -38,18 +43,30 @@ our publications given in [REFERENCE.md](REFERENCE.md).
 
 ## Installation / Documentation
 
-For installation instruction see [Install.md](INSTALL.md).
+See the full documentation including usage instructions and tutorial for HOPR is the [User Guide][hopr].
 
-See the full documentation including usage instructions and
-turorial for HOPR [here][hopr].
- 
+For installation instruction see the user guide section [Installation][install] or the [source file](./docs/documentation/userguide/installation.md).
+
 In case you have question regarding HOPR, want to report bugs
 or contribute to the project you can use the mailing list
 <hopr-project@listserv.uni-stuttgart.de>.
 You can also subscribe to the mailing list [here][list].
 
+## Mesh Format
+
+The [Mesh Format][meshformat] is described as part of the [User Guide][hopr] or can be viewed as a separate [PDF][pdfmeshformat]
+
+## Used libraries
+
+HOPR uses several external libraries as well as auxiliary functions from open source projects, including:
+
+* [cmake](https://www.cmake.org)
+* [LAPACK](http://www.netlib.org/lapack/)
+* [MPI](https://www.open-mpi.org/)
+* [HDF5](https://www.hdfgroup.org/)
+
 ## License
-HOPR is Copyright (C) 2017, Prof. Claus-Dieter Munz and is 
+HOPR is Copyright (C) 2017, Prof. Claus-Dieter Munz and is
 released under the terms of the
 GNU General Public License v3.0 (GPL v3.0). For the complete
 license terms see the included license file [LICENSE](LICENSE).
@@ -58,6 +75,9 @@ available under other licenses,for more information refer to
 [MULTILICENSING.md](MULTILICENSING.md)
 
 
-[nrg]:  https://nrg.iag.uni-stuttgart.de/
-[hopr]: http://www.hopr-project.org/
+[hopr]: https://hopr.readthedocs.io/en/latest/
+[install]: https://hopr.readthedocs.io/en/latest/userguide/installation.html
 [list]: https://listserv.uni-stuttgart.de/mailman/listinfo/hopr-project
+[nrg]: https://www.iag.uni-stuttgart.de/en/working-groups/numerical-methods/
+[meshformat]: https://hopr.readthedocs.io/en/latest/userguide/meshformat.html
+[pdfmeshformat]: ./docs/Meshformat/Meshformat.pdf
