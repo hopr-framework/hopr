@@ -691,9 +691,7 @@ IF(doExactSurfProjection) CALL ProjectToExactSurfaces()
 ! get element types
 CALL FindElemTypes()
 ! correct displacement in z (e.g. for periodic/2.5D)
-InitZOrient = .TRUE.
-IF(doZcorrection) CALL zCorrection()
-
+IF(doZcorrection) CALL zCorrection(InitZOrient_In=.TRUE.)
 
 ! Call RBF curving after GlobalUniqueNodes, since no double entries in the RBF nodes are allowed
 IF (useCurveds.AND.useRBF) THEN
@@ -707,8 +705,7 @@ IF (useCurveds.AND.useRBF) THEN
   DEALLOCATE(ylim)
   ! Call z-Correction again to remove 3D effects of interpolation, zPeriodic is already done
   zPeriodic = .FALSE.
-  InitZOrient = .FALSE.
-  IF(doZcorrection) CALL zCorrection()
+  IF(doZcorrection) CALL zCorrection(InitZOrient_In=.FALSE.)
 END IF
 
 CALL CheckNodeConnectivity()
