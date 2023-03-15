@@ -54,6 +54,7 @@ IMPLICIT NONE
 ! LOCAL VARIABLES
 INTEGER                 :: iArg,nArgs_tmp
 CHARACTER(LEN=255)      :: tmp
+LOGICAL                 :: exist
 LOGICAL,ALLOCATABLE     :: alreadyRead(:)
 !==================================================================================================================================
 ! Get number of command line arguments
@@ -65,6 +66,9 @@ alreadyRead = .FALSE.
 nArgs = nArgs_tmp
 DO iArg = 1, nArgs_tmp
   CALL GET_COMMAND_ARGUMENT(iArg,tmp)
+  IF (STRICMP(tmp, "--help")   .OR.STRICMP(tmp,"-h")) THEN
+    CALL PrintHelp()
+  END IF
   IF (STRICMP(tmp, "--version").OR.STRICMP(tmp,"-V")) THEN
     doPrintVersion    = doPrintVersion + 1
     alreadyRead(iArg) = .TRUE.
@@ -104,7 +108,20 @@ END DO
 DEALLOCATE(alreadyRead)
 
 ! Fill strings from ini file
-CALL FillStrings(Args(1))
+IF (nArgs.EQ.1) THEN
+  INQUIRE (FILE = Args(1), EXIST = exist)
+  IF (exist) THEN
+    CALL FillStrings(Args(1))
+  ELSE
+    WRITE(UNIT_stdOut,'(A)') 'ERROR: Given parameter file "'//TRIM(Args(1))//'" does not exist!'
+    WRITE(UNIT_stdOut,'(A)')
+    CALL PrintHelp()
+  END IF
+ELSE
+  WRITE(UNIT_stdOut,'(A)') 'ERROR: No parameter file given!'
+  WRITE(UNIT_stdOut,'(A)')
+  CALL PrintHelp()
+END IF
 
 END SUBROUTINE ParseCommandlineArguments
 
@@ -114,7 +131,6 @@ END SUBROUTINE ParseCommandlineArguments
 !==================================================================================================================================
 !SUBROUTINE int2strf(str,int_number,stat)
 PURE FUNCTION int2strf(int_number)
-!===================================================================================================================================
 !===================================================================================================================================
 ! MODULES
 ! IMPLICIT VARIABLE HANDLING
@@ -130,14 +146,24 @@ END FUNCTION
 
 
 !==================================================================================================================================
-!> Deallocate all commandline arguments
+!> Print the help message and exit
 !==================================================================================================================================
-SUBROUTINE FinalizeCommandlineArguments()
+SUBROUTINE PrintHelp()
+!===================================================================================================================================
 ! MODULES
+USE MOD_Globals,  ONLY: UNIT_stdOut!,Abort
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !===================================================================================================================================
-IF (Allocated(Args)) DEALLOCATE(Args)
-END SUBROUTINE FinalizeCommandlineArguments
+WRITE(UNIT_stdOut,'(A)') 'Usage: hopr <parameter.ini>'
+WRITE(UNIT_stdOut,'(A)') '   or: hopr [OPTION]'
+WRITE(UNIT_stdOut,'(A)')
+WRITE(UNIT_stdOut,'(A)') ' Optional arguments:'
+WRITE(UNIT_stdOut,'(A)') '  -h, --help       display this help and exit'
+WRITE(UNIT_stdOut,'(A)') '  -V, --version    display the version number and exit'
+WRITE(UNIT_stdOut,'(A)') '                   when given twice, print more information about the build'
+! CALL Abort(__STAMP__,'Parameter file not specified!')
+STOP
+END SUBROUTINE PrintHelp
 
 END MODULE MOD_Commandline_Arguments
