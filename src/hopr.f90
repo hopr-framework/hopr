@@ -12,7 +12,7 @@
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -27,12 +27,13 @@ PROGRAM HOPR
 !===================================================================================================================================
 ! MODULES
 USE MOD_Globals
-USE MOD_Basis,       ONLY:InitBasis
-USE MOD_Mesh,        ONLY:InitMesh,FillMesh
-USE MOD_Mesh_Vars,   ONLY:negativeJacobians,jacobianTolerance
-USE MOD_Output,      ONLY:InitOutput
-USE MOD_ReadInTools, ONLY:IgnoredStrings
-USE MOD_Search,      ONLY:InitSearch
+USE MOD_Basis,                 ONLY: InitBasis
+USE MOD_Commandline_Arguments, ONLY: ParseCommandlineArguments
+USE MOD_Mesh,                  ONLY: InitMesh,FillMesh
+USE MOD_Mesh_Vars,             ONLY: negativeJacobians,jacobianTolerance
+USE MOD_Output,                ONLY: InitOutput
+USE MOD_ReadInTools,           ONLY: IgnoredStrings
+USE MOD_Search,                ONLY: InitSearch
 #ifdef _OPENMP
 USE omp_lib
 #endif
@@ -43,6 +44,7 @@ IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 !===================================================================================================================================
 CALL SetStackSizeUnlimited()
+CALL ParseCommandlineArguments()
 WRITE(UNIT_stdOut,'(132("="))')
 WRITE(UNIT_stdOut,'(A)') &
 "           _______     _______    ___________________    ___________________   ___________________                         xX    "
@@ -83,7 +85,7 @@ CALL InitSearch()
 CALL IgnoredStrings()
 ! Now build mesh!
 CALL FillMesh()
-WRITE(*,'(132("="))')
+WRITE(UNIT_stdOut,'(132("="))')
 IF(negativeJacobians.GT.0) THEN
   WRITE(UNIT_stdOut,'(A,A,A)')' HOPR finished: Mesh "',TRIM(ProjectName)//'_mesh.h5','" written to HDF5 file.'
   WRITE(UNIT_stdOut,'(A,I8,A,E11.3,A)')' WARNING: ',negativeJacobians, &
@@ -91,5 +93,5 @@ IF(negativeJacobians.GT.0) THEN
 ELSE
   WRITE(UNIT_stdOut,'(A,A,A)')' HOPR successfully finished: Mesh "',TRIM(ProjectName)//'_mesh.h5','" written to HDF5 file.'
 END IF
-WRITE(*,'(132("="))')
+WRITE(UNIT_stdOut,'(132("="))')
 END PROGRAM HOPR

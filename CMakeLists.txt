@@ -187,3 +187,14 @@ INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/CMakeListsLib.txt)
 # HOPR
 # =========================================================================
 INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/src/CMakeLists.txt)
+
+# =========================================================================
+# Store the current build information
+# =========================================================================
+SET(buildinfo ${CMAKE_CURRENT_SOURCE_DIR}/src/buildinfo.h)
+FILE(WRITE ${buildinfo} "! Define the current build information. The default must remain empty, i.e., ''. Do not commit the changed file!\n#define GIT_CURRENT_COMMIT  ''\n#define BUILD_DATE          ''\n#define BUILD_VERSION_GCC   ''\n#define BUILD_VERSION_MPI   ''\n")
+IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/.git)
+  EXECUTE_PROCESS(COMMAND git rev-parse --short HEAD OUTPUT_VARIABLE GIT_COMMIT OUTPUT_STRIP_TRAILING_WHITESPACE)
+  # MESSAGE(STATUS "Current git commit ${GIT_COMMIT} will be written to ${buildinfo}")
+  EXECUTE_PROCESS(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/cmake/setBuildInfo.sh ${buildinfo} ${GIT_COMMIT} ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION} ${LIBS_MPI_NAME} ${MPI_C_LIBRARY_VERSION})
+ENDIF()

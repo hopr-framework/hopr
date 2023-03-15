@@ -12,7 +12,7 @@
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -32,7 +32,7 @@ USE MOD_Search_Vars
 IMPLICIT NONE
 PUBLIC
 !-----------------------------------------------------------------------------------------------------------------------------------
-! GLOBAL VARIABLES 
+! GLOBAL VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! Private Part ---------------------------------------------------------------------------------------------------------------------
 ! Public Part ----------------------------------------------------------------------------------------------------------------------
@@ -75,7 +75,7 @@ END INTERFACE
 INTERFACE flushSearchMesh
    MODULE PROCEDURE flushSearchMesh
 END INTERFACE
-  
+
 INTERFACE idxok
    MODULE PROCEDURE idxok
 END INTERFACE
@@ -112,7 +112,7 @@ IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 !===================================================================================================================================
 WRITE(UNIT_StdOut,'(132("-"))')
 WRITE(UNIT_stdOut,'(A)') ' INIT SEARCH...'
@@ -142,12 +142,12 @@ IMPLICIT NONE
 LOGICAL,INTENT(IN)                    :: safedx            ! .TRUE.: calculate dx from mesh geometry, .FALSE.: dx = (xmax-xmin)/50.
 REAL,INTENT(IN),OPTIONAL              :: xmin(3)  ! Search mesh extents
 REAL,INTENT(IN),OPTIONAL              :: xmax(3)  ! Search mesh extents
-REAL,INTENT(IN),OPTIONAL              :: dx                ! specify dx manually 
+REAL,INTENT(IN),OPTIONAL              :: dx                ! specify dx manually
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 TYPE(tSearchMesh),POINTER,INTENT(OUT) :: searchMesh        ! New search mesh
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tElem),POINTER       :: Elem                          ! Local element pointer
 REAL                      :: deltaSafe(3)                    ! ?
 INTEGER,ALLOCATABLE       :: dist(:)                         ! ?
@@ -166,7 +166,7 @@ NULLIFY(searchMesh%actualToObject)
 ! default values used for node search
 searchMesh%nSearch         = 1  ! Initialize first independent of mesh dimension
 IF(.NOT.ConformConnect)searchMesh%nSearch(1:3) = nElemsNodeSearch
-! Get search mesh extents if not given 
+! Get search mesh extents if not given
 IF(.NOT. PRESENT(xmin)) THEN
   ! Calculate from mesh geometry
   searchMesh%xmin = 1.e12
@@ -192,7 +192,7 @@ ELSE
 END IF
 
 ! Calculate dx for search mesh
-IF (safedx) THEN !determine/estimate dx from mesh geometry, used for side search, i.e. rasterfahndung/connect 
+IF (safedx) THEN !determine/estimate dx from mesh geometry, used for side search, i.e. rasterfahndung/connect
   searchMesh%dx=maxDX
 ELSE ! use nElemsNodeSearch to determine dx, used for node search, i.e. getuniquenode, at moment: homogenous in each direction
   searchMesh%dx=(searchMesh%xmax-searchMesh%xmin)/(2.*nElemsNodeSearch)
@@ -201,7 +201,7 @@ END IF
 IF(ConformConnect)searchMesh%dx=MAX(searchMesh%dx,1.1*SpaceQuandt*PP_MeshTolerance) !  !
 
 ! Numerical tolerances: enlarge slightly for numerical security
-deltaSafe        = 0.00001*(searchMesh%xmax-searchMesh%xmin)  
+deltaSafe        = 0.00001*(searchMesh%xmax-searchMesh%xmin)
 searchMesh%xmin  = searchMesh%xmin-deltaSafe
 searchMesh%xmax  = searchMesh%xmax+deltaSafe
 searchMesh%dx    = 1.00001*searchMesh%dx
@@ -211,20 +211,20 @@ IF (safedx) THEN
   ! Introduce Refine Factor for side search mesh
   searchMesh%dx = searchMesh%dx/RefineSideSearch
   ! Determine the new size of the Spirale des Todes
-  searchMesh%nSearch(1:3)= INT(maxDX/searchMesh%dx)+1 !+1 for security 
-ENDIF 
+  searchMesh%nSearch(1:3)= INT(maxDX/searchMesh%dx)+1 !+1 for security
+ENDIF
 ! Determine the cartesian search mesh
 searchMesh%nMesh(1:3) = INT(MAX(1.,(searchMesh%xmax-searchMesh%xmin)/searchMesh%dx))+1
 ! Number of Spirale des Todes links
-searchMesh%n    = PRODUCT((2*searchMesh%nSearch+1))  
-! Define Spirale des Todes. If Search is not successfull in the determined i,j,k grid cell, then 
+searchMesh%n    = PRODUCT((2*searchMesh%nSearch+1))
+! Define Spirale des Todes. If Search is not successfull in the determined i,j,k grid cell, then
 !  proceed search in neighbour grid cells following the Spirale des Todes
 ALLOCATE(searchMesh%mapping(searchMesh%n,3),dist(searchMesh%n),searchMesh%sortidx(searchMesh%n))
 ! This corresponds to the search area, not to the mesh
 l=0
-DO i=-searchMesh%nSearch(1),searchMesh%nSearch(1)   
-  DO j=-searchMesh%nSearch(2),searchMesh%nSearch(2)  
-    DO k=-searchMesh%nSearch(3),searchMesh%nSearch(3)  
+DO i=-searchMesh%nSearch(1),searchMesh%nSearch(1)
+  DO j=-searchMesh%nSearch(2),searchMesh%nSearch(2)
+    DO k=-searchMesh%nSearch(3),searchMesh%nSearch(3)
       l=l+1
       ! Map search mesh indices to one-dimensional search index.
       searchMesh%mapping(l,:)=(/i,j,k/)
@@ -237,7 +237,7 @@ END DO
 CALL Qsort1Int1PInt(dist,searchMesh%sortidx)
 DEALLOCATE(dist)
 ! Reduced Spirale des Todes, covers only the DIRECT neighbour grid cells
-searchMesh%nred=27 
+searchMesh%nred=27
 ! Allocate and initialize search mesh
 ALLOCATE(searchMesh%sm(searchMesh%nMesh(1),searchMesh%nMesh(2),searchMesh%nMesh(3)))
 DO i=1,searchMesh%nMesh(1)  ! Search mesh
@@ -267,7 +267,7 @@ INTEGER,INTENT(IN),OPTIONAL          :: idx(3)        ! Point indices
 ! OUTPUT VARIABLES
 TYPE(tToObject),POINTER   :: getfirstToObject ! First search mesh object at point with "coord" / "idx"
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 INTEGER                   :: maxn   ! ?
 !===================================================================================================================================
 searchMesh%actualInd=1  ! Reset
@@ -276,7 +276,7 @@ IF(PRESENT(idx)) THEN
 ELSEIF(PRESENT(coords)) THEN
   CALL getIdx(searchmesh,coords,searchMesh%actualInd)  ! Calculate indices from coordinates
 ELSE
-  CALL abort(__STAMP__, & 
+  CALL abort(__STAMP__, &
     'error calling getFirstToObject')
 END IF
 maxn=searchMesh%n  ! Number of points in search area
@@ -327,7 +327,7 @@ LOGICAL,INTENT(IN)        :: reduced         ! Reduced search area (faster / les
 ! OUTPUT VARIABLES
 TYPE(tToObject),POINTER   :: getNextToObject ! Next object in search mesh
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 INTEGER                   :: idx(3),maxn   ! ?
 !===================================================================================================================================
 idx  = 1             ! Reset indices
@@ -371,7 +371,7 @@ LOGICAL,INTENT(IN)                      :: withObjects ! Delete mesh objects (no
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 INTEGER                   :: i,j,k   ! ?
 !===================================================================================================================================
 DO i=1,searchMesh%nMesh(1)
@@ -398,7 +398,7 @@ LOGICAL,INTENT(IN),OPTIONAL             :: withObjects ! Delete mesh objects (no
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 !===================================================================================================================================
 ! Delete objects
 IF(PRESENT(withObjects)) THEN
@@ -427,7 +427,7 @@ TYPE(tElem),POINTER,INTENT(IN),OPTIONAL :: Elem   ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tToObject),POINTER   :: ToObject   ! ?
 INTEGER                   :: idx(3)   ! ?
 !===================================================================================================================================
@@ -445,7 +445,7 @@ END SUBROUTINE insertNode
 
 SUBROUTINE insertUniqueNode(node,searchMesh,redundantNodes,marker)
 !===================================================================================================================================
-! Insert unique node in uniqueSearchMesh, if already there in deleteSearchMesh,uses flag marker to check if node is already in mesh 
+! Insert unique node in uniqueSearchMesh, if already there in deleteSearchMesh,uses flag marker to check if node is already in mesh
 !===================================================================================================================================
 ! MODULES
 USE MOD_Mesh_Tolerances,ONLY:SAMEPOINT
@@ -459,7 +459,7 @@ INTEGER,INTENT(IN)                      :: marker  ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tToObject),POINTER   :: toObj   ! ?
 TYPE(tNode),POINTER       :: uniqueNode   ! ?
 !===================================================================================================================================
@@ -506,7 +506,7 @@ INTEGER,OPTIONAL,INTENT(IN)             :: ind           ! node ind
 ! OUTPUT VARIABLES
 TYPE(tNode),POINTER                     :: getUniqueNode ! New / existing node
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tNode),POINTER       :: bNode      ! Local node pointer
 TYPE(tToObject),POINTER   :: ToObject   ! Search mesh object
 INTEGER                   :: idx_ur(3)  ! Indices of starting point
@@ -567,7 +567,7 @@ INTEGER,INTENT(IN)        :: VVpolicy   ! Treatment of periodic boundary sides
 ! OUTPUT VARIABLES
 LOGICAL,INTENT(OUT)       :: success    ! Operation was successful
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tToObject),POINTER   :: newToObject,toObject   ! ?
 REAL                      :: psudoBary(3),VV_loc(3)   ! ?
 INTEGER                   :: idx(3),iNode !idx_ur(3),l,jNode,dm   ! ?
@@ -638,7 +638,7 @@ CASE(2,3) ! at psudoBary only one instance ! not fatal
         ! If idx inside limits: insert side
         CALL getNewToObject(newToObject)
         newToObject%Side=>Side
-        CALL insertToObject(searchMesh%sm(idx(1),idx(2),idx(3))%ToObject,newToObject)  
+        CALL insertToObject(searchMesh%sm(idx(1),idx(2),idx(3))%ToObject,newToObject)
         searchMesh%objectCount=searchMesh%objectCount+1
         RETURN
       END IF
@@ -659,7 +659,7 @@ CASE(4) ! at first node ! fatal
     ELSE
       CALL abort(__STAMP__,'search mesh error')
     END IF
-CASE(5) ! if at least one node lies inside searchmesh, the side is inserted 
+CASE(5) ! if at least one node lies inside searchmesh, the side is inserted
   DO iNode=1,Side%nNodes
     CALL getIdx(searchmesh,Side%Node(iNode)%np%x,idx) ! Calculate search mesh indices of node iNode
     IF(idxok(searchMesh,idx)) THEN  ! Check if indices lie inside the limits of the search mesh
@@ -703,7 +703,7 @@ INTEGER,INTENT(IN)        :: mode       ! See subroutine insert side
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tElem),POINTER       :: Elem    ! Local element pointer
 TYPE(tSide),POINTER       :: Side    ! Local side pointer
 LOGICAL                   :: success   ! ?
@@ -735,7 +735,7 @@ INTEGER,INTENT(IN)        :: idx(3)     ! Indices
 ! OUTPUT VARIABLES
 LOGICAL                   :: idxok      ! .TRUE. = indices within limits
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 !===================================================================================================================================
 IF ( (idx(1) .GE. 1) .AND. (idx(2) .GE. 1) .AND. (idx(1) .LE. searchMesh%nMesh(1)) .AND. (idx(2) .LE.  searchMesh%nMesh(2)) &
    .AND.(idx(3) .GE. 1) .AND. (idx(3) .LE. searchMesh%nMesh(3))) THEN
@@ -755,14 +755,14 @@ SUBROUTINE getIdx(searchmesh,coord,idx,testin)
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT VARIABLES
-TYPE(tSearchMesh),POINTER,INTENT(IN) :: searchmesh  
+TYPE(tSearchMesh),POINTER,INTENT(IN) :: searchmesh
 REAL,INTENT(IN)              :: coord(3)    ! Point coordinates
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 INTEGER,INTENT(OUT)          :: idx(3)      ! Indices i,j,k
 LOGICAL,INTENT(OUT),OPTIONAL :: testin      ! .TRUE. = Indices inside search mesh limits
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 !===================================================================================================================================
 idx=1
 idx(1:3)=INT((coord-searchMesh%xmin)/searchMesh%dx)+1
@@ -772,7 +772,7 @@ END SUBROUTINE getIdx
 
 SUBROUTINE insertToObject(firstToObject,ToObject)
 !===================================================================================================================================
-! Insert object "toObject" in local (in search mesh) list that starts with "firstToObject". Object will be inserted before 
+! Insert object "toObject" in local (in search mesh) list that starts with "firstToObject". Object will be inserted before
 ! "firstToObject".
 !===================================================================================================================================
 ! MODULES
@@ -781,11 +781,11 @@ IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT VARIABLES
 TYPE(tToObject),POINTER,INTENT(INOUT) :: firstToObject ! First object in local list of search objects
-TYPE(tToObject),POINTER,INTENT(IN)    :: ToObject        ! ? 
+TYPE(tToObject),POINTER,INTENT(IN)    :: ToObject        ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 !===================================================================================================================================
 ToObject%nextToObject=>firstToObject
 firstToObject=>ToObject
@@ -802,11 +802,11 @@ IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT VARIABLES
 TYPE(tToObject),POINTER,INTENT(IN) :: prevToObject ! First object in local list of search objects
-TYPE(tToObject),POINTER,INTENT(IN) :: ToObject       ! ? 
+TYPE(tToObject),POINTER,INTENT(IN) :: ToObject       ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tToObject),POINTER :: nextToObject   ! ?
 !===================================================================================================================================
 nextToObject=>prevToObject%nextToObject
@@ -829,7 +829,7 @@ LOGICAL,INTENT(IN)                    :: withObjects   ! Delete mesh objects tha
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tToObject),POINTER               :: sweepToObject,ToObject   ! ?
 !===================================================================================================================================
 sweepToObject=>firstToObject

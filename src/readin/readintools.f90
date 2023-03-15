@@ -42,10 +42,9 @@ PUBLIC::GETREAL
 PUBLIC::GETLOGICAL
 PUBLIC::GETINTARRAY
 PUBLIC::GETREALARRAY
-
 PUBLIC::IgnoredStrings
-
-PUBLIC :: FillStrings
+PUBLIC::FillStrings
+PUBLIC::STRICMP
 
 !===================================================================================================================================
 
@@ -95,6 +94,10 @@ END INTERFACE
 
 INTERFACE LowCase
   MODULE PROCEDURE LowCase
+END INTERFACE
+
+INTERFACE STRICMP
+  MODULE PROCEDURE STRICMP
 END INTERFACE
 
 INTERFACE GetNewString
@@ -180,6 +183,7 @@ END IF
 SWRITE(UNIT_StdOut,'(a3,a30,a3,a33,a3,a7,a3)')' | ',TRIM(Key),' | ', TRIM(GetStr),' | ',TRIM(DefMsg),' | '
 END FUNCTION GETSTR
 
+
 FUNCTION CNTSTR(Key,Proposal)
 !===================================================================================================================================
 ! Counts all occurances of string named "key" from inifile and store in "GETSTR". If keyword "Key" is not found in ini file,
@@ -228,6 +232,7 @@ IF (CntStr.EQ.0) THEN
   END IF
 END IF
 END FUNCTION CNTSTR
+
 
 FUNCTION GETINT(Key,Proposal)
 !===================================================================================================================================
@@ -574,8 +579,8 @@ DO WHILE (ASSOCIATED(Str1))
     CALL Split(Str1%Str,aStr,"&") !take part in front of "&"
     Str2=>Str1%nextStr
     Str1%Str=Var_str(CHAR(aStr)//CHAR(Str2%Str))
-    CALL deleteString(Str2) 
-    !do not go to next  string as long as there are "&" in the string  
+    CALL deleteString(Str2)
+    !do not go to next  string as long as there are "&" in the string
   ELSE
     Str1=>Str1%NextStr !nothing to be done
   END IF
@@ -585,8 +590,8 @@ ReadInDone=.TRUE.
 
 CALL UserDefinedVars()
 
-
 END SUBROUTINE FillStrings
+
 
 SUBROUTINE UserDefinedVars()
 !===================================================================================================================================
@@ -876,6 +881,28 @@ DO iLen=1,nLen
   IF ((Upper > 0).AND. .NOT. HasEq) Str2(iLen:iLen) = lc(Upper:Upper)
 END DO
 END SUBROUTINE LowCase
+
+
+!==================================================================================================================================
+!> Case insensitive string comparison
+!==================================================================================================================================
+FUNCTION STRICMP(a, b)
+! MODULES
+IMPLICIT NONE
+!----------------------------------------------------------------------------------------------------------------------------------
+! INPUT/OUTPUT VARIABLES
+CHARACTER(LEN=*),INTENT(IN) :: a,b !< strings to compare with each other
+!----------------------------------------------------------------------------------------------------------------------------------
+! LOCAL VARIABLES
+LOGICAL            :: STRICMP
+CHARACTER(LEN=255) :: alow
+CHARACTER(LEN=255) :: blow
+!==================================================================================================================================
+CALL LowCase(a, alow)
+CALL LowCase(b, blow)
+STRICMP = (TRIM(alow).EQ.TRIM(blow))
+END FUNCTION STRICMP
+
 
 SUBROUTINE getPImultiplies(helpstr)
 !===================================================================================================================================

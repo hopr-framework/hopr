@@ -12,7 +12,7 @@
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -31,7 +31,7 @@ USE MOD_Globals
 IMPLICIT NONE
 PRIVATE
 !-----------------------------------------------------------------------------------------------------------------------------------
-! GLOBAL VARIABLES 
+! GLOBAL VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! Private Part ---------------------------------------------------------------------------------------------------------------------
 ! Public Part ----------------------------------------------------------------------------------------------------------------------
@@ -72,7 +72,7 @@ IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 CHARACTER(LEN=4) :: tmpstr  ! ?
 !===================================================================================================================================
 WRITE(UNIT_StdOut,'(132("-"))')
@@ -96,7 +96,7 @@ END SUBROUTINE InitBasis
 
 SUBROUTINE fillBasisMapping()
 !===================================================================================================================================
-! determines the hierarchical relation from iAns to the position of the testfunction in the basis triangle, tetrahedra 
+! determines the hierarchical relation from iAns to the position of the testfunction in the basis triangle, tetrahedra
 ! example: linear monomial basis function in 2D: nAns=3: 1,x,y
 ! iAns=1: 1, iAns=2: x, iAns=3: y
 !===================================================================================================================================
@@ -124,7 +124,7 @@ IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 INTEGER             :: i,j,p,q,nNodes   ! ?
 !===================================================================================================================================
 
@@ -183,7 +183,7 @@ END DO
 !last Side
 i=0
 DO j=0,N
-  EdgeToQuad(4,j+1)=QuadMapInv(i,N-j) 
+  EdgeToQuad(4,j+1)=QuadMapInv(i,N-j)
 END DO
 
 !side mappings
@@ -197,7 +197,7 @@ DO q=0,N
       MapSideToVol(TriaMapInv(p,q),4,4)=TetraMapInv(0,q,p)
   END DO !p
 END DO !q
-!pyra  
+!pyra
 DO q=0,N
   DO p=0,N
     MapSideToVol(QuadMapInv(p,q),1,5)=PyraMapInv(q,p,0)
