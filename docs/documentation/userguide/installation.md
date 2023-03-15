@@ -18,7 +18,20 @@ Install the package via
 
 ### AppImage
 
-Download the executable from ...
+Download the pre-compiled (on Centos7) executable from the [release tag assets](https://github.com/hopr-framework/hopr/releases) or from the [GitHub Actions builds](https://github.com/hopr-framework/hopr/actions/runs/4420444576) to get a bleeding-edge version.
+
+The following table shows that there is no apparent drop in performance when using a pre-compiled executable:
+```{table} Performance test with pre-compiled executable: Cart-2D 665600 #Elements
+---
+name: tab:installation_AppImage
+---
+|                      Binary                      |       Laptop      |      Hawk     |  Commit |
+|                 :--------------:                 |    :----------:   |  :----------: | :-----: |
+|                                                  | AMD Ryzen 7 4800H | AMD EPYC 7702 |         |
+|               hopr-x86_64.AppImage               |       22.087      |     29.274    | 0324ba3 |
+| hopr/master/gcc/12.2.0/openmpi/4.1.4/hdf5/1.12.2 |       27.064      |               | afd6756 |
+
+```
 
 ## Prerequisites
 **HOPR** supports Linux-based systems only, requires a x86_64 compliant platform and has been tested on the following platforms
