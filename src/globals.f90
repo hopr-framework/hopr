@@ -94,6 +94,10 @@ INTERFACE getInverse
    MODULE PROCEDURE getInverse
 END INTERFACE
 
+INTERFACE SolveLinSys
+   MODULE PROCEDURE SolveLinSys
+END INTERFACE
+
 INTERFACE
   SUBROUTINE setstacksizeunlimited() BIND(C)
   END SUBROUTINE setstacksizeunlimited
@@ -383,5 +387,43 @@ REAL               :: WORK(dim1*dim1)  ! ?
     CALL abort(__STAMP__,'GetInverse(dim1,A): MATRIX INVERSION FAILED! INFO = ',IntInfoOpt=INFO)
   END IF
 END FUNCTION GetInverse
+
+
+SUBROUTINE SolveLinSys(dim1,nRHS,A,B)
+!===================================================================================================================================
+! Solve liner system A*X=B using LAPACK routines. A will be overwritten in the process! Multiple RHS possible.
+!===================================================================================================================================
+! MODULES
+! IMPLICIT VARIABLE HANDLING
+IMPLICIT NONE
+!-----------------------------------------------------------------------------------------------------------------------------------
+! INPUT VARIABLES
+INTEGER, INTENT(IN) :: dim1   ! size of matrix A
+INTEGER,INTENT(IN)  :: nRHS   ! number of right hand sides
+REAL,INTENT(INOUT)  :: A(dim1,dim1) ! System matrix
+REAL,INTENT(INOUT)  :: B(dim1,nRHS) ! Right hand side of the system
+!-----------------------------------------------------------------------------------------------------------------------------------
+!-----------------------------------------------------------------------------------------------------------------------------------
+! LOCAL VARIABLES
+INTEGER            :: IPIV(dim1),INFO,lwork ! ?
+REAL               :: WORK(dim1*dim1)  ! ?
+!===================================================================================================================================
+! DGETRF computes an LU factorization of a general M-by-N matrix A
+! using partial pivoting with row interchanges. A will be overwritten with LU factorization.
+CALL DGETRF(dim1, dim1, A, dim1, IPIV, INFO)
+
+IF (INFO.NE.0) THEN
+  CALL abort(__STAMP__,'SolveLinSys(dim1,nRHS,A,B): MATRIX A IS NUMERICALLY SINGULAR! INFO = ',IntInfoOpt=INFO)
+END IF
+
+! DGETRES computes the solution to the liner system A*X=B using the factorization
+! computed by DGETRF.
+CALL DGETRS('N', dim1, nRHS, A, dim1, IPIV, B, dim1, INFO)
+
+IF (INFO.NE.0) THEN
+  CALL abort(__STAMP__,'SolveLinSys(dim1,nRHS,A,B): SOLVING LINEAR SYSTEM FAILED! INFO = ',IntInfoOpt=INFO)
+END IF
+END SUBROUTINE SolveLinSys
+
 
 END MODULE MOD_Globals

@@ -247,6 +247,28 @@ IF(useCurveds) THEN
       CALL abort(__STAMP__,&
         'Specified curving method does not exist. =1: NormalVectors, =3: SplitElemFile, =4: SpecElemFile')
     END SELECT
+
+    ! Volume curving by radial basis functions
+    useRBF = GETLOGICAL('useRBF','.FALSE.')
+    IF (useRBF) THEN
+      nRBFBoxes = CNTSTR('RBFType','0')
+
+      ALLOCATE(SupportRadius(nRBFBoxes))
+      ALLOCATE(RBFType(      nRBFBoxes))
+      ALLOCATE(xlim(       2,nRBFBoxes))
+      ALLOCATE(ylim(       2,nRBFBoxes))
+
+      ! If xlim or ylim not given, apply RBF curving to whole mesh
+      WRITE(DefStr,'(E21.11,A1,E21.11)')-HUGE(1.),',',HUGE(1.)
+
+      DO i=1,nRBFBoxes
+        SupportRadius(i) = GETREAL('SupportRadius')
+        RBFType(i) = GETINT('RBFType')
+        xlim(:, i) = GETREALARRAY('xlim',2,TRIM(DefStr))
+        ylim(:, i) = GETREALARRAY('ylim',2,TRIM(DefStr))
+      END DO
+    END IF
+
   END IF
   doExactSurfProjection=GETLOGICAL('doExactSurfProjection','.FALSE.')
   IF(doExactSurfProjection)THEN
@@ -448,6 +470,7 @@ USE MOD_Mesh_Tools,       ONLY: CheckMortarWaterTight
 USE MOD_Mesh_PostDeform,  ONLY: PostDeform
 USE MOD_Output_HDF5,      ONLY: WriteMeshToHDF5
 USE MOD_Mesh_Jacobians,   ONLY: CheckJacobians
+USE MOD_RBF,              ONLY: RBFVolumeCurving
 USE MOD_Readin_ANSA
 USE MOD_Readin_CGNS
 USE MOD_Readin_Gambit
@@ -470,7 +493,7 @@ IMPLICIT NONE
 TYPE(tElem),POINTER :: Elem  ! ?
 TYPE(tSide),POINTER :: Side    ! ?
 LOGICAL             :: curvedFound  ! ?
-INTEGER             :: i,iElem  ! ?
+INTEGER             :: i,iElem,iRBFBox  ! ?
 !===================================================================================================================================
 CALL Timer(.TRUE.)
 WRITE(UNIT_stdOut,'(132("="))')
@@ -668,7 +691,22 @@ IF(doExactSurfProjection) CALL ProjectToExactSurfaces()
 ! get element types
 CALL FindElemTypes()
 ! correct displacement in z (e.g. for periodic/2.5D)
-IF(doZcorrection) CALL zCorrection()
+IF(doZcorrection) CALL zCorrection(InitZOrient_In=.TRUE.)
+
+! Call RBF curving after GlobalUniqueNodes, since no double entries in the RBF nodes are allowed
+IF (useCurveds.AND.useRBF) THEN
+  DO iRBFBox=1,nRBFBoxes
+    CALL RBFVolumeCurving(iRBFBox)
+  END DO
+  ! Deallocate all RBF quantities
+  DEALLOCATE(RBFType)
+  DEALLOCATE(SupportRadius)
+  DEALLOCATE(xlim)
+  DEALLOCATE(ylim)
+  ! Call z-Correction again to remove 3D effects of interpolation, zPeriodic is already done
+  zPeriodic = .FALSE.
+  IF(doZcorrection) CALL zCorrection(InitZOrient_In=.FALSE.)
+END IF
 
 CALL CheckNodeConnectivity()
 
