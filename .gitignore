@@ -1,15 +1,33 @@
-share
-tutorials/
-build
-ctags.txt
-*.mod
+*.s
 *.o
+*.i90
+*.mod
+*.swp
+*.pyc
 *~
+src/buildinfo.h
 
-# build dirs
-build*
+# build folders
+bin/*
+ini/*
+lib/*
+share/*
+build*/
+tutorials/*
+
+# tags
+ctags.txt
+
+# core dump files
+core
 
 # documentation
 _build/
+
+# cmake temporary files
 CMakeCache.txt
 CMakeFiles/
+
+# integrated development environment (ide)
+.vscode/
+nbproject/
