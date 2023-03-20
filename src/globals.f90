@@ -12,7 +12,7 @@
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -33,7 +33,7 @@ USE, INTRINSIC :: ISO_FORTRAN_ENV, ONLY : INPUT_UNIT, OUTPUT_UNIT, ERROR_UNIT
 IMPLICIT NONE
 PUBLIC
 !-----------------------------------------------------------------------------------------------------------------------------------
-! GLOBAL VARIABLES 
+! GLOBAL VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! Private Part ---------------------------------------------------------------------------------------------------------------------
 ! Public Part ----------------------------------------------------------------------------------------------------------------------
@@ -60,7 +60,7 @@ INTEGER,PARAMETER           :: PatchVersion = 0           !> HoprVersion saved i
 INTEGER,PARAMETER           :: HoprVersionInt = PatchVersion+MinorVersion*100+MajorVersion*10000 !> Hopr version number saved in each hdf5 file with hdf5 header
 CHARACTER(LEN=10)           :: HoprVersionStr             !> Hopr version string saved in each hdf5 file with hdf5 header
 
-
+INTEGER                     :: doPrintVersion = 0         !> 0: no version, 1: normal version, 2: extended version
 
 INTERFACE Abort
    MODULE PROCEDURE AbortProg
@@ -141,6 +141,7 @@ WRITE(UNIT_stdOut,*)
 STOP 0001
 END SUBROUTINE AbortProg
 
+
 SUBROUTINE Timer(start,unit_in)
 !===================================================================================================================================
 ! Get average and max time needed for a task. You always have to call this routine twice. The first time you call it
@@ -208,7 +209,7 @@ FUNCTION IS_NAN(x)
 ! ?
 !===================================================================================================================================
 ! MODULES
-#ifdef IEEE_ISNAN 
+#ifdef IEEE_ISNAN
 USE IEEE_ARITHMETIC
 #endif
 ! IMPLICIT VARIABLE HANDLING
@@ -237,7 +238,7 @@ IF(ABS(x) .GT. HUGE(testvalue))THEN
   is_nan=.TRUE.
 ENDIF
 ! Not defined
-IF(x .NE. x)THEN 
+IF(x .NE. x)THEN
   ERRWRITE(*,*) 'Floating invalid detected!'
   ERRWRITE(*,*) 'x=',x
   is_nan=.TRUE.
@@ -259,9 +260,9 @@ INTEGER,INTENT(IN)  :: nVal ! ?
 REAL,INTENT(IN)     :: v1(nVal) ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
-REAL            :: normalize(nVal) ! ? 
+REAL            :: normalize(nVal) ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 !===================================================================================================================================
 normalize=v1/SQRT(SUM(v1*v1))
 END FUNCTION NORMALIZE
@@ -276,13 +277,13 @@ PURE FUNCTION CROSS(v1,v2)
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT VARIABLES
-REAL,INTENT(IN) :: v1(3)    ! ? 
+REAL,INTENT(IN) :: v1(3)    ! ?
 REAL,INTENT(IN) :: v2(3)    ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 REAL            :: cross(3) ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 !===================================================================================================================================
 cross=(/v1(2)*v2(3)-v1(3)*v2(2),v1(3)*v2(1)-v1(1)*v2(3),v1(1)*v2(2)-v1(2)*v2(1)/)
 END FUNCTION CROSS
@@ -306,6 +307,7 @@ getDet3=   ( Mat(1,1) * Mat(2,2) - Mat(1,2) * Mat(2,1) ) * Mat(3,3) &
          + ( Mat(1,2) * Mat(2,3) - Mat(1,3) * Mat(2,2) ) * Mat(3,1) &
          + ( Mat(1,3) * Mat(2,1) - Mat(1,1) * Mat(2,3) ) * Mat(3,2)
 END FUNCTION getDet3
+
 
 FUNCTION getInv3(Mat,sDet_in)
 !===================================================================================================================================
@@ -342,10 +344,9 @@ getInv3(3,3) = ( Mat(1,1) * Mat(2,2) - Mat(1,2) * Mat(2,1) ) * sDet
 END FUNCTION getInv3
 
 
-
 FUNCTION GetInverse(dim1,A) RESULT(Ainv)
 !===================================================================================================================================
-! invert a matrix (dependant in LAPACK Routines) 
+! invert a matrix (dependant in LAPACK Routines)
 !===================================================================================================================================
 ! MODULES
 ! IMPLICIT VARIABLE HANDLING
@@ -382,6 +383,5 @@ REAL               :: WORK(dim1*dim1)  ! ?
     CALL abort(__STAMP__,'GetInverse(dim1,A): MATRIX INVERSION FAILED! INFO = ',IntInfoOpt=INFO)
   END IF
 END FUNCTION GetInverse
-
 
 END MODULE MOD_Globals

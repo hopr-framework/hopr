@@ -2,7 +2,9 @@ name: cmake-ninja
 
 on:
   push:
-    #pull_request:
+  #pull_request:
+  release:
+    types: published
 
 jobs:
   build:
@@ -14,12 +16,24 @@ jobs:
     # Use centos7
     container:
       image: centos:7
+      options: --privileged
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Install GIT
+      run: |
+        yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
+        yum -y install git
+        git --version
+
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
 
     - name: Dependencies
       run: |
+        git config --global --add safe.directory '*'
+        git status
         curl -L -O https://github.com/Kitware/CMake/releases/download/v3.16.4/cmake-3.16.4-Linux-x86_64.sh
         chmod +x cmake-3.16.4-Linux-x86_64.sh
         ./cmake-3.16.4-Linux-x86_64.sh --skip-license --prefix=/usr/local
@@ -28,7 +42,10 @@ jobs:
         rpm -U --quiet p7zip-16.02-20.el7.x86_64.rpm
         rpm -U --quiet p7zip-plugins-16.02-20.el7.x86_64.rpm
         yum install -y epel-release
-        yum install -y make libasan gcc-gfortran gcc-c++ unzip git openblas-devel lapack-devel zlib-devel
+        yum install -y make libasan gcc-gfortran gcc-c++ unzip openblas-devel lapack-devel zlib-devel tree fuse-sshfs fuse-libs file
+        groupadd fuse
+        user="$(whoami)"
+        usermod -a -G fuse "$user"
         curl -L -O https://github.com/ninja-build/ninja/releases/download/v1.11.1/ninja-linux.zip
         unzip ninja-linux.zip
         mv ./ninja /usr/bin
@@ -37,25 +54,73 @@ jobs:
       shell: bash
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      #run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
-      # hdf5-openmpi-devel on centos7 probably broken
-      #run: cmake -G Ninja -B ${{github.workspace}}/build -DLIBS_BUILD_HDF5=OFF -DCMAKE_BUILD_TYPE=Release -DLIBS_USE_MPI=OFF
-      run: cmake -G Ninja -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release -DLIBS_USE_MPI=OFF
+      run: cmake -G Ninja -B build -DCMAKE_BUILD_TYPE=Release -DLIBS_USE_MPI=OFF -DCMAKE_INSTALL_PREFIX=/usr
 
     - name: Build
       shell: bash
       # Build your program with the given configuration
-      #run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-      run: cmake --build ${{github.workspace}}/build
+      run: cmake --build build
 
-    - name: Create archive
+    - name: Create AppImage
+      shell: bash
       run: |
-        mkdir artifact
-        7z a artifact/hopr.zip ${{github.workspace}}/build/bin/hopr
+        cd build
+        DESTDIR=AppDir ninja install
+        mkdir -p AppDir/usr/share/icons
+        cp ../docs/Meshformat/pics/HOPR_logo.png AppDir/usr/share/icons/hopr.png
+        curl -L -O https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+        chmod +x linuxdeploy-x86_64.AppImage
+        tree AppDir
+        ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage --desktop-file=../hopr.desktop
 
-    # Upload hopr binary archive as an artifact
-    - name: Upload artifact
-      uses: actions/upload-artifact@v1
+    - name: Set env
+      run: |
+        echo "BINARYPATH=$(ls build/hopr*x86_64.AppImage)" >> $GITHUB_ENV
+        echo "BINARYNAME=$(basename $(ls build/hopr*x86_64.AppImage))" >> $GITHUB_ENV
+
+    #- name: Test env variable
+      #run: |
+        #echo ${BINARYPATH}
+        #echo ${{env.BINARYPATH}}
+        #echo ${BINARYNAME}
+        #echo ${{env.BINARYNAME}}
+        #cat src/buildinfo.h
+
+    - name: Check file existence
+      id: check_files
+      uses: andstor/file-existence-action@v2
       with:
-        name: hopr-binary-archives
-        path: artifact
+        files: "${{ env.BINARYPATH }}"
+
+    - name: Fail if binary does not exist
+      if: steps.check_files.outputs.files_exists == 'false'
+      uses: actions/github-script@v3
+      with:
+        script: |
+          core.setFailed('no binary found under build/hopr*x86_64.AppImage.')
+
+    - name: Create archives
+      run: |
+        mkdir artifacts
+        mkdir assets
+        cp ${BINARYPATH} .
+        7z a assets/hopr-linux64.zip ${BINARYNAME}
+        mv ${BINARYNAME} artifacts/.
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: hopr-binary-v1.1.0
+        path: artifacts
+
+    - name: Upload release asset
+      if: github.event.action == 'published'
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./assets/hopr-linux64.zip
+        asset_name: hopr-linux64.zip
+        asset_content_type: application/zip
+

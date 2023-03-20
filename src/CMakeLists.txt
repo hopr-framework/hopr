@@ -38,6 +38,7 @@ FILE(GLOB_RECURSE hoprF90 ./src/basis/*.f90
                           ./src/search/*.f90
                           ./src/sfc/*.f90
                           globals.f90
+                          commandlinearguments.f90
                           headers.f90
                           io_hdf5.f90
                           sortingtools.f90)

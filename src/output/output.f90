@@ -13,7 +13,7 @@
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -32,7 +32,7 @@ USE MOD_Output_Vars
 IMPLICIT NONE
 PRIVATE
 !-----------------------------------------------------------------------------------------------------------------------------------
-! GLOBAL VARIABLES 
+! GLOBAL VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! Private Part ---------------------------------------------------------------------------------------------------------------------
 ! Public Part ----------------------------------------------------------------------------------------------------------------------
@@ -64,7 +64,7 @@ IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 INTEGER             :: ioStatus  ! ?
 CHARACTER(LEN=255)  :: strFileName  ! ?
 CHARACTER(LEN=8)    :: StrDate  ! ?
@@ -98,11 +98,11 @@ IF(Logging)THEN
                       StrTime(1:2),':',StrTime(3:4),':',StrTime(5:10)
 END IF  ! Logging
 DebugVisu   =GETLOGICAL('DebugVisu','.FALSE.')
-OutputFormat=GETINT('OutputFormat','0')  
+OutputFormat=GETINT('OutputFormat','0')
 IF(DebugVisu) THEN
-  DebugVisuLevel=GETINT('DebugVisuLevel','0')  
+  DebugVisuLevel=GETINT('DebugVisuLevel','0')
   IF(DebugVisuLevel.GE.2) &
-    Visu_sJ_limit  =GETREAL('Visu_sJ_limit','1.')  
+    Visu_sJ_limit  =GETREAL('Visu_sJ_limit','1.')
 END IF
 
 sfc_type  =GETSTR('sfc_type','hilbert')

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=hopr
+Exec=hopr
+Comment=Tool create .h5 hopr meshes to be read by piclas, flexi, fluxo, etc.
+Icon=hopr
+Categories=Development;
+Terminal=true
