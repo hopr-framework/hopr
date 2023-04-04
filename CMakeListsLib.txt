@@ -14,13 +14,20 @@ MARK_AS_ADVANCED(FORCE LIBS_EXTERNAL_LIB_DIR)
 # =========================================================================
 # Check where the code originates
 # =========================================================================
-EXECUTE_PROCESS(COMMAND git ls-remote --get-url OUTPUT_VARIABLE GIT_ORIGIN)
+IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/.git)
+  EXECUTE_PROCESS(COMMAND git ls-remote --get-url OUTPUT_VARIABLE GIT_ORIGIN)
+
+  # Strip lead and trailing white space
+  string(STRIP ${GIT_ORIGIN} GIT_ORIGIN)
+
+  # Origin pointing to gitlab?
+  MESSAGE(STATUS "Checking git origin: " ${GIT_ORIGIN})
+ENDIF()
 
 # Origin pointing to IAG
 IF("${GIT_ORIGIN}" MATCHES ".iag.uni-stuttgart.de")
-# Strip leading and trailing white space
-STRING(STRIP ${GIT_ORIGIN} GIT_ORIGIN)
-MESSAGE(STATUS "Checking git origin: " ${GIT_ORIGIN})
+  # Strip leading and trailing white space
+  STRING(STRIP ${GIT_ORIGIN} GIT_ORIGIN)
   # Checked out using SSH
   IF("${GIT_ORIGIN}" MATCHES "^git@")
     SET(LIBS_DLPATH "git@gitlab.iag.uni-stuttgart.de:")
@@ -39,9 +46,9 @@ ELSEIF("${GIT_ORIGIN}" MATCHES "ila.uni-stuttgart.de")
   ELSE()
     SET(LIBS_DLPATH "https://gitlab.ila.uni-stuttgart.de/")
   ENDIF()
-# Fallback to IAG libs
 ELSE()
-  SET(LIBS_DLPATH "https://gitlabext.iag.uni-stuttgart.de/")
+  # Fallback to github
+  SET(GIT_ORIGIN ".github.com")
 ENDIF()
 
 
@@ -160,6 +167,7 @@ ELSE()
     SET (HDF5DOWNLOAD ${LIBS_DLPATH}libs/hdf5.git )
   ENDIF()
   SET (HDF5_DOWNLOAD ${HDF5DOWNLOAD} CACHE STRING "HDF5 Download-link")
+  MESSAGE (STATUS "Downloading HDF5 from ${HDF5DOWNLOAD}")
   MARK_AS_ADVANCED(FORCE HDF5_DOWNLOAD)
 
   #SET HDF5_TAG depending on MPI Version
@@ -316,6 +324,7 @@ ELSE()
     ELSE()
       SET (MATHLIB_DOWNLOAD ${LIBS_DLPATH}libs/lapack.git)
     ENDIF()
+    MESSAGE(STATUS "Downloading LAPACK from ${MATHLIB_DOWNLOAD}")
     SET (MATH_LIB_DOWNLOAD ${MATHLIB_DOWNLOAD} CACHE STRING "LAPACK Download-link" FORCE)
     SET (MATH_LIB_TAG "v3.10.0")
     MARK_AS_ADVANCED(FORCE MATH_LIB_DOWNLOAD)
@@ -327,6 +336,7 @@ ELSE()
     ELSE()
       SET (MATHLIB_DOWNLOAD ${LIBS_DLPATH}libs/OpenBLAS.git)
     ENDIF()
+    MESSAGE(STATUS "Downloading LAPACK from ${MATHLIB_DOWNLOAD}")
     SET (MATH_LIB_DOWNLOAD ${MATHLIB_DOWNLOAD} CACHE STRING "OpenBLAS Download-link" FORCE)
     SET (MATH_LIB_TAG "v0.3.17")
     MARK_AS_ADVANCED(FORCE MATH_LIB_DOWNLOAD)
@@ -473,6 +483,7 @@ ELSE()
       ELSE()
         SET (CGNSDOWNLOAD ${LIBS_DLPATH}libs/cgns.git )
       ENDIF()
+      MESSAGE(STATUS "Downloading CGNS from ${CGNSDOWNLOAD}")
 
       # Fallback for disabling HDF5 for CGNS compilation
       OPTION(LIBS_BUILD_CGNS_ENABLE_HDF5 "Build CGNS library with -DCGNS_ENABLE_HDF5=ON" ON)
