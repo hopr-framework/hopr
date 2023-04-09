@@ -5,6 +5,10 @@ on:
   #pull_request:
   release:
     types: published
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    # 20:00 every Sunday UTC (which is 21:00 CET or 22:00 CEST)
+    - cron: '0 20 * * 0'
 
 jobs:
   build:
@@ -21,6 +25,7 @@ jobs:
     steps:
     - name: Install GIT
       run: |
+        date
         yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
         yum -y install git
         git --version
