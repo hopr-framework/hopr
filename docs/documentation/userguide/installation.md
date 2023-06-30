@@ -129,7 +129,26 @@ For compiling HOPR, create a new sub-directory, e.g. "build" . Inside that direc
 Here you can specify library paths and options. If no preinstallied libraries for HDF5 and CGNS are found these libraries will be
 downloaded and built automatically. Press `c` to configure and `g` to create the Makefiles. Finally compile HOPR by typing `make`.
 
-If the user does not need the cgns library (i.e. HOPR mesh is not built via a cgns input meshfile), the cmake option `LIBS_USE_CGNS` can be set to `OFF`, which skips the installation of the cgns library. Note that the cmake tests that depend on CGNS will not be executed. 
+``LIBS_USE_CGNS``: If the user does not need the cgns library (i.e. HOPR mesh is not built via a cgns input meshfile), the cmake
+option `LIBS_USE_CGNS` can be set to `OFF`, which skips the installation of the cgns library.
+Note that the cmake tests that depend on CGNS will not be executed.
+
+``HOPR_INSTRUCTION``: Processor instruction settings (mainly depending on the hardware on which the compilation process is
+  performed or the target hardware where HOPR will be executed). This variable is set automatically depending on the machine where
+  HOPR is compiled. CMake prints the value of this parameter during configuration
+
+      -- Compiling Release/Profile with [GNU] (v12.2.0) fortran compiler using HOPR_INSTRUCTION [-march=native] instruction
+
+  When compiling HOPR on one machine and executing the code on a different one, the instruction setting should be set to
+  `generic`. This can be accomplished by running
+
+      cmake -DHOPR_INSTRUCTION=-mtune=generic
+
+  To reset the instruction settings, run cmake again but with
+
+      -DHOPR_INSTRUCTION=
+
+  which resorts to using the automatic determination depending on the detected machine.
 
 (sec:hdf5-installation)=
 ### Installing/setting up HDF5
