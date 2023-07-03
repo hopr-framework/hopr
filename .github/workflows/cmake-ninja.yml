@@ -104,8 +104,9 @@ jobs:
         mkdir artifacts
         mkdir assets
         cp ${BINARYPATH} .
-        7z a assets/hopr-linux64.zip ${BINARYNAME}
-        mv ${BINARYNAME} artifacts/.
+        md5sum ${BINARYNAME} > md5sum.txt
+        7z a assets/hopr-linux64.zip ${BINARYNAME} md5sum.txt
+        mv ${BINARYNAME} md5sum.txt artifacts/.
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
