@@ -70,12 +70,11 @@ IF("${HOPR_INSTRUCTION}" STREQUAL "")
   IF ("${CMAKE_HOSTNAME}" MATCHES "login")
     MARK_AS_ADVANCED(FORCE C_PATH CXX_PATH Fortran_PATH)
 
-    # HAWK and SuperMUC name their login nodes identically, so use OS distribution to identify
-    FIND_PROGRAM(LSB_RELEASE_EXEC lsb_release)
-    EXECUTE_PROCESS(COMMAND ${LSB_RELEASE_EXEC} -is OUTPUT_VARIABLE LSB_RELEASE_ID_SHORT OUTPUT_STRIP_TRAILING_WHITESPACE)
-    MARK_AS_ADVANCED(FORCE LSB_RELEASE_EXEC)
+    # HAWK and SuperMUC name their login nodes identically, so use the Fully Qualified Domain Name (FQDN) to identify
+    CMAKE_HOST_SYSTEM_INFORMATION(RESULT FQDN QUERY FQDN)
+    MARK_AS_ADVANCED(FORCE FQDN)
     # HLRS HAWK
-    IF (LSB_RELEASE_ID_SHORT MATCHES "CentOS")
+    IF (FQDN MATCHES "hawk.hww.hlrs.de")
       MESSAGE(STATUS "Compiling on Hawk")
       # Overwrite compiler target architecture
       IF (CMAKE_Fortran_COMPILER_ID MATCHES "GNU" OR CMAKE_Fortran_COMPILER_ID MATCHES "Flang")
@@ -86,7 +85,7 @@ IF("${HOPR_INSTRUCTION}" STREQUAL "")
       # Use AMD Optimized Lapack/BLAS
       # SET(BLA_VENDOR "FLAME")
     # SuperMUC
-    ELSEIF (LSB_RELEASE_ID_SHORT MATCHES "SUSE")
+    ELSEIF (FQDN MATCHES "sng.lrz.de")
       MESSAGE(STATUS "Compiling on SuperMUC")
       # Overwrite compiler target architecture
       IF (CMAKE_Fortran_COMPILER_ID MATCHES "GNU" OR CMAKE_Fortran_COMPILER_ID MATCHES "Flang")
@@ -124,12 +123,6 @@ IF("${HOPR_INSTRUCTION}" STREQUAL "")
     MESSAGE(STATUS "Compiling on ILA student cluster")
     MARK_AS_ADVANCED(FORCE C_PATH CXX_PATH Fortran_PATH)
     SET(HOPR_INSTRUCTION "-march=native")
-
-  ELSEIF ("${CMAKE_FQDN_HOST}" MATCHES "gitlab.ila.uni-stuttgart.de")
-    MESSAGE(STATUS "Compiling on ILA Gitlab")
-    ADD_DEFINITIONS(-DVDM_ANALYTICAL)
-    SET(HOPR_INSTRUCTION "-march=native")
-
   ELSE()
     MESSAGE(STATUS "Compiling on a generic machine")
     # Set compiler target architecture
@@ -141,7 +134,7 @@ IF("${HOPR_INSTRUCTION}" STREQUAL "")
   ENDIF()
 ENDIF()
 
-MESSAGE(STATUS "Compiling Release/Profile with [${CMAKE_Fortran_COMPILER_ID}] (v${CMAKE_Fortran_COMPILER_VERSION}) fortran compiler using HOPR_INSTRUCTION [${HOPR_INSTRUCTION}] instruction")
+MESSAGE(STATUS "Compiling Release/Profile with [${CMAKE_Fortran_COMPILER_ID}] (v${CMAKE_Fortran_COMPILER_VERSION}) fortran compiler using HOPR_INSTRUCTION [${HOPR_INSTRUCTION}] instructions.")
 
 # =========================================================================
 # COMPILER FLAGS
@@ -160,7 +153,7 @@ IF (CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
   SET (CMAKE_Fortran_FLAGS_RELEASE   "${CMAKE_Fortran_FLAGS}     -O3 ${HOPR_INSTRUCTION} -finline-functions -fstack-arrays")
   SET (CMAKE_Fortran_FLAGS_PROFILE   "${CMAKE_Fortran_FLAGS} -pg -O3 ${HOPR_INSTRUCTION} -finline-functions -fstack-arrays")
   SET (CMAKE_Fortran_FLAGS_DEBUG     "${CMAKE_Fortran_FLAGS} -g  -Og -ggdb3 -ffpe-trap=invalid -fbounds-check -finit-real=snan -fbacktrace  -Wall")
-  SET (CMAKE_Fortran_FLAGS_SANITIZE  "${CMAKE_Fortran_FLAGS} -g  -Og -ggdb3 -ffpe-trap=invalid,zero,overflow -fbounds-check -finit-real=snan -fbacktrace  -Wall -fsanitize=address,undefined,leak -fno-omit-frame-pointer -Wc-binding-type -Wuninitialized -pedantic")
+  SET (CMAKE_Fortran_FLAGS_SANITIZE  "${CMAKE_Fortran_FLAGS} -g  -Og -ggdb3 -ffpe-trap=invalid,zero,overflow,denorm -fbounds-check -finit-real=snan -fbacktrace  -Wall -fsanitize=address,undefined,leak -fno-omit-frame-pointer -Wc-binding-type -Wuninitialized -pedantic")
   # add flags only for compiling not linking!
   # Compile flags depend on the generator
   IF(NOT "${CMAKE_GENERATOR}" MATCHES "Ninja")
@@ -240,7 +233,9 @@ MARK_AS_ADVANCED(FORCE CMAKE_Fortran_FLAGS)
 MARK_AS_ADVANCED(FORCE CMAKE_Fortran_FLAGS_RELEASE)
 MARK_AS_ADVANCED(FORCE CMAKE_Fortran_FLAGS_PROFILE)
 MARK_AS_ADVANCED(FORCE CMAKE_Fortran_FLAGS_DEBUG)
+MARK_AS_ADVANCED(FORCE CMAKE_Fortran_FLAGS_SANITIZE)
 SET(CMAKE_Fortran_FLAGS            "${CMAKE_Fortran_FLAGS}"          CACHE STRING "Default compiler flags" FORCE)
 SET(CMAKE_Fortran_FLAGS_RELEASE    "${CMAKE_Fortran_FLAGS_RELEASE}"  CACHE STRING "Release compiler flags" FORCE)
 SET(CMAKE_Fortran_FLAGS_PROFILE    "${CMAKE_Fortran_FLAGS_PROFILE}"  CACHE STRING "Profile compiler flags" FORCE)
 SET(CMAKE_Fortran_FLAGS_DEBUG      "${CMAKE_Fortran_FLAGS_DEBUG}"    CACHE STRING "Debug compiler flags"   FORCE)
+SET(CMAKE_Fortran_FLAGS_SANITIZE   "${CMAKE_Fortran_FLAGS_SANITIZE}" CACHE STRING "Sanitize compiler flags"  FORCE)
