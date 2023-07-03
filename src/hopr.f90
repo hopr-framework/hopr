@@ -21,6 +21,7 @@
 ! You should have received a copy of the GNU General Public License along with HOPR. If not, see <http://www.gnu.org/licenses/>.
 !=================================================================================================================================
 #include "hopr.h"
+#include "buildinfo.h"
 PROGRAM HOPR
 !===================================================================================================================================
 ! control program of HOPR (high order preprocessor)
@@ -28,7 +29,7 @@ PROGRAM HOPR
 ! MODULES
 USE MOD_Globals
 USE MOD_Basis,                 ONLY: InitBasis
-USE MOD_Commandline_Arguments, ONLY: ParseCommandlineArguments
+USE MOD_Commandline_Arguments, ONLY: ParseCommandlineArguments,int2strf
 USE MOD_Mesh,                  ONLY: InitMesh,FillMesh
 USE MOD_Mesh_Vars,             ONLY: negativeJacobians,jacobianTolerance
 USE MOD_Output,                ONLY: InitOutput
@@ -46,31 +47,23 @@ IMPLICIT NONE
 CALL SetStackSizeUnlimited()
 CALL ParseCommandlineArguments()
 WRITE(UNIT_stdOut,'(132("="))')
-WRITE(UNIT_stdOut,'(A)') &
-"           _______     _______    ___________________    ___________________   ___________________                         xX    "
-WRITE(UNIT_stdOut,'(A)') &
-"          /      /)   /      /)  /                  /)  /                  /) /                  /)     .xXXXXXXXXx.       X     "
-WRITE(UNIT_stdOut,'(A)') &
-"         /      //   /      //  /      _____       //  /      _____       // /      _____       //    .XXXXXXXXXXXXXXXx  .XXXXx  "
-WRITE(UNIT_stdOut,'(A)') &
-"        /      //   /      //  /      /)___/      //  /      /)___/      // /      /)___/      //   .XXXXXXXXXXXXXXXXXXXXXXXXXXx "
-WRITE(UNIT_stdOut,'(A)') &
-"       /      //___/      //  /      //   /      //  /      //___/      // /      //___/      //  .XXXXXXXXXXXXXXXXXXXXXXXX´     "
-WRITE(UNIT_stdOut,'(A)') &
-"      /                  //  /      //   /      //  /                  // /                  //  .XX``XXXXXXXXXXXXXXXXXX´        "
-WRITE(UNIT_stdOut,'(A)') &
-"     /      _____       //  /      //   /      //  /      ____________// /      __      ____//   XX`  `XXXXX`      .X´           "
-WRITE(UNIT_stdOut,'(A)') &
-"    /      /)___/      //  /      //   /      //  /      /)___________) /      /)_|    |____)   XX     XXX`       .´             "
-WRITE(UNIT_stdOut,'(A)') &
-"   /      //   /      //  /      //___/      //  /      //             /      //  |    |__     ,X`    XXX´                       "
-WRITE(UNIT_stdOut,'(A)') &
-"  /      //   /      //  /                  //  /      //             /      //   |      /)   ,X`   .XX´                         "
-WRITE(UNIT_stdOut,'(A)') &
-" /______//   /______//  /__________________//  /______//             /______//    |_____//   ,X`   XX´                           "
-WRITE(UNIT_stdOut,'(A)') &
-" )______)    )______)   )__________________)   )______)              )______)     )_____)   xX    XXx                            "
+WRITE(UNIT_stdOut,'(A)')"           _______     _______    ___________________    ___________________   ___________________                         xX    "
+WRITE(UNIT_stdOut,'(A)')"          /      /)   /      /)  /                  /)  /                  /) /                  /)     .xXXXXXXXXx.       X     "
+WRITE(UNIT_stdOut,'(A)')"         /      //   /      //  /      _____       //  /      _____       // /      _____       //    .XXXXXXXXXXXXXXXx  .XXXXx  "
+WRITE(UNIT_stdOut,'(A)')"        /      //   /      //  /      /)___/      //  /      /)___/      // /      /)___/      //   .XXXXXXXXXXXXXXXXXXXXXXXXXXx "
+WRITE(UNIT_stdOut,'(A)')"       /      //___/      //  /      //   /      //  /      //___/      // /      //___/      //  .XXXXXXXXXXXXXXXXXXXXXXXX´     "
+WRITE(UNIT_stdOut,'(A)')"      /                  //  /      //   /      //  /                  // /                  //  .XX``XXXXXXXXXXXXXXXXXX´        "
+WRITE(UNIT_stdOut,'(A)')"     /      _____       //  /      //   /      //  /      ____________// /      __      ____//   XX`  `XXXXX`      .X´           "
+WRITE(UNIT_stdOut,'(A)')"    /      /)___/      //  /      //   /      //  /      /)___________) /      /)_|    |____)   XX     XXX`       .´             "
+WRITE(UNIT_stdOut,'(A)')"   /      //   /      //  /      //___/      //  /      //             /      //  |    |__     ,X`    XXX´                       "
+WRITE(UNIT_stdOut,'(A)')"  /      //   /      //  /                  //  /      //             /      //   |      /)   ,X`   .XX´                         "
+WRITE(UNIT_stdOut,'(A)')" /______//   /______//  /__________________//  /______//             /______//    |_____//   ,X`   XX´                           "
+WRITE(UNIT_stdOut,'(A)')" )______)    )______)   )__________________)   )______)              )______)     )_____)   xX    XXx                            "
 WRITE(UNIT_stdOut,'(A)')
+WRITE(UNIT_stdOut,'(132(" "))')
+WRITE(UNIT_stdOut,'(A)')"hopr version "&
+    //TRIM(int2strf(MajorVersion))//"."//TRIM(int2strf(MinorVersion))//"."//TRIM(int2strf(PatchVersion))&
+    //" with commit "//TRIM(GIT_CURRENT_COMMIT)
 WRITE(UNIT_stdOut,'(132("="))')
 
 ! Initialization

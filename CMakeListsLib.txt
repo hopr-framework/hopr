@@ -34,7 +34,7 @@ IF("${GIT_ORIGIN}" MATCHES ".iag.uni-stuttgart.de")
   # Checked out using HTTPS
   # IF("${GIT_ORIGIN}" MATCHES "^https@")
   ELSE()
-    SET(LIBS_DLPATH "https://gitlabext.iag.uni-stuttgart.de/")
+    SET(LIBS_DLPATH "https://gitlab.iag.uni-stuttgart.de/")
   ENDIF()
 # Origin pointing to ILA
 ELSEIF("${GIT_ORIGIN}" MATCHES "ila.uni-stuttgart.de")
