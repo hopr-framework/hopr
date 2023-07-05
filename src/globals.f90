@@ -55,8 +55,8 @@ CHARACTER(LEN=255)          :: ProjectName                ! necessary data for i
 LOGICAL                     :: Logging                    ! Set .TRUE. to activate logging function for each processor
 
 INTEGER,PARAMETER           :: MajorVersion = 1           !> HoprVersion saved in each hdf5 file with hdf5 header
-INTEGER,PARAMETER           :: MinorVersion = 1           !> HoprVersion saved in each hdf5 file with hdf5 header
-INTEGER,PARAMETER           :: PatchVersion = 1           !> HoprVersion saved in each hdf5 file with hdf5 header
+INTEGER,PARAMETER           :: MinorVersion = 2           !> HoprVersion saved in each hdf5 file with hdf5 header
+INTEGER,PARAMETER           :: PatchVersion = 0           !> HoprVersion saved in each hdf5 file with hdf5 header
 INTEGER,PARAMETER           :: HoprVersionInt = PatchVersion+MinorVersion*100+MajorVersion*10000 !> Hopr version number saved in each hdf5 file with hdf5 header
 CHARACTER(LEN=10)           :: HoprVersionStr             !> Hopr version string saved in each hdf5 file with hdf5 header
 
