@@ -1,0 +1,20 @@
+name: publish-docker
+on: [push]
+jobs:
+  build-and-push-docker-image:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v2
+      - name: Build the  Docker image
+        run: |
+             docker build -t ghcr.io/hopr-framework/docker-ubuntu20-hopr-exec:latest -f docker_image/ubuntu20_hoprexec.dockerfile docker_image/.
+      - name: Push the docker image
+        run: |
+             docker push ghcr.io/hopr-framework/docker-ubuntu20-hopr-exec:latest
