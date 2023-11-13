@@ -335,6 +335,8 @@ REAL                           :: PostDeform_R0
 REAL                           :: PostDeform_Lz  
 REAL                           :: PostDeform_sq  
 REAL                           :: PostDeform_Rtorus  
+REAL                           :: PostDeform_WaveLength
+REAL                           :: PostDeform_Amplitude
 TYPE(tElemPtr),POINTER         :: Elems(:)
 ! INTERFACES -----------------------------------------------------------------------------------------------------------------------
 INTERFACE getNewElem

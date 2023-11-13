@@ -166,6 +166,7 @@ SUBROUTINE PostDeformFunc(nTotal,X_in,X_out)
 USE MOD_Globals
 USE MOD_Mesh_Vars,ONLY:MeshPostDeform,PostDeform_R0,PostDeform_Rtorus 
 USE MOD_Mesh_Vars,ONLY:PostDeform_sq,PostDeform_Lz
+USE MOD_Mesh_Vars,ONLY:PostDeform_Amplitude,PostDeform_WaveLength
 !MODULE OUTPUT VARIABLES
 ! MODULES
 ! IMPLICIT VARIABLE HANDLING
@@ -186,7 +187,7 @@ REAL               :: rr,x(3),dx(3),dx1(3),dx2(3),dx3(3)
 REAL               :: xout(3)
 REAL               :: alpha,HH, xi,eta
 REAL               :: cosa,cosb,sina,sinb 
-REAL               :: rotmat(2,2),arg
+REAL               :: rotmat(2,2),arg,freq
 REAL               :: g,h,hMax,xLeft,normal,vec(2),length
 REAL               :: vecRefBottom(2),xBlendBottom
 REAL               :: vecRefTop(2),   xBlendTop
@@ -695,26 +696,32 @@ CASE(21)!Laval nozzle
     xout(3)=x(3)
     X_out(:,i)=xout(:)
   END DO !i=1,nTotal
+
 CASE(30) ! sin [-1;1]^3
-  x_out(1,:) = x_in(1,:)+ 0.1*SIN(Pi*x_in(1,:))*SIN(Pi*x_in(2,:))
-  x_out(2,:) = x_in(2,:)+ 0.1*SIN(Pi*x_in(1,:))*SIN(Pi*x_in(2,:))
-  x_out(3,:) = x_in(3,:)+ 0.1*SIN(Pi*x_in(1,:))*SIN(Pi*x_in(2,:))
+  freq = 2.*Pi/PostDeform_WaveLength
+  x_out(1,:) = x_in(1,:)+ PostDeform_Amplitude*SIN(freq*x_in(1,:))*SIN(freq*x_in(2,:))
+  x_out(2,:) = x_in(2,:)+ PostDeform_Amplitude*SIN(freq*x_in(1,:))*SIN(freq*x_in(2,:))
+  x_out(3,:) = x_in(3,:)+ PostDeform_Amplitude*SIN(freq*x_in(1,:))*SIN(freq*x_in(2,:))
 CASE(31) ! sin [-1;1]^3
-  x_out(1,:) = x_in(1,:)+ 0.1*SIN(Pi*x_in(1,:))*SIN(Pi*x_in(2,:))*SIN(Pi*x_in(3,:))
-  x_out(2,:) = x_in(2,:)+ 0.1*SIN(Pi*x_in(1,:))*SIN(Pi*x_in(2,:))*SIN(Pi*x_in(3,:))
-  x_out(3,:) = x_in(3,:)+ 0.1*SIN(Pi*x_in(1,:))*SIN(Pi*x_in(2,:))*SIN(Pi*x_in(3,:))
+  freq = 2.*Pi/PostDeform_WaveLength
+  x_out(1,:) = x_in(1,:)+ PostDeform_Amplitude*SIN(freq*x_in(1,:))*SIN(freq*x_in(2,:))*SIN(freq*x_in(3,:))
+  x_out(2,:) = x_in(2,:)+ PostDeform_Amplitude*SIN(freq*x_in(1,:))*SIN(freq*x_in(2,:))*SIN(freq*x_in(3,:))
+  x_out(3,:) = x_in(3,:)+ PostDeform_Amplitude*SIN(freq*x_in(1,:))*SIN(freq*x_in(2,:))*SIN(freq*x_in(3,:))
 CASE(32) ! sin [-1;1]^3
-  x_out(1,:) = x_in(1,:)+ 0.1*SIN(Pi*x_in(1,:))
-  x_out(2,:) = x_in(2,:)+ 0.1*SIN(Pi*x_in(1,:))
-  x_out(3,:) = x_in(3,:)+ 0.1*SIN(Pi*x_in(1,:))
+  freq = 2.*Pi/PostDeform_WaveLength
+  x_out(1,:) = x_in(1,:)+ PostDeform_Amplitude*SIN(freq*x_in(1,:))
+  x_out(2,:) = x_in(2,:)+ PostDeform_Amplitude*SIN(freq*x_in(1,:))
+  x_out(3,:) = x_in(3,:)+ PostDeform_Amplitude*SIN(freq*x_in(1,:))
 CASE(33) ! sin 2D [-1;1]^2
-  x_out(1,:) = x_in(1,:)+ 0.1*SIN(Pi*x_in(1,:))*SIN(Pi*x_in(2,:))
-  x_out(2,:) = x_in(2,:)+ 0.1*SIN(Pi*x_in(1,:))*SIN(Pi*x_in(2,:))
+  freq = 2.*Pi/PostDeform_WaveLength
+  x_out(1,:) = x_in(1,:)+ PostDeform_Amplitude*SIN(freq*x_in(1,:))*SIN(freq*x_in(2,:))
+  x_out(2,:) = x_in(2,:)+ PostDeform_Amplitude*SIN(freq*x_in(1,:))*SIN(freq*x_in(2,:))
   x_out(3,:) = x_in(3,:)
 CASE(34) ! cos3D (1.5Pi) [-1;1]^3
-  x_out(1,:) = x_in(1,:)+ 0.1*COS(1.5*Pi*x_in(1,:))*COS(1.5*Pi*x_in(2,:))*COS(1.5*Pi*x_in(3,:))
-  x_out(2,:) = x_in(2,:)+ 0.1*COS(1.5*Pi*x_in(1,:))*COS(1.5*Pi*x_in(2,:))*COS(1.5*Pi*x_in(3,:))
-  x_out(3,:) = x_in(3,:)+ 0.1*COS(1.5*Pi*x_in(1,:))*COS(1.5*Pi*x_in(2,:))*COS(1.5*Pi*x_in(3,:))
+  x_out(1,:) = x_in(1,:)+ PostDeform_Amplitude*COS(1.5*Pi*x_in(1,:))*COS(1.5*Pi*x_in(2,:))*COS(1.5*Pi*x_in(3,:))
+  x_out(2,:) = x_in(2,:)+ PostDeform_Amplitude*COS(1.5*Pi*x_in(1,:))*COS(1.5*Pi*x_in(2,:))*COS(1.5*Pi*x_in(3,:))
+  x_out(3,:) = x_in(3,:)+ PostDeform_Amplitude*COS(1.5*Pi*x_in(1,:))*COS(1.5*Pi*x_in(2,:))*COS(1.5*Pi*x_in(3,:))
+
 CASE(40) ! cos with coupling  [-1;1]^3 (from https://arxiv.org/pdf/1809.01178.pdf, page 20) 
   x_out(2,:) = x_in(2,:)+ 0.15*COS(1.5*Pi*x_in( 1,:))*COS(0.5*Pi*x_in( 2,:))*COS(0.5*Pi*x_in(3,:))
   x_out(1,:) = x_in(1,:)+ 0.15*COS(0.5*Pi*x_in( 1,:))*SIN(2.0*Pi*x_out(2,:))*COS(0.5*Pi*x_in(3,:))

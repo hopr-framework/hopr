@@ -376,6 +376,8 @@ IF(meshPostDeform.GT.0) THEN
   PostDeform_Lz     = GETREAL('PostDeform_Lz','1.')
   PostDeform_sq     = GETREAL('PostDeform_sq','0.')
   PostDeform_Rtorus = GETREAL('PostDeform_Rtorus','-1.') !from cyl-> torus
+  PostDeform_Amplitude = GETREAL('PostDeform_Amplitude' ,'0.1') ! Amplitude  for sinusoidal deform
+  PostDeform_WaveLength= GETREAL('PostDeform_WaveLength','2.0') ! Wavelength for sinusoidal deform
 
   postConnect       = GETINT('postConnect','0')
   IF(postConnect.EQ.3)THEN
