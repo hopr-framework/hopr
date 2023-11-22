@@ -40,9 +40,11 @@ extensions = [
         'sphinx.ext.autosectionlabel',
         'sphinxcontrib.bibtex',
         'sphinx_rtd_theme',
+        'sphinx_rtd_size',
         'myst_parser'
         ]
 
+sphinx_rtd_size_width='98%'
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
