@@ -48,6 +48,11 @@ TYPE tEdgePtr
   TYPE(tEdge),POINTER                 ::       EDP                    ! edge pointer
 END TYPE tEdgePtr
 
+
+TYPE tLocalEdgePtr
+  TYPE(tLocalEdge),POINTER                 ::       LEDP                    ! local edge pointer
+END TYPE tLocalEdgePtr
+
 TYPE tNodePtr
   TYPE(tNode),POINTER                 ::       NP                     ! node pointer
 END TYPE tNodePtr
@@ -58,6 +63,7 @@ TYPE tElem ! provides data structure for local element
   TYPE(tSide), POINTER                ::       firstSide              ! pointer to element's first side
   TYPE(tNodePtr),POINTER              ::       node(:)                ! pointer to element's nodes used for restart and meshing
   TYPE(tNodePtr),POINTER              ::       curvedNode(:)          ! ? 
+  TYPE(tLocalEdgePtr),POINTER         ::       localEdge(:)            ! allocated with number of edges in the element
   TYPE(tElem),POINTER                 ::       nextElem               ! pointer to next     element in order to continue a loop
   TYPE(tElem),POINTER                 ::       prevElem               ! pointer to previous element in order to continue a loop   
   TYPE(tElem),POINTER                 ::       tree                   ! pointer to tree if MortarMesh=1
@@ -104,13 +110,25 @@ TYPE tSide ! provides data structure for local side
   LOGICAL                             ::       isCurved               ! true if side is curved
 END TYPE tSide
 
-TYPE tEdge ! provides data structure for local edge
+TYPE tEdge ! provides data structure for global edges
   TYPE(tNodePtr)                      ::       Node(2)                ! pointer to node always 2
   TYPE(tNodePtr),POINTER              ::       CurvedNode(:)          ! pointer to interpolation nodes of curved sides
   TYPE(tEdge),POINTER                 ::       nextEdge               ! only used to assign edges 
   TYPE(tEdgePtr),POINTER              ::       MortarEdge(:)          ! array of edge pointers to slave mortar edges
   TYPE(tEdge),POINTER                 ::       parentEdge             ! parentEdge in case of non-conforming meshes
+  TYPE(tLocalEdge),POINTER            ::       FirstLocalEdge         ! pointer to local edge of first connected element
 END TYPE tEdge
+
+
+TYPE tLocalEdge ! provides data structure for local element edges, needed for edge connectivity
+  TYPE(tEdge),POINTER                 ::       Edge             ! pointer back to geometrically unique edge
+  TYPE(tLocalEdge),POINTER            ::       next_connected      !  pointer 
+  TYPE(tElem),POINTER                 ::       elem                   ! pointer to element connected to that edge
+  INTEGER                             ::       localEdgeID            !local edge id in connected element
+  LOGICAL                             ::       orientation            ! orientation from local to global edge (True: same, False: opposite)
+  INTEGER                             ::       ind                    ! edge counter
+  INTEGER                             ::       tmp    ! ?           
+END TYPE tLocalEdge
 
 TYPE tNode ! provides data structure for local node
   TYPE(tNormal),POINTER               ::       firstNormal            ! pointer to first normal of node
@@ -134,20 +152,6 @@ TYPE tNormalPtr
   TYPE(tNormal),POINTER               ::       np                     ! first Normal in list 
 END TYPE 
 
-! Used for connect 3d
-TYPE tsuperNode ! provides data structure for nodes that are shared by "aSide" and "bSide". 
-  !             ! For each shared node a new SuperNode is created and put in a list of
-  !             ! SuperNodes that starts with "firstSuperNode".
-  TYPE(tNode),POINTER                 ::       meshNode               ! pointer to node
-  TYPE(tNode),POINTER                 ::       periodicNode           ! pointer to periodic node
-  TYPE(tsuperNode),POINTER            ::       nextSuperNode          ! pointer to next SuperNode
-  REAL                                ::       aCoeff(2)              ! Position of node on edge of aSide
-  REAL                                ::       bCoeff(2)              ! Position of node on edge of bSide
-  INTEGER                             ::       aEdge(2)               ! Node number of first/last edge on aSide
-  INTEGER                             ::       bEdge(2)               ! Node number of first/last edge on bSide
-  LOGICAL                             ::       periodic               ! Default: not periodic but ste to .TRUE. 
-  !                                                                   ! for periodic boundary sides
-END TYPE tsuperNode
 
 TYPE tBC  ! container for boundary condition information
   INTEGER                             ::       BCtype                 !  CGNS boundary types which are mapped by the code
@@ -361,10 +365,6 @@ INTERFACE getNewBC
   MODULE PROCEDURE getNewBC
 END INTERFACE
 
-INTERFACE getNewSuperNode
-  MODULE PROCEDURE getNewSuperNode
-END INTERFACE
-
 INTERFACE copyBC
   MODULE PROCEDURE copyBC
 END INTERFACE
@@ -397,10 +397,6 @@ INTERFACE deleteBC
   MODULE PROCEDURE deleteBC
 END INTERFACE
 
-INTERFACE deleteSuperNodes
-  MODULE PROCEDURE deleteSuperNodes
-END INTERFACE
-
 !===================================================================================================================================
 
 CONTAINS
@@ -418,13 +414,14 @@ IMPLICIT NONE
 ! OUTPUT VARIABLES
 TYPE(tElem),POINTER,INTENT(OUT) :: Elem  ! New element
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES                 
 !===================================================================================================================================
 ALLOCATE(Elem)
 NULLIFY(Elem%Node,&
         Elem%prevElem,Elem%nextElem,Elem%firstSide)
 NULLIFY(Elem%CurvedNode)
 NULLIFY(Elem%tree)
+NULLIFY(Elem%localEdge)
 Elem%nCurvedNodes  = 0
 Elem%ind           = 0
 Elem%detT          = 0.
@@ -594,66 +591,6 @@ BC%BCalphaInd = 0
 BC%BCIndex    = 0
 END SUBROUTINE getNewBC
 
-
-SUBROUTINE getNewSuperNode(superNode,meshNode,aNode,bNode,aSide_nNodes,bSide_nNodes,aCoeff,bCoeff)
-!===================================================================================================================================
-! Allocate and initialize new SuperNode (used for connect 3d)
-!===================================================================================================================================
-! MODULES
-! IMPLICIT VARIABLE HANDLING
-IMPLICIT NONE
-!-----------------------------------------------------------------------------------------------------------------------------------
-! INPUT VARIABLES
-TYPE(tNode),POINTER,INTENT(IN)      :: meshNode     ! "Real" mesh node
-INTEGER,INTENT(IN)                  :: aNode        ! Node number on aSide
-INTEGER,INTENT(IN)                  :: bNode        ! Node number on bSide
-INTEGER,INTENT(IN)                  :: aSide_nNodes ! Number of nodes of aSide
-INTEGER,INTENT(IN)                  :: bSide_nNodes ! Number of nodes of bSide
-REAL,INTENT(IN)                     :: aCoeff       ! Position of node on edge of aSide
-REAL,INTENT(IN)                     :: bCoeff       ! Position of node on edge of bSide
-!-----------------------------------------------------------------------------------------------------------------------------------
-! OUTPUT VARIABLES
-TYPE(tsuperNode),POINTER,INTENT(OUT) :: superNode    ! New SuperNode
-!-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
-!===================================================================================================================================
-ALLOCATE(superNode)
-! Set mesh node
-superNode%meshNode=>meshNode
-NULLIFY(superNode%nextSuperNode,superNode%periodicNode)
-! Default: not periodic
-superNode%periodic=.FALSE.
-! aSide edge numbers
-superNode%aEdge(1)=aNode  ! First edge
-superNode%aCoeff(1)=aCoeff  ! Position on first edge
-! Set second edge - side vertices only
-IF((aNode.NE.0).AND.(aCoeff.EQ.0.))THEN
-  IF(aNode.EQ.1)THEN
-    superNode%aEdge(2)=aSide_nNodes
-  ELSE
-    superNode%aEdge(2)=aNode-1
-  END IF
-  superNode%bCoeff(2)=1.
-ELSE
-  superNode%aEdge(2)=0
-  superNode%aCoeff(2)=0.
-END IF
-! bSide edge numbers
-superNode%bEdge(1)=bNode  ! First edge
-superNode%bCoeff(1)=bCoeff  ! Position on first edge
-! Set second edge - side vertices only
-IF((bNode.NE.0).AND.(bCoeff.EQ.0.))THEN
-  IF(bNode.EQ.1)THEN
-    superNode%bEdge(2)=bSide_nNodes
-  ELSE
-    superNode%bEdge(2)=bNode-1
-  END IF
-  superNode%bCoeff(2)=1.
-ELSE
-  superNode%bEdge(2)=0
-  superNode%bCoeff(2)=0.
-END IF
-END SUBROUTINE getNewSuperNode
 
 
 SUBROUTINE copyBC(BCSide,Side)
@@ -911,31 +848,5 @@ TYPE(tBC),POINTER,INTENT(INOUT) :: BC   ! ?
 DEALLOCATE(BC)
 NULLIFY(BC)
 END SUBROUTINE deleteBC
-
-
-SUBROUTINE deleteSuperNodes(firstSuperNode)
-!===================================================================================================================================
-! Deletes a list of SuperNodes
-!===================================================================================================================================
-! MODULES
-! IMPLICIT VARIABLE HANDLING
-IMPLICIT NONE
-!-----------------------------------------------------------------------------------------------------------------------------------
-! INPUT VARIABLES
-TYPE(tsuperNode),POINTER,INTENT(INOUT) :: firstSuperNode ! First super node in list
-!-----------------------------------------------------------------------------------------------------------------------------------
-! OUTPUT VARIABLES
-!-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
-TYPE(tsuperNode),POINTER :: superNode   ! ?
-!===================================================================================================================================
-superNode=>firstSuperNode
-DO WHILE(ASSOCIATED(superNode))
-  firstSuperNode=>superNode%nextSuperNode
-  NULLIFY(superNode%nextSuperNode,superNode%periodicNode,superNode%MeshNode)
-  DEALLOCATE(superNode)
-  superNode=>firstSuperNode
-END DO
-END SUBROUTINE deleteSuperNodes
 
 END MODULE MOD_Mesh_Vars
