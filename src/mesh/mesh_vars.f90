@@ -50,7 +50,7 @@ END TYPE tEdgePtr
 
 
 TYPE tLocalEdgePtr
-  TYPE(tLocalEdge),POINTER                 ::       LEDP                    ! local edge pointer
+  TYPE(tLocalEdge),POINTER            ::       LEDP                    ! local edge pointer
 END TYPE tLocalEdgePtr
 
 TYPE tNodePtr
@@ -73,6 +73,7 @@ TYPE tElem ! provides data structure for local element
   !                                                                   ! triangle/quadrangle etc.. is set in findElemType
   INTEGER                             ::       zone                   ! zone for zonal concept is given indirectly in the inifile
   INTEGER                             ::       nNodes                 ! total number of nodes for one Elem
+  INTEGER                             ::       nEdges                 ! total number of edges for one Elem
   INTEGER                             ::       nCurvedNodes           ! Used for writing curveds to hdf5 mesh format
   INTEGER                             ::       ind                    ! unique Element index for each element on all processors
   INTEGER                             ::       tmp
@@ -498,6 +499,7 @@ NULLIFY(Edge%nextEdge)
 NULLIFY(Edge%curvedNode)
 NULLIFY(Edge%MortarEdge)
 NULLIFY(Edge%parentEdge)
+NULLIFY(Edge%FirstLocalEdge)
 END SUBROUTINE getNewEdge
 
 
@@ -802,6 +804,7 @@ IF(ASSOCIATED(Edge%MortarEdge))THEN
 END IF
 SDEALLOCATE(Edge%MortarEdge)
 SDEALLOCATE(Edge%parentEdge)
+SDEALLOCATE(Edge%FirstLocalEdge)
 SDEALLOCATE(Edge)
 END SUBROUTINE deleteEdge
 

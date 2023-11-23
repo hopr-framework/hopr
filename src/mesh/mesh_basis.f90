@@ -612,7 +612,7 @@ SUBROUTINE buildEdges()
 ! If the edge is not  oriented, it goes from orientedNode(i+1)-> orientedNode(i)
 !===================================================================================================================================
 ! MODULES
-USE MOD_Mesh_Vars,ONLY:tElem,tSide,tEdge,tNode,tEdgePtr
+USE MOD_Mesh_Vars,ONLY:tElem,tSide,tEdge,tNode,tEdgePtr,tLocalEdge
 USE MOD_Mesh_Vars,ONLY:firstElem
 USE MOD_Mesh_Vars,ONLY:GetNewEdge
 IMPLICIT NONE
@@ -625,16 +625,21 @@ IMPLICIT NONE
 TYPE(tElem),POINTER          :: aElem  ! ?
 TYPE(tSide),POINTER          :: aSide,bSide   ! ?
 TYPE(tEdge),POINTER          :: aEdge,bEdge  ! ?
+TYPE(tLocalEdge),POINTER     :: lEdge,nextlEdge  ! ?
 TYPE(tEdgePtr)               :: smallEdges(4)  ! ?
 TYPE(tNode),POINTER          :: aNode,bNode  ! ?
 INTEGER                      :: iSide,jSide,iEdge,jEdge,kEdge,iNode,iPlus,nSides,EdgeInd,nNodes  ! ?
+INTEGER                      :: nEdges
 INTEGER                      :: indA(2),indB(2,4),indTmp(2)
 INTEGER                      :: edgeCount  ! ?
 LOGICAL                      :: edgeFound  ! ?
+INTEGER                      :: CGNSElemEdgeToNode(4:8,12,2)
 !===================================================================================================================================
 CALL Timer(.TRUE.)
 WRITE(UNIT_stdOut,'(132("~"))')
 WRITE(UNIT_stdOut,'(A)')'BUILD EDGES ...'
+
+
 
 ! count unique corner nodes
 aElem=>firstElem
@@ -798,6 +803,198 @@ DO WHILE(ASSOCIATED(aElem))
     END DO
     aSide=>aSide%nextElemSide
   END DO !!SIDES!!**************
+  aElem=>aElem%nextElem
+END DO !! ELEMS!!
+
+
+! set first local edge and back to its global edge
+aElem=>firstElem
+DO WHILE(ASSOCIATED(aElem))
+  aSide=>aElem%firstSide
+  DO iSide=1,nSides
+    IF(aSide%nMortars.LE.0)THEN  ! only check big mortar sides  ??????
+      aSide=>aSide%nextElemSide
+      CYCLE
+    END IF
+    IF(ASSOCIATED(aSide%BC))THEN ! 
+      IF(aSide%BC%BCType.EQ.1)THEN !periodic BC!!
+        
+        DO iEdge=1,aSide%nNodes 
+          iPlus=iEdge+1
+          IF(iEdge.EQ.aSide%nNodes) iPlus=1
+          IF(aSide%edgeOrientation(iEdge))THEN
+            aNode=>aSide%OrientedNode(iEdge)%np
+            bNode=>aSide%OrientedNode(iPlus)%np
+          ELSE  
+            aNode=>aSide%OrientedNode(iPlus)%np
+            bNode=>aSide%OrientedNode(iEdge)%np
+          END IF
+          indA(1)=aNode%ind
+          indA(2)=bNode%ind
+          edgeFound=.FALSE.
+          aEdge=>aNode%firstEdge
+          DO WHILE (ASSOCIATED(aEdge))
+            indTmp(1)=aEdge%Node(1)%np%ind
+            indTmp(2)=aEdge%Node(2)%np%ind
+            IF((ANY(indA(1).EQ.indTmp)).AND.(ANY(indA(2).EQ.indTmp)))THEN
+              edgeFound=.TRUE.
+              EXIT
+            END IF
+            aEdge=>aEdge%nextEdge
+          END DO
+          IF(.NOT.edgeFound) STOP 'problem in finding periodic side aEdge'
+        END DO !iEdge=1,aSide%nnodes
+
+        bSide=>aside%connection
+        DO iEdge=1,bSide%nNodes 
+          iPlus=iEdge+1
+          IF(iEdge.EQ.bSide%nNodes) iPlus=1
+          IF(bSide%edgeOrientation(iEdge))THEN
+            aNode=>bSide%OrientedNode(iEdge)%np
+            bNode=>bSide%OrientedNode(iPlus)%np
+          ELSE  
+            aNode=>bSide%OrientedNode(iPlus)%np
+            bNode=>bSide%OrientedNode(iEdge)%np
+          END IF
+          indA(1)=aNode%ind
+          indA(2)=bNode%ind
+          edgeFound=.FALSE.
+          bEdge=>aNode%firstEdge
+          DO WHILE (ASSOCIATED(bEdge))
+            indTmp(1)=bEdge%Node(1)%np%ind
+            indTmp(2)=bEdge%Node(2)%np%ind
+            IF((ANY(indA(1).EQ.indTmp)).AND.(ANY(indA(2).EQ.indTmp)))THEN
+              edgeFound=.TRUE.
+              EXIT
+            END IF
+            bEdge=>bEdge%nextEdge
+          END DO
+          IF(.NOT.edgeFound) STOP 'problem in finding periodic side aEdge'
+        END DO !iEdge=1,bSide%nnodes
+
+        IF(.NOT.ASSOCIATED(bEdge%FirstLocalEdge))THEN
+          ALLOCATE(bEdge%FirstLocalEdge)
+          IF(.NOT.ASSOCIATED(aEdge%FirstLocalEdge))THEN
+            ALLOCATE(aEdge%FirstLocalEdge)
+            lEdge=>aEdge%FirstLocalEdge
+            lEdge%edge=>aEdge
+            lEdge%elem=>aElem
+            NULLIFY(lEdge%next_connected)
+          END IF! aedge%firstlocalEdge not associated
+          bEdge%FirstLocalEdge=>aEdge%FirstLocalEdge
+        ELSE 
+          IF(.NOT.ASSOCIATED(aEdge%FirstLocalEdge))THEN
+            aEdge%FirstLocalEdge=>bEdge%FirstLocalEdge
+          ELSE
+            IF(LOC(aEdge%FirstLocalEdge%Edge).NE.LOC(bEdge%FirstLocalEdge%Edge))THEN
+              STOP 'something with periodic aEdge bEdge wrong'
+            END IF
+          END IF !aedge
+        END IF !bedge%firstlocalEdge not associated
+      END IF ! BC periodic
+    END IF !   BC side
+    aSide=>aSide%nextElemSide
+  END DO !iSides
+  aElem=>aElem%nextElem
+END DO !ELEMS
+
+
+
+CGNSElemEdgeToNode=-1
+! tet ( 4 nodes)
+CGNSElemEdgeToNode(4, 1,1:2)=(/1,2/)
+CGNSElemEdgeToNode(4, 2,1:2)=(/2,3/)
+CGNSElemEdgeToNode(4, 3,1:2)=(/3,1/)
+CGNSElemEdgeToNode(4, 4,1:2)=(/1,4/)
+CGNSElemEdgeToNode(4, 5,1:2)=(/2,4/)
+CGNSElemEdgeToNode(4, 6,1:2)=(/3,4/)
+! pyra (5nodes)
+CGNSElemEdgeToNode(5, 1,1:2)=(/1,2/)
+CGNSElemEdgeToNode(5, 2,1:2)=(/2,3/)
+CGNSElemEdgeToNode(5, 3,1:2)=(/3,4/)
+CGNSElemEdgeToNode(5, 4,1:2)=(/4,1/)
+CGNSElemEdgeToNode(5, 5,1:2)=(/1,5/)
+CGNSElemEdgeToNode(5, 6,1:2)=(/2,5/)
+CGNSElemEdgeToNode(5, 7,1:2)=(/3,5/)
+CGNSElemEdgeToNode(5, 8,1:2)=(/4,5/)
+! prism (6nodes)
+CGNSElemEdgeToNode(6, 1,1:2)=(/1,2/)
+CGNSElemEdgeToNode(6, 2,1:2)=(/2,3/)
+CGNSElemEdgeToNode(6, 3,1:2)=(/3,1/)
+CGNSElemEdgeToNode(6, 4,1:2)=(/1,4/)
+CGNSElemEdgeToNode(6, 5,1:2)=(/2,5/)
+CGNSElemEdgeToNode(6, 6,1:2)=(/3,6/)
+CGNSElemEdgeToNode(6, 7,1:2)=(/4,5/)
+CGNSElemEdgeToNode(6, 8,1:2)=(/5,6/)
+CGNSElemEdgeToNode(6, 9,1:2)=(/6,4/)
+! hexa (8nodes)
+CGNSElemEdgeToNode(8, 1,1:2)=(/1,2/)
+CGNSElemEdgeToNode(8, 2,1:2)=(/2,3/)
+CGNSElemEdgeToNode(8, 3,1:2)=(/3,4/)
+CGNSElemEdgeToNode(8, 4,1:2)=(/4,1/)
+CGNSElemEdgeToNode(8, 5,1:2)=(/1,5/)
+CGNSElemEdgeToNode(8, 6,1:2)=(/2,6/)
+CGNSElemEdgeToNode(8, 7,1:2)=(/3,7/)
+CGNSElemEdgeToNode(8, 8,1:2)=(/4,8/)
+CGNSElemEdgeToNode(8, 9,1:2)=(/5,6/)
+CGNSElemEdgeToNode(8,10,1:2)=(/6,7/)
+CGNSElemEdgeToNode(8,11,1:2)=(/7,8/)
+CGNSElemEdgeToNode(8,12,1:2)=(/8,5/)
+
+
+! Build elem to localEdge
+aElem=>firstElem
+DO WHILE(ASSOCIATED(aElem))
+  SELECT CASE(aElem%nNodes)
+  CASE(8)
+    nEdges=12
+  CASE(6)
+    nEdges=9
+  CASE(5)
+    nEdges=8
+  CASE(4)
+    nEdges=6
+  END SELECT
+  aElem%nEdges=nEdges
+  ALLOCATE(aElem%localEdge(aElem%nEdges))
+  DO iEdge=1,aElem%nEdges
+    NULLIFY(aElem%localEdge(iEdge)%LEDP)
+    aNode=>aElem%Node(CGNSElemEdgeToNode(aElem%nNodes,iEdge,1))%np
+    bNode=>aElem%Node(CGNSElemEdgeToNode(aElem%nNodes,iEdge,2))%np
+   
+    edgeFound=.FALSE.
+    ALLOCATE(aElem%LocalEdge(iEdge)%ledp)
+    lEdge=>aElem%LocalEdge(iEdge)%ledp
+    NULLIFY(ledge%next_connected,ledge%elem,ledge%edge)
+    lEdge%elem=>aElem
+    aEdge=>aNode%firstEdge
+    DO WHILE (ASSOCIATED(aEdge))
+      indA(1)=aEdge%Node(1)%np%ind
+      indA(2)=aEdge%Node(2)%np%ind
+      indTmp(1)=aNode%ind
+      indTmp(2)=bNode%ind
+      IF((ANY(indA(1).EQ.indTmp)).AND.(ANY(indA(2).EQ.indTmp)))THEN
+        edgeFound=.TRUE.
+        ledge%orientation=(indA(1).EQ.indTmp(1)) !TRUE: same as global edge, FALSE: opposite to global edge
+        EXIT
+      END IF
+      aEdge=>aEdge%nextEdge
+    END DO
+    IF (edgeFound) THEN
+      lEdge%edge=>aEdge
+      IF(.NOT.ASSOCIATED(aEdge%firstLocalEdge))THEN
+        aEdge%FirstLocalEdge=>lEdge
+      ELSE 
+        nextLedge=>aEdge%FirstLocalEdge%next_connected
+        DO WHILE(ASSOCIATED(nextlEdge))
+          nextlEdge=>nextlEdge%next_connected
+        END DO 
+        nextlEdge%next_connected=>lEdge
+      END IF
+    ELSE 
+      STOP 'something is wrong for localEdge for elem'
+    END IF 
+  END DO !iEdge=1,aElem%nEdges
   aElem=>aElem%nextElem
 END DO !! ELEMS!!
 
