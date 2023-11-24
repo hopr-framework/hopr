@@ -936,7 +936,7 @@ DO WHILE(ASSOCIATED(aElem))
     aNode=>aElem%Node(CGNSElemEdgeToNode(aElem%nNodes,iEdge,1))%np
     bNode=>aElem%Node(CGNSElemEdgeToNode(aElem%nNodes,iEdge,2))%np
 
-    CALL getNewLocalEdge(aElem%LocalEdge(iEdge)%ledp,Elem_in=aElem)
+    CALL getNewLocalEdge(aElem%LocalEdge(iEdge)%ledp,Elem_in=aElem,localEdgeID_in=iEdge)
     lEdge=>aElem%LocalEdge(iEdge)%ledp
     !find edge from aNode->bNode (same orientation) / from bNode->aNode (opposite orientation)
     aEdge=>aNode%firstEdge

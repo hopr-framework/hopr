@@ -73,7 +73,7 @@ TYPE(tEdge),POINTER            :: aEdge  ! ?
 TYPE(tLocalEdge),POINTER       :: lEdge,nextLedge  ! ?
 INTEGER                        :: ElemID,SideID,NodeID,EdgeID,FEMEdgeID  ! ?
 INTEGER                        :: locnSides
-INTEGER                        :: iNode,i,iMortar,iEdge,jEdge
+INTEGER                        :: iNode,i,iMortar,iEdge
 LOGICAL                        :: found
 CHARACTER(LEN=26)              :: ElemTypeName(1:11)
 !===================================================================================================================================
@@ -330,6 +330,7 @@ CALL WriteAttribute(File_ID,'nUniqueSides',1,IntScalar=nSideIDs)
 CALL WriteAttribute(File_ID,'nUniqueEdges',1,IntScalar=nEdgeIDs)
 CALL WriteAttribute(File_ID,'nUniqueNodes',1,IntScalar=nNodeIDs)
 CALL WriteAttribute(File_ID,'nFEMEdges',1,IntScalar=nFEMEdgeIDs)
+CALL WriteAttribute(File_ID,'nFEMEdgeConnections',1,IntScalar=nFEMEdgeConnections)
 
 !WRITE ElemInfo,into (1,nElems)
 CALL WriteArrayToHDF5(File_ID,'ElemInfo',2,(/ElemInfoSize,nElems/),IntegerArray=ElemInfo)
@@ -420,7 +421,7 @@ SUBROUTINE getMeshInfo()
 ! Subroutine prepares ElemInfo,Sideinfo,Nodeinfo,NodeCoords arrays
 !===================================================================================================================================
 ! MODULES
-USE MOD_Mesh_Vars,ONLY:tElem,tSide
+USE MOD_Mesh_Vars,ONLY:tElem,tSide,tEdge,tlocalEdge
 USE MOD_Mesh_Vars,ONLY:FirstElem
 USE MOD_Mesh_Vars,ONLY:N
 USE MOD_Mesh_Basis,ONLY:ISORIENTED
@@ -432,9 +433,11 @@ IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES
 TYPE(tElem),POINTER            :: Elem  ! ?
+TYPE(tEdge),POINTER            :: aEdge  ! ?
+TYPE(tlocalEdge),POINTER       :: lEdge,next_lEdge  ! ?
 TYPE(tSide),POINTER            :: Side  ! ?
 INTEGER                        :: locnNodes,locnSides
-INTEGER                        :: iNode,iSide,iElem,i,iMortar,iEdge,jEdge
+INTEGER                        :: iNode,iSide,iElem,i,iMortar,iEdge,jEdge,iLocEdge
 TYPE(tSide),POINTER            :: aSide
 !===================================================================================================================================
 !fill ElementInfo.
@@ -581,13 +584,27 @@ ALLOCATE(EdgeInfo(EdgeInfoSize,1:nEdges))
 ALLOCATE(EdgeConnectInfo(EDGEConnectInfoSize,1:nFEMEdgeConnections))
 EdgeInfo=0
 EdgeConnectInfo=0
-iEdge=0
+iEdge=0  !counter in EdgeInfo
+jEdge=0  !counter in EdgeConnectInfo
+
 Elem=>firstElem
 DO WHILE(ASSOCIATED(Elem))
-  DO jEdge=1,Elem%nEdges
-    !EdgeInfo(EDGE_FEMEdgeID,iEdge)=
-    !EdgeInfo(EDGE_offsetIndEdgeConnect,iEdge)=
-  END DO
+  DO iLocEdge=1,Elem%nEdges
+    lEdge=>Elem%localEdge(iLocEdge)%LEDP
+    aEdge=>lEdge%edge
+    iEdge=iEdge+1
+    EdgeInfo(EDGE_FEMEdgeID,iEdge)=ledge%ind*(MERGE(1,-1,lEdge%orientation))  ! negative sign means opposite orientation of local to global edge
+    EdgeInfo(EDGE_offsetIndEdgeConnect,iEdge)=jEdge
+    next_lEdge=>lEdge%next_connected
+    DO WHILE (ASSOCIATED(next_lEdge))
+      jEdge=jEdge+1
+      EdgeConnectInfo(EDGEConnect_nbElemID,jEdge)=next_lEdge%elem%ind*(MERGE(1,-1, (next_lEdge%tmp.GT.0) ))   ! + is master, -  is slave
+      EdgeConnectInfo(EDGEConnect_nbLocEdgeID,jEdge)=next_lEdge%localEdgeID*(MERGE(1,-1,next_lEdge%orientation))
+      next_lEdge=>next_lEdge%next_connected
+    END DO !
+    EdgeInfo(EDGE_lastIndEdgeConnect,iEdge)=jEdge
+    IF((EdgeInfo(EDGE_lastIndEdgeConnect,iEdge)-EdgeInfo(EDGE_offsetIndEdgeConnect,iEdge)).NE. (aEdge%FirstLocalEdge%tmp-1)) STOP "wrong length of edge connections"
+  END DO !iLoc
   Elem=>Elem%nextElem
 END DO
 

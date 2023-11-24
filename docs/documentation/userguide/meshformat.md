@@ -61,7 +61,9 @@ name: tab:mesh_file_attributes
   |         nUniqueNodes        |          INTEGER          |                       Total number of geometrically unique nodes in the mesh                      |
   |         nFEMSides           |          INTEGER          |  Total number of topologically (includes periodicity) unique sides in the mes (needed for a FEM solver)  |
   |         nFEMEdges           |          INTEGER          |  Total number of topologically (includes periodicity) unique edges in the mesh (needed for a FEM solver)  |
+  |         nFEMEdgeConnections |          INTEGER          |  Size of **EdgeConnectInfo** |
   |         nFEMVertices        |          INTEGER          |  Total number of topologically (includes periodicity) unique vertices in the mesh (needed for a FEM solver)  |
+  |         nFEMVertexConnections |          INTEGER          |  Size of **VertexConnectInfo** |
   |             nBCs            |          INTEGER          |                                Size of the Boundary Condition list                                |
 ```
 
@@ -85,9 +87,9 @@ name: tab:mesh_data_arrays
   |         **ElemInfo**        | Start\End positions of element data in **SideInfo** / **EdgeInfo**/**VertexInfo**/**NodeCoords**|   INTEGER     | (1:10,1:**nElems**$^*$)    |
   |         **SideInfo**        |                         Side Data / Connectivity information                                    |   INTEGER     |  (1:5,1:**nSides**$^*$)    |
   |        **EdgeInfo**         |              Element Edge  information  and offsets in **EdgeConnectInfo**                      |   INTEGER     |  (1:3,1:**nEdges**$^*$)    |
-  |     **EdgeConnectInfo**     |        Connectivity information  for each element edge  (needed for a FEM solver)               |   INTEGER     |    (1:2,1:)                |
+  |     **EdgeConnectInfo**     |        Connectivity information  for each element edge  (needed for a FEM solver)               |   INTEGER     |    (1:2,1:nFEMEdgeConnections)          |
   |       **VertexInfo**        |         Element Vertex Data information and and offsets in **VertexConnectInfo**                |   INTEGER     |  (1:3,1:**nVertices**$^*$) |
-  |    **VertexConnectInfo**    |        Connectivity information for each element vertex (needed for a FEM solver)               |   INTEGER     |    (1:2,1:)                |
+  |    **VertexConnectInfo**    |        Connectivity information for each element vertex (needed for a FEM solver)               |   INTEGER     |    (1:2,1:nFEMVertexConnections)        |
   |        **NodeCoords**       |                                   Node Coordinates                                              |    REAL       |  (1:3,1:**nNodes**$^*$)    |
   |      **GlobalNodeIDs**      |                              Globally unique node index                                         |   INTEGER     |    (1:**nNodes**$^*$)      |
   |           BCNames           |          List of user-defined boundary condition names (max. 255 Characters)                    |   STRING      |       (1:**nBCs**)         |
@@ -390,7 +392,7 @@ name: tab:vertex_info_def
 | | |
 |      :---     |    :---                                                                                                                              |
 |   *FEMVertexID*:                           | Topologically unique global vertex ID, includes periodicity (needed for a FEM solver)                   |
-| *offsetIndEDGEConnect/lastIndEDGEConnect*: | Each local element vertex has a range of neighbor element edgvertices in the **EdgeConnectInfo** array. |
+| *offsetIndVERTEXConnect/lastIndVERTEXConnect*: | Each local element vertex has a range of neighbor element edgvertices in the **VertexConnectInfo** array. |
 ```
 
 ```{table} VertexConnect Information
@@ -400,7 +402,7 @@ name: tab:vertex_connect_info
 |               |                                                                                   |
 |      :---     |                                              :---                                 |
 | Name in file: |                                      **VertexConnectInfo**                        |
-|     Type:     |                                  INTEGER, Size: Array(1:2,1:)                     |
+|     Type:     |                                  INTEGER, Size: Array(1:2,1:nFEMVertexConnections)|
 |  Description: | Array of connected vertices, all information of one vertex is stored continuously |
 |               | in the range `offsetIndVERTEXConnect+1:lastIndVERTEXConnect` in **VertexInfo**    |
 ```
