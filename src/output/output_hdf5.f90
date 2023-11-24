@@ -9,7 +9,8 @@
 ! /____//   /____//  /______________//  /____//           /____//   |_____/)    ,X`      XXX`
 ! )____)    )____)   )______________)   )____)            )____)    )_____)   ,xX`     .XX`
 !                                                                           xxX`      XXx
-! Copyright (C) 2017  Florian Hindenlang <hindenlang@gmail.com>
+! Copyright (C) 2017-2023  Florian Hindenlang <hindenlang@gmail.com>
+! Copyright (C) 2023  Tobias Ott <tobias.ott@proton.me>
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
@@ -69,7 +70,7 @@ CHARACTER(LEN=*),INTENT(IN)    :: FileString  ! ?
 TYPE(tElem),POINTER            :: Elem  ! ?
 TYPE(tSide),POINTER            :: Side  ! ?
 TYPE(tEdge),POINTER            :: aEdge  ! ?
-TYPE(tLocalEdge),POINTER       :: lEdge  ! ?
+TYPE(tLocalEdge),POINTER       :: lEdge,nextLedge  ! ?
 INTEGER                        :: ElemID,SideID,NodeID,EdgeID,FEMEdgeID  ! ?
 INTEGER                        :: locnSides
 INTEGER                        :: iNode,i,iMortar,iEdge,jEdge
@@ -108,6 +109,7 @@ nNodeIDs=0 !number of unique nodeIDs
 nSideIDs=0 !number of unique side IDs (side and side%connection have the same sideID)
 nEdgeIDs=0
 nFEMEdgeIDs=0
+nFEMEdgeConnections=0
 nElems=0   !number of elements
 nSides=0   !number of all sides
 nNodes=0   !number of all nodes
@@ -163,18 +165,20 @@ DO WHILE(ASSOCIATED(Elem))
     nNodes = nNodes+Elem%nCurvedNodes
   END IF
   nSides = nSides+locnSides
-  ! Count edges 
-  DO i=1,Elem%nEdges 
+  ! Count edges
+  DO i=1,Elem%nEdges
     lEdge=>Elem%localEdge(i)%ledp
     aEdge=>lEdge%edge
     IF(aEdge%ind.NE.-777777) THEN
       nEdgeIDs=nEdgeIDs+1
       IF(aEdge%FirstLocalEdge%ind.NE.-99999) THEN
         nFEMEdgeIDs=nFEMEdgeIDs+1
+        IF(aEdge%FirstLocalEdge%tmp.LE.0) STOP 'Something is wrong with edge multiplicity'
+        nFEMEdgeConnections=nFEMEdgeConnections+(aEdge%FirstLocalEdge%tmp-1)
       END IF
     END IF
     lEdge%ind=-99999
-    aEdge%ind=-777777 
+    aEdge%ind=-777777
   END DO
   Elem=>Elem%nextElem
 END DO
@@ -238,15 +242,23 @@ DO WHILE(ASSOCIATED(Elem))
     END IF
     Side=>Side%nextElemSide
   END DO
-  ! Count edges 
-  DO i=1,Elem%nEdges
-    IF(Elem%localEdge(i)%ledp%edge%ind.EQ.-777777)THEN
+  ! Count edges
+  DO iEdge=1,Elem%nEdges
+    lEdge=>Elem%localEdge(iEdge)%ledp
+    aEdge=>lEdge%Edge
+    IF(aEdge%ind.EQ.-777777)THEN
       EdgeID=EdgeID+1
-      Elem%localEdge(i)%ledp%edge%ind=EdgeID 
+      aEdge%ind=EdgeID
     END IF
-    IF(Elem%localEdge(i)%ledp%edge%firstlocal%ind.EQ.-99999)THEN
+    IF(aEdge%FirstLocalEdge%ind.EQ.-99999)THEN
       FEMEdgeID=FEMEdgeID+1
-      Elem%localEdge(i)%ledp%edge%firstlocal%ind=FEMEdgeID 
+      aEdge%FirstLocalEdge%ind=FEMEdgeID
+      nextLedge=>aEdge%FirstLocalEdge%next_connected
+      DO WHILE(ASSOCIATED(nextlEdge))
+        IF(nextLedge%tmp.NE.-1) STOP 'Something wrong with nextLedge'
+        nextLedge%ind=FEMEdgeID
+        nextLedge=>nextLedge%next_connected
+      END DO
     END IF
   END DO
   Elem=>Elem%nextElem
@@ -254,11 +266,14 @@ END DO !Elem
 
 IF(NodeID.NE.nNodeIDs) CALL abort(__STAMP__,&
                      'Sanity check: max(nodeID <> nNodeIDs!')
+IF(EdgeID.NE.nEdgeIDs) CALL abort(__STAMP__,&
+                     'Sanity check: max(edgeID <> nEdgeIDs!')
 IF(SideID.NE.nSideIDs) CALL abort(__STAMP__,&
                      'Sanity check: max(sideID <> nSideIDs!')
 IF(ElemID.NE.nElems) CALL abort(__STAMP__,&
                      'Sanity check: max(elemID <> nElems!')
-
+IF(FEMEdgeID.NE.nFEMEdgeIDs) CALL abort(__STAMP__,&
+                     'Sanity check: max(femedgeID <> nFEMEdgeIDs!')
 
 !set Side Flip
 Elem=>firstElem
@@ -302,16 +317,19 @@ CALL getMeshInfo() !allocates and fills ElemInfo,SideInfo,NodeInfo,NodeCoords
 ! Create the file
 CALL OpenHDF5File(FileString,create=.TRUE.)
 
-!attributes 
+!attributes
 WRITE(UNIT=HoprVersionStr,FMT='(I0,A1,I0,A1,I0)') MajorVersion,".",MinorVersion,".",PatchVersion
 CALL WriteAttribute(File_ID,'HoprVersion',1,StrScalar=TRIM(HoprVersionStr))
 CALL WriteAttribute(File_ID,'HoprVersionInt',1,IntScalar=HoprVersionInt)
 CALL WriteAttribute(File_ID,'Ngeo',1,IntScalar=N)
 CALL WriteAttribute(File_ID,'nElems',1,IntScalar=nElems)
 CALL WriteAttribute(File_ID,'nSides',1,IntScalar=nSides)
+CALL WriteAttribute(File_ID,'nEdges',1,IntScalar=nEdges)
 CALL WriteAttribute(File_ID,'nNodes',1,IntScalar=nNodes)
 CALL WriteAttribute(File_ID,'nUniqueSides',1,IntScalar=nSideIDs)
+CALL WriteAttribute(File_ID,'nUniqueEdges',1,IntScalar=nEdgeIDs)
 CALL WriteAttribute(File_ID,'nUniqueNodes',1,IntScalar=nNodeIDs)
+CALL WriteAttribute(File_ID,'nFEMEdges',1,IntScalar=nFEMEdgeIDs)
 
 !WRITE ElemInfo,into (1,nElems)
 CALL WriteArrayToHDF5(File_ID,'ElemInfo',2,(/ElemInfoSize,nElems/),IntegerArray=ElemInfo)
@@ -320,6 +338,13 @@ DEALLOCATE(ElemInfo)
 !WRITE SideInfo,into (1,nSides)
 CALL WriteArrayToHDF5(File_ID,'SideInfo',2,(/SideInfoSize,nSides/),IntegerArray=SideInfo)
 DEALLOCATE(SideInfo)
+
+!WRITE EdgeInfo
+CALL WriteArrayToHDF5(File_ID,'EdgeInfo',2,(/EdgeInfoSize,nEdges/),IntegerArray=EdgeInfo)
+DEALLOCATE(EdgeInfo)
+
+CALL WriteArrayToHDF5(File_ID,'EdgeConnectInfo',2,(/EDGEConnectInfoSize,nFEMEdgeConnections/),IntegerArray=EdgeConnectInfo)
+DEALLOCATE(EdgeConnectInfo)
 
 ! WRITE NodeCoords and NodeIDs
 CALL WriteArrayToHDF5(File_ID,'NodeCoords',2,(/3,nNodes/),RealArray=NodeCoords)
@@ -553,7 +578,9 @@ IF(iSide.NE.nSides) CALL abort(__STAMP__,&
 
 !fill Edge Info
 ALLOCATE(EdgeInfo(EdgeInfoSize,1:nEdges))
+ALLOCATE(EdgeConnectInfo(EDGEConnectInfoSize,1:nFEMEdgeConnections))
 EdgeInfo=0
+EdgeConnectInfo=0
 iEdge=0
 Elem=>firstElem
 DO WHILE(ASSOCIATED(Elem))
