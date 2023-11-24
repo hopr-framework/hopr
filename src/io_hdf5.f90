@@ -48,13 +48,17 @@ INTEGER(SIZE_T)                :: SizeSet
 INTEGER                        :: nDims
 INTEGER(HSIZE_T),POINTER       :: HSize(:)
 
-INTEGER,PARAMETER              :: ElemInfoSize=6        !number of entry in each line of ElemInfo
+INTEGER,PARAMETER              :: ElemInfoSize=10        !number of entry in each line of ElemInfo
 INTEGER,PARAMETER              :: ELEM_Type=1           !entry position in ElemInfo
 INTEGER,PARAMETER              :: ELEM_Zone=2           
 INTEGER,PARAMETER              :: ELEM_FirstSideInd=3
 INTEGER,PARAMETER              :: ELEM_LastSideInd=4
 INTEGER,PARAMETER              :: ELEM_FirstNodeInd=5
 INTEGER,PARAMETER              :: ELEM_LastNodeInd=6
+INTEGER,PARAMETER              :: ELEM_FirstEdeEInd=7
+INTEGER,PARAMETER              :: ELEM_LastEdeeInd=8
+INTEGER,PARAMETER              :: ELEM_FirstVertexInd=9
+INTEGER,PARAMETER              :: ELEM_LastVertexeInd=10
 
 INTEGER,PARAMETER              :: SideInfoSize=5
 INTEGER,PARAMETER              :: SIDE_Type=1           !entry position in SideInfo
@@ -72,7 +76,17 @@ INTEGER,PARAMETER              :: LinMap(1:8,4:8)=RESHAPE(        & !CGNS -> IJK
                                          0,0,0,0,0,0,0,0,         & !nothing
                                          1,2,4,3,5,6,8,7/),(/8,5/)) !Hex
 
-INTEGER,ALLOCATABLE            :: ElemInfo(:,:),SideInfo(:,:)
+
+INTEGER,PARAMETER              :: EDGEInfoSize=3
+INTEGER,PARAMETER              :: EDGE_FEMEdgeID=1           !entry position in SideInfo
+INTEGER,PARAMETER              :: EDGE_offsetIndEdgeConnect=2
+INTEGER,PARAMETER              :: EDGE_lastIndEdgeConnect=3
+                                         
+INTEGER,PARAMETER              :: EDGEConnectInfoSize=2
+INTEGER,PARAMETER              :: EDGEConnect_nbElemID=1           !entry position in SideInfo
+INTEGER,PARAMETER              :: EDGEConnect_nbLocEdgeID=2
+
+INTEGER,ALLOCATABLE            :: ElemInfo(:,:),SideInfo(:,:), EdgeInfo(:,:),EdgeConnectInfo(:,:)
 REAL,ALLOCATABLE               :: ElemWeight(:)
 REAL,ALLOCATABLE               :: ElemBarycenters(:,:)
 INTEGER,ALLOCATABLE            :: GlobalNodeIDs(:)
@@ -80,7 +94,7 @@ REAL,ALLOCATABLE               :: NodeCoords(:,:)
 INTEGER,ALLOCATABLE            :: Elem_IJK(:,:)
 INTEGER                        :: nElems_IJK(3)
 INTEGER                        :: nGlobalElems
-INTEGER                        :: nElems,nSides,nNodes
+INTEGER                        :: nElems,nSides,nNodes,nEdges,nFEMEdges
 INTEGER                        :: ElemCounter(2,11)
 INTEGER                        :: nSideIDs,nNodeIDs
 INTEGER                        :: nBCs

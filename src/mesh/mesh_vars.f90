@@ -118,6 +118,7 @@ TYPE tEdge ! provides data structure for global edges
   TYPE(tEdgePtr),POINTER              ::       MortarEdge(:)          ! array of edge pointers to slave mortar edges
   TYPE(tEdge),POINTER                 ::       parentEdge             ! parentEdge in case of non-conforming meshes
   TYPE(tLocalEdge),POINTER            ::       FirstLocalEdge         ! pointer to local edge of first connected element
+  INTEGER                             ::      ind
 END TYPE tEdge
 
 
@@ -500,7 +501,48 @@ NULLIFY(Edge%curvedNode)
 NULLIFY(Edge%MortarEdge)
 NULLIFY(Edge%parentEdge)
 NULLIFY(Edge%FirstLocalEdge)
+Edge%ind=0
 END SUBROUTINE getNewEdge
+
+
+SUBROUTINE getNewLocalEdge(lEdge,Elem_in,edge_in)
+  !===================================================================================================================================
+  ! Create "Edge" with nodes "Node1" and "Node2"
+  !===================================================================================================================================
+  ! MODULES
+  ! IMPLICIT VARIABLE HANDLING
+  IMPLICIT NONE
+  !-----------------------------------------------------------------------------------------------------------------------------------
+  ! INPUT VARIABLES
+  TYPE(tElem),POINTER,INTENT(IN),OPTIONAL :: Elem_in
+  TYPE(tEdge),POINTER,INTENT(IN),OPTIONAL :: edge_in
+  !-----------------------------------------------------------------------------------------------------------------------------------
+  ! OUTPUT VARIABLES
+  TYPE(tLocalEdge),POINTER,INTENT(INOUT) :: Edge         ! New edge
+  !-----------------------------------------------------------------------------------------------------------------------------------
+  ! LOCAL VARIABLES 
+  !===================================================================================================================================
+  ALLOCATE(lEdge)
+  lEdge%ind=0
+  lEdge%tmp=0
+  NULLIFY(lEdge%next_connected)
+  IF(PRESENT(elem_in))THEN
+    lEdge%elem=>elem_in
+  ELSE
+    NULLIFY(lEdge%elem)
+  END IF
+  IF(PRESENT(elem_in))THEN
+    lEdge%elem=>elem_in
+  ELSE
+    NULLIFY(lEdge%elem)
+  END IF
+  IF(PRESENT(edge_in))THEN
+    lEdge%edge=>edge_in
+  ELSE
+    NULLIFY(lEdge%edge)
+  END IF
+  
+  END SUBROUTINE getNewLocalEdge
 
 
 SUBROUTINE getNewNode(Node,refCount,ind)

@@ -864,6 +864,7 @@ DO WHILE(ASSOCIATED(aElem))
               lEdge%edge=>aEdge
               lEdge%elem=>aElem
               NULLIFY(lEdge%next_connected)
+              lEdge%ind=-1
               lEdge%tmp=1
             END IF! aedge%firstlocalEdge not associated
             bEdge%FirstLocalEdge=>aEdge%FirstLocalEdge
@@ -943,6 +944,7 @@ DO WHILE(ASSOCIATED(aElem))
     ALLOCATE(aElem%LocalEdge(iEdge)%ledp)
     lEdge=>aElem%LocalEdge(iEdge)%ledp
     NULLIFY(ledge%next_connected)
+    lEdge%ind=-1
     lEdge%tmp=0
     lEdge%elem=>aElem
     !find edge from aNode->bNode (same orientation) / from bNode->aNode (opposite orientation)

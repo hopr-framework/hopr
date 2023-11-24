@@ -1,0 +1,38 @@
+{
+    "version": 3,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 22,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "hopr_config_debug_nohdf5_nocgns",
+            "displayName": "hopr configure: default debug build no cgns no hdf5",
+            "hidden": false,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "LIBS_BUILD_HDF5": "Off",
+                "LIBS_USE_CGNS": "Off"
+            }
+        },
+        {
+            "name": "hopr_config_release_nohdf5_nocgns",
+            "displayName": "hopr configure: default release build no cgns no hdf5",
+            "hidden": false,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "LIBS_BUILD_HDF5": "Off",
+                "LIBS_USE_CGNS": "Off"
+            }
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "HOPR_ctest",
+            "displayName": "Test HOPR running ctest ",
+            "configurePreset": "HOPR_config_release",
+            "output": {"outputOnFailure": true}
+        }
+    ]
+}
