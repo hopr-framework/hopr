@@ -58,13 +58,18 @@ TYPE tNodePtr
   TYPE(tNode),POINTER                 ::       NP                     ! node pointer
 END TYPE tNodePtr
 
+TYPE tVertexPtr
+  TYPE(tVertex),POINTER                 ::       VP                     ! vertex pointer
+END TYPE tVertexPtr
+
 ! Actual derived types ------------------------------------------------------------------------------------------------------------
 TYPE tElem ! provides data structure for local element
   ! Derived data types -----------------------------------------------!
   TYPE(tSide), POINTER                ::       firstSide              ! pointer to element's first side
   TYPE(tNodePtr),POINTER              ::       node(:)                ! pointer to element's nodes used for restart and meshing
   TYPE(tNodePtr),POINTER              ::       curvedNode(:)          ! ?
-  TYPE(tLocalEdgePtr),POINTER         ::       localEdge(:)            ! allocated with number of edges in the element
+  TYPE(tLocalEdgePtr),POINTER         ::       localEdge(:)            ! allocated with number of edges in the element, CGNS ordering
+  TYPE(tVertexPtr),POINTER            ::       Vertex(:)              ! allocated with number of vertices in the element, CGNS ordering
   TYPE(tElem),POINTER                 ::       nextElem               ! pointer to next     element in order to continue a loop
   TYPE(tElem),POINTER                 ::       prevElem               ! pointer to previous element in order to continue a loop
   TYPE(tElem),POINTER                 ::       tree                   ! pointer to tree if MortarMesh=1
@@ -119,7 +124,7 @@ TYPE tEdge ! provides data structure for global edges
   TYPE(tEdgePtr),POINTER              ::       MortarEdge(:)          ! array of edge pointers to slave mortar edges
   TYPE(tEdge),POINTER                 ::       parentEdge             ! parentEdge in case of non-conforming meshes
   TYPE(tLocalEdge),POINTER            ::       FirstLocalEdge         ! pointer to local edge of first connected element
-  INTEGER                             ::      ind
+  INTEGER                             ::       ind                    ! used for global edge index (geometrical)
 END TYPE tEdge
 
 
@@ -127,22 +132,34 @@ TYPE tLocalEdge ! provides data structure for local element edges, needed for ed
   TYPE(tEdge),POINTER                 ::       Edge             ! pointer back to geometrically unique edge
   TYPE(tLocalEdge),POINTER            ::       next_connected      !  pointer
   TYPE(tElem),POINTER                 ::       elem                   ! pointer to element connected to that edge
-  INTEGER                             ::       localEdgeID            !local edge id in connected element
+  INTEGER                             ::       localEdgeID            !local edge id in connected element (CGNS standard)
   LOGICAL                             ::       orientation            ! orientation from local to global edge (True: same, False: opposite)
-  INTEGER                             ::       ind                    ! edge counter
-  INTEGER                             ::       tmp    ! ?
+  INTEGER                             ::       ind                    ! used for global FEMedge index (topological, so with periodic BCs)                
+  INTEGER                             ::       tmp                    ! used as counter for the list of edge connections 
 END TYPE tLocalEdge
-
+                                                                                                                    
 TYPE tNode ! provides data structure for local node
   TYPE(tNormal),POINTER               ::       firstNormal            ! pointer to first normal of node
   TYPE(tEdge),POINTER                 ::       firstEdge              ! pointer to first normal of node
   REAL                                ::       x(3)                   ! node coordinates
-  INTEGER                             ::       ind                    ! node counter
+  INTEGER                             ::       ind                    ! used for global node index (geometrical)
   INTEGER                             ::       tmp    ! ?
   INTEGER                             ::       refCount               ! In general nodes are used by more than
   !                                                                   ! one side / element -> Node%refCount > 1
   !                                                                   ! Node%refCount = 0 means that node is not used any more
+  TYPE(tVertex),POINTER               ::       FirstVertex            ! pointer to the beginning of the vertex connection list
 END TYPE tNode
+
+
+TYPE tVertex ! provides data structure for local element "vertices", needed for vertex connectivity
+  TYPE(tNode),POINTER                 ::       node                   ! pointer back to geometrically unique node
+  TYPE(tVertex),POINTER               ::       next_connected         !  pointer to next connected vertex
+  TYPE(tElem),POINTER                 ::       elem                   ! pointer to element connected to that vertex
+  INTEGER                             ::       localVertexID          ! local vertex id in connected element (CGNS standard)
+  INTEGER                             ::       ind                    ! used for global FEMVertex index (topological, so with periodic BCs)                
+  INTEGER                             ::       tmp                    ! used as counter for the list of vertex connections
+END TYPE tVertex
+
 
 TYPE tNormal
   REAL                                ::       normal(3)              ! Normals(nDim) normals vector of a node
@@ -364,6 +381,11 @@ INTERFACE getNewNode
   MODULE PROCEDURE getNewNode
 END INTERFACE
 
+
+INTERFACE getNewVertex
+  MODULE PROCEDURE getNewVertex
+END INTERFACE
+
 INTERFACE getNewQuad
   MODULE PROCEDURE getNewQuad
 END INTERFACE
@@ -548,6 +570,45 @@ SUBROUTINE getNewLocalEdge(lEdge,localEdgeID_in,Elem_in,edge_in)
     NULLIFY(lEdge%edge)
   END IF
 END SUBROUTINE getNewLocalEdge
+
+SUBROUTINE getNewVertex(vert,localVertexID_in,Elem_in,node_in)
+  !===================================================================================================================================
+  ! Create "Edge" with nodes "Node1" and "Node2"
+  !===================================================================================================================================
+  ! MODULES
+  ! IMPLICIT VARIABLE HANDLING
+  IMPLICIT NONE
+  !-----------------------------------------------------------------------------------------------------------------------------------
+  ! INPUT VARIABLES
+  INTEGER,INTENT(IN),OPTIONAL             :: localVertexID_in
+  TYPE(tElem),POINTER,INTENT(IN),OPTIONAL :: Elem_in
+  TYPE(tNode),POINTER,INTENT(IN),OPTIONAL :: node_in
+  !-----------------------------------------------------------------------------------------------------------------------------------
+  ! OUTPUT VARIABLES
+  TYPE(tVertex),POINTER,INTENT(INOUT) :: vert         ! New edge
+  !-----------------------------------------------------------------------------------------------------------------------------------
+  ! LOCAL VARIABLES
+  !===================================================================================================================================
+  ALLOCATE(vert)
+  vert%ind=0
+  vert%tmp=0
+  NULLIFY(vert%next_connected)
+  IF(PRESENT(localVertexID_in))THEN
+    vert%localVertexID=localVertexID_in
+  ELSE
+    vert%localVertexID=0
+  END IF
+  IF(PRESENT(elem_in))THEN
+    vert%elem=>elem_in
+  ELSE
+    NULLIFY(vert%elem)
+  END IF
+  IF(PRESENT(node_in))THEN
+    vert%node=>node_in
+  ELSE
+    NULLIFY(vert%node)
+  END IF
+END SUBROUTINE getNewVertex
 
 
 SUBROUTINE getNewNode(Node,refCount,ind)

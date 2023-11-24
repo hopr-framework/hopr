@@ -614,9 +614,9 @@ SUBROUTINE buildEdges()
 ! If the edge is not  oriented, it goes from orientedNode(i+1)-> orientedNode(i)
 !===================================================================================================================================
 ! MODULES
-USE MOD_Mesh_Vars,ONLY:tElem,tSide,tEdge,tNode,tEdgePtr,tLocalEdge
+USE MOD_Mesh_Vars,ONLY:tElem,tSide,tEdge,tNode,tEdgePtr,tLocalEdge,tVertex
 USE MOD_Mesh_Vars,ONLY:firstElem
-USE MOD_Mesh_Vars,ONLY:GetNewEdge,getNewLocalEdge
+USE MOD_Mesh_Vars,ONLY:GetNewEdge,getNewLocalEdge,getNewVertex
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT VARIABLES
@@ -629,8 +629,9 @@ TYPE(tSide),POINTER          :: aSide,bSide   ! ?
 TYPE(tEdge),POINTER          :: aEdge,bEdge  ! ?
 TYPE(tLocalEdge),POINTER     :: lEdge,nextlEdge  ! ?
 TYPE(tEdgePtr)               :: smallEdges(4)  ! ?
-TYPE(tNode),POINTER          :: aNode,bNode  ! ?
-INTEGER                      :: iSide,jSide,iEdge,jEdge,kEdge,iNode,iPlus,nSides,EdgeInd,nNodes  ! ?
+TYPE(tNode),POINTER          :: aNode,bNode ! ?
+TYPE(tVertex),POINTER        :: vert,next_vert
+INTEGER                      :: i,iSide,jSide,iEdge,jEdge,kEdge,iNode,iPlus,nSides,EdgeInd,nNodes  ! ?
 INTEGER                      :: indA(2),indB(2,4),indTmp(2)
 INTEGER                      :: edgeCount  ! ?
 LOGICAL                      :: edgeFound  ! ?
@@ -812,6 +813,8 @@ DO WHILE(ASSOCIATED(aElem))
         DO iEdge=1,aSide%nNodes
           iPlus=iEdge+1
           IF(iEdge.EQ.aSide%nNodes) iPlus=1
+
+          ! aSide + edge from aNode->bNode
           IF(aSide%edgeOrientation(iEdge))THEN
             aNode=>aSide%OrientedNode(iEdge)%np
             bNode=>aSide%OrientedNode(iPlus)%np
@@ -822,7 +825,7 @@ DO WHILE(ASSOCIATED(aElem))
           indA(1)=aNode%ind
           indA(2)=bNode%ind
           edgeFound=.FALSE.
-          aEdge=>aNode%firstEdge
+          aEdge=>aNode%firstEdge  ! edge list of edges that have the aNode as their first index
           DO WHILE (ASSOCIATED(aEdge))
             indTmp(1)=aEdge%Node(1)%np%ind
             indTmp(2)=aEdge%Node(2)%np%ind
@@ -833,8 +836,9 @@ DO WHILE(ASSOCIATED(aElem))
             aEdge=>aEdge%nextEdge
           END DO
           IF(.NOT.edgeFound) STOP 'problem in finding periodic side aEdge'
-          !now for the periodic side (bSide)
-          IF(bSide%edgeOrientation(iEdge))THEN
+
+          !now for the periodic side (bSide,edge from anode->bnode)
+          IF(bSide%edgeOrientation(iEdge))THEN      
             aNode=>bSide%OrientedNode(iEdge)%np
             bNode=>bSide%OrientedNode(iPlus)%np
           ELSE
@@ -854,11 +858,10 @@ DO WHILE(ASSOCIATED(aElem))
             END IF
             bEdge=>bEdge%nextEdge
           END DO
-          IF(.NOT.edgeFound) STOP 'problem in finding periodic side aEdge'
+          IF(.NOT.edgeFound) STOP 'problem in finding periodic side bEdge'
 
           !set firstLocalEdge to the same global edge
           IF(.NOT.ASSOCIATED(bEdge%FirstLocalEdge))THEN
-            ALLOCATE(bEdge%FirstLocalEdge)
             IF(.NOT.ASSOCIATED(aEdge%FirstLocalEdge))THEN
               CALL getNewLocalEdge(aEdge%FirstLocalEdge,Elem_in=aElem,Edge_in=aEdge)
               aEdge%FirstLocalEdge%tmp=1
@@ -875,6 +878,31 @@ DO WHILE(ASSOCIATED(aElem))
               END IF
             END IF !aedge
           END IF !bedge%firstlocalEdge not associated
+          !now the vertex periodic connections!
+          DO i=1,2   ! i=1: iEdge (edge first node), =2: iPlus (edge second node)
+            aNode=>aSide%OrientedNode(MERGE(iEdge,iPlus,i.EQ.1))%np  ! node of aEdge
+            bNode=>bSide%OrientedNode(MERGE(iEdge,iPlus,i.EQ.1))%np  !corresponding periodic node of bEdge
+            aNode%ind=-777
+            bNode%ind=-777
+            IF(.NOT.ASSOCIATED(bNode%FirstVertex))THEN
+              IF(.NOT.ASSOCIATED(aNode%FirstVertex))THEN
+                CALL getNewVertex(aNode%FirstVertex,Elem_in=aElem,Node_in=aNode)
+                aNode%FirstVertex%tmp=1
+              END IF! anode%firstVertex not associated
+              bNode%FirstVertex=>aNode%FirstVertex
+              aNode%FirstVertex%tmp=aNode%FirstVertex%tmp+1 !count vertex multiplicity in firstVertex%tmp
+            ELSE
+              IF(.NOT.ASSOCIATED(aNode%FirstVertex))THEN
+                aNode%FirstVertex=>bNode%FirstVertex
+                bNode%FirstVertex%tmp=bNode%FirstVertex%tmp+1 !count vertex multiplicity in firstVertex%tmp
+              ELSE
+                IF(LOC(aNode%FirstVertex%Node).NE.LOC(bNode%FirstVertex%Node))THEN
+                  STOP 'something  wrong with periodic aNode bNode'
+                END IF
+              END IF !anode
+            END IF !bnode%firstVertex not associated
+          END DO
+
         END DO !iEdge=1,bSide%nnodes
       END IF ! BC periodic
     END IF !   BC side
@@ -927,11 +955,35 @@ CGNSElemEdgeToNode(8,11,1:2)=(/7,8/)
 CGNSElemEdgeToNode(8,12,1:2)=(/8,5/)
 
 
-! Build elem to localEdge
+! Build elem to localEdge / Vertex
 aElem=>firstElem
 DO WHILE(ASSOCIATED(aElem))
   aElem%nEdges=nEdges_from_nNodes(aElem%nNodes)
   ALLOCATE(aElem%localEdge(aElem%nEdges))
+  ALLOCATE(aElem%Vertex(aElem%nNodes))
+  ! fill element vertex
+  DO iNode=1,aElem%nNodes
+    aNode=>aElem%Node(iNode)%np
+    CALL GetNewVertex(aElem%Vertex(iNode)%vp,Elem_in=aElem,localVertexID_in=iNode)
+    vert=>aElem%Vertex(iNode)%vp
+    IF(.NOT.ASSOCIATED(aNode%firstVertex))THEN
+      IF(aNode%ind.EQ.-777) STOP 'firstVertex should be associated'
+      aNode%FirstVertex=>vert
+      vert%node=>aNode
+      aNode%FirstVertex%tmp=aNode%FirstVertex%tmp+1  !vertex multiplicity counted on FirstVertex%tmp (master vertex)
+    ELSE
+      IF(aNode%ind.NE.-777) STOP 'firstVertex must be already associated'
+      WRITE(*,*)'DEBUG',ASSOCIATED(aNode%FirstVertex),aNode%ind
+
+      next_vert=>aNode%FirstVertex%next_connected
+      DO WHILE(ASSOCIATED(next_vert))
+        next_vert=>next_vert%next_connected
+      END DO
+      next_vert%next_connected=>vert  !append to vertex connectivity list
+      vert%tmp=-1  ! mark as slave vertex
+    END IF
+  END DO !iNode
+  !fill element edges
   DO iEdge=1,aElem%nEdges
     aNode=>aElem%Node(CGNSElemEdgeToNode(aElem%nNodes,iEdge,1))%np
     bNode=>aElem%Node(CGNSElemEdgeToNode(aElem%nNodes,iEdge,2))%np
@@ -963,7 +1015,7 @@ DO WHILE(ASSOCIATED(aElem))
         DO WHILE(ASSOCIATED(nextlEdge))
           nextlEdge=>nextlEdge%next_connected
         END DO
-        nextlEdge%next_connected=>lEdge
+        nextlEdge%next_connected=>lEdge !append to edge connectivity list
         lEdge%tmp=-1
       END IF
     ELSE
