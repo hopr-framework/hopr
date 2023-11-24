@@ -629,12 +629,14 @@ TYPE(tLocalEdge),POINTER     :: lEdge,nextlEdge  ! ?
 TYPE(tEdgePtr)               :: smallEdges(4)  ! ?
 TYPE(tNode),POINTER          :: aNode,bNode  ! ?
 INTEGER                      :: iSide,jSide,iEdge,jEdge,kEdge,iNode,iPlus,nSides,EdgeInd,nNodes  ! ?
-INTEGER                      :: nEdges
 INTEGER                      :: indA(2),indB(2,4),indTmp(2)
 INTEGER                      :: edgeCount  ! ?
 LOGICAL                      :: edgeFound  ! ?
 INTEGER                      :: CGNSElemEdgeToNode(4:8,12,2)
+INTEGER                      :: nSides_from_nNodes(4:8)=(/4,5,5,-1, 6/)
+INTEGER                      :: nEdges_from_nNodes(4:8)=(/6,8,9,-1,12/)
 !===================================================================================================================================
+
 CALL Timer(.TRUE.)
 WRITE(UNIT_stdOut,'(132("~"))')
 WRITE(UNIT_stdOut,'(A)')'BUILD EDGES ...'
@@ -662,16 +664,7 @@ END DO !! ELEMS!!
 EdgeInd=0
 aElem=>firstElem
 DO WHILE(ASSOCIATED(aElem))
-  SELECT CASE(aElem%nNodes)
-  CASE(8)
-    nSides=6
-  CASE(6)
-    nSides=5
-  CASE(5)
-    nSides=5
-  CASE(4)
-    nSides=4
-  END SELECT
+  nSides=nSides_from_nNodes(aElem%nNodes)
   aSide=>aElem%firstSide
   DO iSide=1,nSides    !!SIDES!!***********
     DO iEdge=1,aSide%nNodes     !!EDGES!! nNodes=nEdges**************
@@ -722,16 +715,7 @@ END DO !! ELEMS!!
 ! in case of nonconforming meshes, build nonconforming edge connectivity
 aElem=>firstElem
 DO WHILE(ASSOCIATED(aElem))
-  SELECT CASE(aElem%nNodes)
-  CASE(8)
-    nSides=6
-  CASE(6)
-    nSides=5
-  CASE(5)
-    nSides=5
-  CASE(4)
-    nSides=4
-  END SELECT
+  nSides=nSides_from_nNodes(aElem%nNodes)
   aSide=>aElem%firstSide
   DO iSide=1,nSides
     IF(aSide%nMortars.LE.0)THEN  ! only check big mortar sides
@@ -810,6 +794,7 @@ END DO !! ELEMS!!
 ! set first local edge and back to its global edge
 aElem=>firstElem
 DO WHILE(ASSOCIATED(aElem))
+  nSides=nSides_from_nNodes(aElem%nNodes)
   aSide=>aElem%firstSide
   DO iSide=1,nSides
     IF(aSide%nMortars.LE.0)THEN  ! only check big mortar sides  ??????
@@ -817,8 +802,11 @@ DO WHILE(ASSOCIATED(aElem))
       CYCLE
     END IF
     IF(ASSOCIATED(aSide%BC))THEN ! 
-      IF(aSide%BC%BCType.EQ.1)THEN !periodic BC!!
-        
+      IF(aSide%BC%BCType.EQ.1)THEN !ONLY FOR periodic BC!!
+        !find periodic  edge connection (edge exists two times!)
+        bSide=>aside%connection
+        !find from aside and bside the common edge => aEdge and bEdge 
+        ! NOTE THAT "iEdge"=iOrientedNode
         DO iEdge=1,aSide%nNodes 
           iPlus=iEdge+1
           IF(iEdge.EQ.aSide%nNodes) iPlus=1
@@ -843,12 +831,7 @@ DO WHILE(ASSOCIATED(aElem))
             aEdge=>aEdge%nextEdge
           END DO
           IF(.NOT.edgeFound) STOP 'problem in finding periodic side aEdge'
-        END DO !iEdge=1,aSide%nnodes
-
-        bSide=>aside%connection
-        DO iEdge=1,bSide%nNodes 
-          iPlus=iEdge+1
-          IF(iEdge.EQ.bSide%nNodes) iPlus=1
+          !now for the periodic side (bSide)
           IF(bSide%edgeOrientation(iEdge))THEN
             aNode=>bSide%OrientedNode(iEdge)%np
             bNode=>bSide%OrientedNode(iPlus)%np
@@ -870,27 +853,32 @@ DO WHILE(ASSOCIATED(aElem))
             bEdge=>bEdge%nextEdge
           END DO
           IF(.NOT.edgeFound) STOP 'problem in finding periodic side aEdge'
+          
+          !set firstLocalEdge to the same global edge
+          IF(.NOT.ASSOCIATED(bEdge%FirstLocalEdge))THEN
+            ALLOCATE(bEdge%FirstLocalEdge)
+            IF(.NOT.ASSOCIATED(aEdge%FirstLocalEdge))THEN
+              !getNewLocalEdge
+              ALLOCATE(aEdge%FirstLocalEdge)
+              lEdge=>aEdge%FirstLocalEdge
+              lEdge%edge=>aEdge
+              lEdge%elem=>aElem
+              NULLIFY(lEdge%next_connected)
+              lEdge%tmp=1
+            END IF! aedge%firstlocalEdge not associated
+            bEdge%FirstLocalEdge=>aEdge%FirstLocalEdge
+            aEdge%FirstLocalEdge%tmp=aEdge%FirstLocalEdge%tmp+1 !count edge multiplicity in firstLocalEdge%tmp
+          ELSE 
+            IF(.NOT.ASSOCIATED(aEdge%FirstLocalEdge))THEN
+              aEdge%FirstLocalEdge=>bEdge%FirstLocalEdge
+              bEdge%FirstLocalEdge%tmp=bEdge%FirstLocalEdge%tmp+1 !count edge multiplicity in firstLocalEdge%tmp
+            ELSE
+              IF(LOC(aEdge%FirstLocalEdge%Edge).NE.LOC(bEdge%FirstLocalEdge%Edge))THEN
+                STOP 'something with periodic aEdge bEdge wrong'
+              END IF
+            END IF !aedge
+          END IF !bedge%firstlocalEdge not associated
         END DO !iEdge=1,bSide%nnodes
-
-        IF(.NOT.ASSOCIATED(bEdge%FirstLocalEdge))THEN
-          ALLOCATE(bEdge%FirstLocalEdge)
-          IF(.NOT.ASSOCIATED(aEdge%FirstLocalEdge))THEN
-            ALLOCATE(aEdge%FirstLocalEdge)
-            lEdge=>aEdge%FirstLocalEdge
-            lEdge%edge=>aEdge
-            lEdge%elem=>aElem
-            NULLIFY(lEdge%next_connected)
-          END IF! aedge%firstlocalEdge not associated
-          bEdge%FirstLocalEdge=>aEdge%FirstLocalEdge
-        ELSE 
-          IF(.NOT.ASSOCIATED(aEdge%FirstLocalEdge))THEN
-            aEdge%FirstLocalEdge=>bEdge%FirstLocalEdge
-          ELSE
-            IF(LOC(aEdge%FirstLocalEdge%Edge).NE.LOC(bEdge%FirstLocalEdge%Edge))THEN
-              STOP 'something with periodic aEdge bEdge wrong'
-            END IF
-          END IF !aedge
-        END IF !bedge%firstlocalEdge not associated
       END IF ! BC periodic
     END IF !   BC side
     aSide=>aSide%nextElemSide
@@ -945,29 +933,21 @@ CGNSElemEdgeToNode(8,12,1:2)=(/8,5/)
 ! Build elem to localEdge
 aElem=>firstElem
 DO WHILE(ASSOCIATED(aElem))
-  SELECT CASE(aElem%nNodes)
-  CASE(8)
-    nEdges=12
-  CASE(6)
-    nEdges=9
-  CASE(5)
-    nEdges=8
-  CASE(4)
-    nEdges=6
-  END SELECT
-  aElem%nEdges=nEdges
+  aElem%nEdges=nEdges_from_nNodes(aElem%nNodes)
   ALLOCATE(aElem%localEdge(aElem%nEdges))
   DO iEdge=1,aElem%nEdges
-    NULLIFY(aElem%localEdge(iEdge)%LEDP)
     aNode=>aElem%Node(CGNSElemEdgeToNode(aElem%nNodes,iEdge,1))%np
     bNode=>aElem%Node(CGNSElemEdgeToNode(aElem%nNodes,iEdge,2))%np
-   
-    edgeFound=.FALSE.
+    
+    !getNewLocalEdge
     ALLOCATE(aElem%LocalEdge(iEdge)%ledp)
     lEdge=>aElem%LocalEdge(iEdge)%ledp
-    NULLIFY(ledge%next_connected,ledge%elem,ledge%edge)
+    NULLIFY(ledge%next_connected)
+    lEdge%tmp=0
     lEdge%elem=>aElem
+    !find edge from aNode->bNode (same orientation) / from bNode->aNode (opposite orientation)
     aEdge=>aNode%firstEdge
+    edgeFound=.FALSE.
     DO WHILE (ASSOCIATED(aEdge))
       indA(1)=aEdge%Node(1)%np%ind
       indA(2)=aEdge%Node(2)%np%ind
@@ -984,6 +964,7 @@ DO WHILE(ASSOCIATED(aElem))
       lEdge%edge=>aEdge
       IF(.NOT.ASSOCIATED(aEdge%firstLocalEdge))THEN
         aEdge%FirstLocalEdge=>lEdge
+        aEdge%FirstLocalEdge%tmp=aEdge%FirstLocalEdge%tmp+1 !count edge multiplicity in firstLocalEdge%tmp
       ELSE 
         nextLedge=>aEdge%FirstLocalEdge%next_connected
         DO WHILE(ASSOCIATED(nextlEdge))
