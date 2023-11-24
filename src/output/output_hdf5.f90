@@ -52,7 +52,7 @@ SUBROUTINE WriteMeshToHDF5(FileString)
 ! Subroutine to write Data to HDF5 format
 !===================================================================================================================================
 ! MODULES
-USE MOD_Mesh_Vars,ONLY:tElem,tSide
+USE MOD_Mesh_Vars,ONLY:tElem,tSide,tEdge,tLocalEdge
 USE MOD_Mesh_Vars,ONLY:FirstElem
 USE MOD_Mesh_Vars,ONLY:N
 USE MOD_Output_Vars,ONLY:dosortIJK
@@ -68,9 +68,11 @@ CHARACTER(LEN=*),INTENT(IN)    :: FileString  ! ?
 ! LOCAL VARIABLES
 TYPE(tElem),POINTER            :: Elem  ! ?
 TYPE(tSide),POINTER            :: Side  ! ?
-INTEGER                        :: ElemID,SideID,NodeID  ! ?
+TYPE(tEdge),POINTER            :: aEdge  ! ?
+TYPE(tLocalEdge),POINTER       :: lEdge  ! ?
+INTEGER                        :: ElemID,SideID,NodeID,EdgeID,FEMEdgeID  ! ?
 INTEGER                        :: locnSides
-INTEGER                        :: iNode,i,iMortar
+INTEGER                        :: iNode,i,iMortar,iEdge,jEdge
 LOGICAL                        :: found
 CHARACTER(LEN=26)              :: ElemTypeName(1:11)
 !===================================================================================================================================
@@ -104,13 +106,16 @@ END DO
 ! count Elements , unique sides and nodes are marked with ind=0
 nNodeIDs=0 !number of unique nodeIDs
 nSideIDs=0 !number of unique side IDs (side and side%connection have the same sideID)
+nEdgeIDs=0
+nFEMEdgeIDs=0
 nElems=0   !number of elements
 nSides=0   !number of all sides
 nNodes=0   !number of all nodes
-
+nEdges=0    !number of all element local Edges
 Elem=>firstElem
 DO WHILE(ASSOCIATED(Elem))
   nElems=nElems+1
+  nEdges=nEdges+Elem%nEdges
   ! Count nodes
   DO i=1,Elem%nNodes
     IF(Elem%Node(i)%np%ind.NE.0) CYCLE
@@ -158,9 +163,21 @@ DO WHILE(ASSOCIATED(Elem))
     nNodes = nNodes+Elem%nCurvedNodes
   END IF
   nSides = nSides+locnSides
+  ! Count edges 
+  DO i=1,Elem%nEdges 
+    lEdge=>Elem%localEdge(i)%ledp
+    aEdge=>lEdge%edge
+    IF(aEdge%ind.NE.-777777) THEN
+      nEdgeIDs=nEdgeIDs+1
+      IF(aEdge%FirstLocalEdge%ind.NE.-99999) THEN
+        nFEMEdgeIDs=nFEMEdgeIDs+1
+      END IF
+    END IF
+    lEdge%ind=-99999
+    aEdge%ind=-777777 
+  END DO
   Elem=>Elem%nextElem
 END DO
-
 
 !NOW CALLED IN FILLMESH!!
 !! prepare sorting by space filling curve
@@ -176,6 +193,8 @@ ALLOCATE(ElemBarycenters(1:nElems,3))
 ElemID=0
 SideID=0
 NodeID=0
+EdgeID=0
+FEMEdgeID=0
 Elem=>firstElem
 DO WHILE(ASSOCIATED(Elem))
   ElemID=ElemID+1
@@ -218,6 +237,17 @@ DO WHILE(ASSOCIATED(Elem))
       END IF
     END IF
     Side=>Side%nextElemSide
+  END DO
+  ! Count edges 
+  DO i=1,Elem%nEdges
+    IF(Elem%localEdge(i)%ledp%edge%ind.EQ.-777777)THEN
+      EdgeID=EdgeID+1
+      Elem%localEdge(i)%ledp%edge%ind=EdgeID 
+    END IF
+    IF(Elem%localEdge(i)%ledp%edge%firstlocal%ind.EQ.-99999)THEN
+      FEMEdgeID=FEMEdgeID+1
+      Elem%localEdge(i)%ledp%edge%firstlocal%ind=FEMEdgeID 
+    END IF
   END DO
   Elem=>Elem%nextElem
 END DO !Elem
@@ -379,7 +409,7 @@ IMPLICIT NONE
 TYPE(tElem),POINTER            :: Elem  ! ?
 TYPE(tSide),POINTER            :: Side  ! ?
 INTEGER                        :: locnNodes,locnSides
-INTEGER                        :: iNode,iSide,iElem,i,iMortar
+INTEGER                        :: iNode,iSide,iElem,i,iMortar,iEdge,jEdge
 TYPE(tSide),POINTER            :: aSide
 !===================================================================================================================================
 !fill ElementInfo.
@@ -519,6 +549,20 @@ END DO
 
 IF(iSide.NE.nSides) CALL abort(__STAMP__,&
                      'Sanity check: nSides not equal to total number of sides!')
+
+
+!fill Edge Info
+ALLOCATE(EdgeInfo(EdgeInfoSize,1:nEdges))
+EdgeInfo=0
+iEdge=0
+Elem=>firstElem
+DO WHILE(ASSOCIATED(Elem))
+  DO jEdge=1,Elem%nEdges
+    !EdgeInfo(EDGE_FEMEdgeID,iEdge)=
+    !EdgeInfo(EDGE_offsetIndEdgeConnect,iEdge)=
+  END DO
+  Elem=>Elem%nextElem
+END DO
 
 !fill GlobalNodeID
 ALLOCATE(NodeCoords(3,nNodes),GlobalNodeIDs(nNodes))
