@@ -639,6 +639,7 @@ IF(PRESENT(refCount)) Node%refCount=refCount
 NodeCount=NodeCount+1
 NULLIFY(Node%firstNormal)
 NULLIFY(Node%firstEdge)
+NULLIFY(Node%firstVertex)
 END SUBROUTINE getNewNode
 
 

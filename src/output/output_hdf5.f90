@@ -171,14 +171,15 @@ DO WHILE(ASSOCIATED(Elem))
     aEdge=>lEdge%edge
     IF(aEdge%ind.NE.-777777) THEN
       nEdgeIDs=nEdgeIDs+1
+      aEdge%ind=-777777
       IF(aEdge%FirstLocalEdge%ind.NE.-99999) THEN
         nFEMEdgeIDs=nFEMEdgeIDs+1
-        IF(aEdge%FirstLocalEdge%tmp.LE.0) STOP 'Something is wrong with edge multiplicity'
+        aEdge%FirstLocalEdge%ind=-99999
+        IF(aEdge%FirstLocalEdge%tmp.LE.0) CALL abort(__STAMP__, &
+                                           'Something is wrong with edge multiplicity')
         nFEMEdgeConnections=nFEMEdgeConnections+(aEdge%FirstLocalEdge%tmp-1)
       END IF
     END IF
-    lEdge%ind=-99999
-    aEdge%ind=-777777
   END DO
   Elem=>Elem%nextElem
 END DO
@@ -255,7 +256,8 @@ DO WHILE(ASSOCIATED(Elem))
       aEdge%FirstLocalEdge%ind=FEMEdgeID
       nextLedge=>aEdge%FirstLocalEdge%next_connected
       DO WHILE(ASSOCIATED(nextlEdge))
-        IF(nextLedge%tmp.NE.-1) STOP 'Something wrong with nextLedge'
+        IF(nextLedge%tmp.NE.-1) CALL abort(__STAMP__, &
+                                           'Something wrong with nextLedge')
         nextLedge%ind=FEMEdgeID
         nextLedge=>nextLedge%next_connected
       END DO
@@ -603,7 +605,10 @@ DO WHILE(ASSOCIATED(Elem))
       next_lEdge=>next_lEdge%next_connected
     END DO !
     EdgeInfo(EDGE_lastIndEdgeConnect,iEdge)=jEdge
-    IF((EdgeInfo(EDGE_lastIndEdgeConnect,iEdge)-EdgeInfo(EDGE_offsetIndEdgeConnect,iEdge)).NE. (aEdge%FirstLocalEdge%tmp-1)) STOP "wrong length of edge connections"
+    IF((EdgeInfo(EDGE_lastIndEdgeConnect,iEdge)-EdgeInfo(EDGE_offsetIndEdgeConnect,iEdge)).NE. (aEdge%FirstLocalEdge%tmp-1)) THEN
+      CALL abort(__STAMP__, &
+                 "wrong length of edge connections")
+    END IF
   END DO !iLoc
   Elem=>Elem%nextElem
 END DO

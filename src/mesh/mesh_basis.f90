@@ -800,10 +800,6 @@ DO WHILE(ASSOCIATED(aElem))
   nSides=nSides_from_nNodes(aElem%nNodes)
   aSide=>aElem%firstSide
   DO iSide=1,nSides
-    IF(aSide%nMortars.LE.0)THEN  ! only check big mortar sides  ??????
-      aSide=>aSide%nextElemSide
-      CYCLE
-    END IF
     IF(ASSOCIATED(aSide%BC))THEN !
       IF(aSide%BC%BCType.EQ.1)THEN !ONLY FOR periodic BC!!
         !find periodic  edge connection (edge exists two times!)
@@ -816,7 +812,7 @@ DO WHILE(ASSOCIATED(aElem))
 
           ! aSide + edge from aNode->bNode
           IF(aSide%edgeOrientation(iEdge))THEN
-            aNode=>aSide%OrientedNode(iEdge)%np
+            aNode=>aSide%OrientedNode(iEdge)%np 
             bNode=>aSide%OrientedNode(iPlus)%np
           ELSE
             aNode=>aSide%OrientedNode(iPlus)%np
@@ -835,7 +831,8 @@ DO WHILE(ASSOCIATED(aElem))
             END IF
             aEdge=>aEdge%nextEdge
           END DO
-          IF(.NOT.edgeFound) STOP 'problem in finding periodic side aEdge'
+          IF(.NOT.edgeFound) CALL abort(__STAMP__, &
+                                         'problem in finding periodic side aEdge')
 
           !now for the periodic side (bSide,edge from anode->bnode)
           IF(bSide%edgeOrientation(iEdge))THEN      
@@ -858,7 +855,8 @@ DO WHILE(ASSOCIATED(aElem))
             END IF
             bEdge=>bEdge%nextEdge
           END DO
-          IF(.NOT.edgeFound) STOP 'problem in finding periodic side bEdge'
+          IF(.NOT.edgeFound) CALL abort(__STAMP__, &
+                                          'problem in finding periodic side bEdge')
 
           !set firstLocalEdge to the same global edge
           IF(.NOT.ASSOCIATED(bEdge%FirstLocalEdge))THEN
@@ -874,34 +872,34 @@ DO WHILE(ASSOCIATED(aElem))
               bEdge%FirstLocalEdge%tmp=bEdge%FirstLocalEdge%tmp+1 !count edge multiplicity in firstLocalEdge%tmp
             ELSE
               IF(LOC(aEdge%FirstLocalEdge%Edge).NE.LOC(bEdge%FirstLocalEdge%Edge))THEN
-                STOP 'something with periodic aEdge bEdge wrong'
+                CALL abort(__STAMP__, &
+                          'something with periodic aEdge bEdge wrong')
               END IF
             END IF !aedge
           END IF !bedge%firstlocalEdge not associated
           !now the vertex periodic connections!
-          DO i=1,2   ! i=1: iEdge (edge first node), =2: iPlus (edge second node)
-            aNode=>aSide%OrientedNode(MERGE(iEdge,iPlus,i.EQ.1))%np  ! node of aEdge
-            bNode=>bSide%OrientedNode(MERGE(iEdge,iPlus,i.EQ.1))%np  !corresponding periodic node of bEdge
-            aNode%ind=-777
-            bNode%ind=-777
-            IF(.NOT.ASSOCIATED(bNode%FirstVertex))THEN
-              IF(.NOT.ASSOCIATED(aNode%FirstVertex))THEN
-                CALL getNewVertex(aNode%FirstVertex,Elem_in=aElem,Node_in=aNode)
-                aNode%FirstVertex%tmp=1
-              END IF! anode%firstVertex not associated
-              bNode%FirstVertex=>aNode%FirstVertex
+          aNode=>aSide%OrientedNode(iEdge)%np  ! node of aEdge
+          bNode=>bSide%OrientedNode(iEdge)%np  !corresponding periodic node of bEdge
+          IF(.NOT.ASSOCIATED(bNode%FirstVertex))THEN
+            IF(.NOT.ASSOCIATED(aNode%FirstVertex))THEN
+              CALL getNewVertex(aNode%FirstVertex,Elem_in=aElem,Node_in=aNode)
+              aNode%FirstVertex%tmp=1
+              WRITE(*,*)'DEBUG,periodic node',aElem%ind,aNode%ind,aNode%FirstVertex%tmp
+            END IF! anode%firstVertex not associated
+            bNode%FirstVertex=>aNode%FirstVertex
+            bNode%FirstVertex%tmp=bNode%FirstVertex%tmp+1 !count vertex multiplicity in firstVertex%tmp
+          ELSE  
+            IF(.NOT.ASSOCIATED(aNode%FirstVertex))THEN
+              aNode%FirstVertex=>bNode%FirstVertex
               aNode%FirstVertex%tmp=aNode%FirstVertex%tmp+1 !count vertex multiplicity in firstVertex%tmp
             ELSE
-              IF(.NOT.ASSOCIATED(aNode%FirstVertex))THEN
-                aNode%FirstVertex=>bNode%FirstVertex
-                bNode%FirstVertex%tmp=bNode%FirstVertex%tmp+1 !count vertex multiplicity in firstVertex%tmp
-              ELSE
-                IF(LOC(aNode%FirstVertex%Node).NE.LOC(bNode%FirstVertex%Node))THEN
-                  STOP 'something  wrong with periodic aNode bNode'
-                END IF
-              END IF !anode
-            END IF !bnode%firstVertex not associated
-          END DO
+              IF(LOC(aNode%FirstVertex%Node).NE.LOC(bNode%FirstVertex%Node))THEN
+                CALL abort(__STAMP__, &
+                           'something  wrong with periodic aNode bNode')
+              END IF
+            END IF !anode%firstvertex not associated
+          END IF !bnode%firstVertex not associated
+          WRITE(*,*)'DEBUG 1st',aElem%ind,aNode%ind,anode%firstvertex%tmp
 
         END DO !iEdge=1,bSide%nnodes
       END IF ! BC periodic
@@ -964,66 +962,75 @@ DO WHILE(ASSOCIATED(aElem))
   ! fill element vertex
   DO iNode=1,aElem%nNodes
     aNode=>aElem%Node(iNode)%np
+    WRITE(*,*)'DEBUG 2nd',aElem%ind,inode,aNode%ind
     CALL GetNewVertex(aElem%Vertex(iNode)%vp,Elem_in=aElem,localVertexID_in=iNode)
     vert=>aElem%Vertex(iNode)%vp
     IF(.NOT.ASSOCIATED(aNode%firstVertex))THEN
-      IF(aNode%ind.EQ.-777) STOP 'firstVertex should be associated'
       aNode%FirstVertex=>vert
       vert%node=>aNode
-      aNode%FirstVertex%tmp=aNode%FirstVertex%tmp+1  !vertex multiplicity counted on FirstVertex%tmp (master vertex)
     ELSE
-      IF(aNode%ind.NE.-777) STOP 'firstVertex must be already associated'
-      WRITE(*,*)'DEBUG',ASSOCIATED(aNode%FirstVertex),aNode%ind
-
+      WRITE(*,*)'DEBUG,3rd',aNode%FirstVertex%tmp
+      vert%node=>aNode%FirstVertex%node
+      vert%tmp=-1  ! mark as slave vertex
       next_vert=>aNode%FirstVertex%next_connected
       DO WHILE(ASSOCIATED(next_vert))
         next_vert=>next_vert%next_connected
       END DO
-      next_vert%next_connected=>vert  !append to vertex connectivity list
-      vert%tmp=-1  ! mark as slave vertex
+      next_vert=>vert  !append to vertex connectivity list
     END IF
+    aNode%FirstVertex%tmp=aNode%FirstVertex%tmp+1  !vertex multiplicity counted on FirstVertex%tmp (master vertex)
   END DO !iNode
   !fill element edges
   DO iEdge=1,aElem%nEdges
     aNode=>aElem%Node(CGNSElemEdgeToNode(aElem%nNodes,iEdge,1))%np
     bNode=>aElem%Node(CGNSElemEdgeToNode(aElem%nNodes,iEdge,2))%np
-
     CALL getNewLocalEdge(aElem%LocalEdge(iEdge)%ledp,Elem_in=aElem,localEdgeID_in=iEdge)
     lEdge=>aElem%LocalEdge(iEdge)%ledp
     !find edge from aNode->bNode (same orientation) / from bNode->aNode (opposite orientation)
-    aEdge=>aNode%firstEdge
+
     edgeFound=.FALSE.
-    DO WHILE (ASSOCIATED(aEdge))
-      indA(1)=aEdge%Node(1)%np%ind
-      indA(2)=aEdge%Node(2)%np%ind
-      indTmp(1)=aNode%ind
-      indTmp(2)=bNode%ind
-      IF((ANY(indA(1).EQ.indTmp)).AND.(ANY(indA(2).EQ.indTmp)))THEN
-        edgeFound=.TRUE.
-        ledge%orientation=(indA(1).EQ.indTmp(1)) !TRUE: same as global edge, FALSE: opposite to global edge
-        EXIT
+    indA(1)=aNode%ind
+    indA(2)=bNode%ind
+    DO i=1,2  ! loop anode, bnode
+      IF(i.EQ.1)THEN
+        aEdge=>aNode%firstEdge
+      ELSE 
+        aEdge=>bNode%firstEdge
       END IF
-      aEdge=>aEdge%nextEdge
-    END DO
+      DO WHILE (ASSOCIATED(aEdge))
+        indtmp(1)=aEdge%Node(1)%np%ind
+        indtmp(2)=aEdge%Node(2)%np%ind
+        IF((ANY(indA(1).EQ.indTmp)).AND.(ANY(indA(2).EQ.indTmp)))THEN
+          edgeFound=.TRUE.
+          EXIT
+        END IF
+        aEdge=>aEdge%nextEdge
+      END DO
+      IF(edgeFound) EXIT
+    END DO !i=1,2  
     IF (edgeFound) THEN
-      lEdge%edge=>aEdge
       IF(.NOT.ASSOCIATED(aEdge%firstLocalEdge))THEN
+        lEdge%edge=>aEdge
         aEdge%FirstLocalEdge=>lEdge
-        aEdge%FirstLocalEdge%tmp=aEdge%FirstLocalEdge%tmp+1 !count edge multiplicity in firstLocalEdge%tmp
       ELSE
+        lEdge%edge=>aEdge%FirstLocalEdge%Edge
+        lEdge%tmp=-1  !mark as slave edge
         nextLedge=>aEdge%FirstLocalEdge%next_connected
         DO WHILE(ASSOCIATED(nextlEdge))
           nextlEdge=>nextlEdge%next_connected
         END DO
-        nextlEdge%next_connected=>lEdge !append to edge connectivity list
-        lEdge%tmp=-1
+        nextlEdge=>lEdge !append to edge connectivity list
       END IF
+      aEdge%FirstLocalEdge%tmp=aEdge%FirstLocalEdge%tmp+1 !count edge multiplicity in firstLocalEdge%tmp
+      lEdge%orientation=(SUM((bNode%x-aNode%x)*(lEdge%edge%Node(2)%np%x-lEdge%edge%Node(1)%np%x)).GT.0.)
     ELSE
-      STOP 'something is wrong for localEdge for elem'
+      CALL abort(__STAMP__, &
+                  'something is wrong cannot find edge in element')
     END IF
   END DO !iEdge=1,aElem%nEdges
   aElem=>aElem%nextElem
 END DO !! ELEMS!!
+
 
 CALL timer(.FALSE.)
 END SUBROUTINE buildEdges
