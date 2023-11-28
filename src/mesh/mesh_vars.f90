@@ -213,7 +213,7 @@ LOGICAL                        :: checkElemJacobians     ! check if Jacobians ar
 INTEGER                        :: NegativeJacobians=0    ! counter for elements with scaledJac<jacobianTolerance
                                                          !after checkJacobians, this might be >0!
 REAL                           :: jacobianTolerance      ! smallest value of jacobian permitted (e.g. 1.e-16)
-
+LOGICAL                        :: generateFEMconnectivity! Flag for generating and writing the element edge and vertex connectivity, needed for a FEM solver
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! GEOMETRY
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -233,6 +233,7 @@ INTEGER                        :: nBoundarySides=0       ! number of boundary si
 INTEGER                        :: NodeCount=0,SideCount=0,ElemCount=0  ! Counter for nodes,sides and elements.
 INTEGER                        :: nNodesElemSideMapping(8,6) ! mapping matrix for Elem side mappings following the CGNS standard
 INTEGER                        :: ElemSideMapping(8,6,4)     ! mapping matrix for Elem side mappings following the CGNS standard
+INTEGER                        :: CGNSElemEdgeToNode(4:8,12,2) ! mapping matrix for Elem Edges to element corners following the CGNS standard
 INTEGER                        :: TypeIndex(8)           ! typeIndex mapping of index for different element types
 !                                                        !  used for urElem administration
 INTEGER                        :: TypeIndex_surf(4)      ! typeIndex_surf(nNodes) determines the typeIndex of the Surface(nNodes)

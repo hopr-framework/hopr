@@ -615,7 +615,7 @@ SUBROUTINE buildEdges()
 !===================================================================================================================================
 ! MODULES
 USE MOD_Mesh_Vars,ONLY:tElem,tSide,tEdge,tNode,tEdgePtr,tLocalEdge,tVertex
-USE MOD_Mesh_Vars,ONLY:firstElem
+USE MOD_Mesh_Vars,ONLY:firstElem,generateFEMconnectivity,CGNSElemEdgeToNode
 USE MOD_Mesh_Vars,ONLY:GetNewEdge,getNewLocalEdge,getNewVertex
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -635,7 +635,6 @@ INTEGER                      :: i,iSide,jSide,iEdge,jEdge,kEdge,iNode,iPlus,nSid
 INTEGER                      :: indA(2),indB(2,4),indTmp(2)
 INTEGER                      :: edgeCount  ! ?
 LOGICAL                      :: edgeFound  ! ?
-INTEGER                      :: CGNSElemEdgeToNode(4:8,12,2)
 INTEGER                      :: nSides_from_nNodes(4:8)=(/4,5,5,-1, 6/)
 INTEGER                      :: nEdges_from_nNodes(4:8)=(/6,8,9,-1,12/)
 !===================================================================================================================================
@@ -792,8 +791,13 @@ DO WHILE(ASSOCIATED(aElem))
   END DO !!SIDES!!**************
   aElem=>aElem%nextElem
 END DO !! ELEMS!!
+CALL timer(.FALSE.)
 
+IF(.NOT.generateFEMconnectivity)RETURN
 
+CALL Timer(.TRUE.)
+WRITE(UNIT_stdOut,'(132("~"))')
+WRITE(UNIT_stdOut,'(A)')'BUILD FEM connectivity...'
 ! set first local edge and back to its global edge
 aElem=>firstElem
 DO WHILE(ASSOCIATED(aElem))
@@ -884,7 +888,6 @@ DO WHILE(ASSOCIATED(aElem))
             IF(.NOT.ASSOCIATED(aNode%FirstVertex))THEN
               CALL getNewVertex(aNode%FirstVertex,Elem_in=aElem,Node_in=aNode)
               aNode%FirstVertex%tmp=1
-              WRITE(*,*)'DEBUG,periodic node',aElem%ind,aNode%ind,aNode%FirstVertex%tmp
             END IF! anode%firstVertex not associated
             bNode%FirstVertex=>aNode%FirstVertex
             bNode%FirstVertex%tmp=bNode%FirstVertex%tmp+1 !count vertex multiplicity in firstVertex%tmp
@@ -899,8 +902,6 @@ DO WHILE(ASSOCIATED(aElem))
               END IF
             END IF !anode%firstvertex not associated
           END IF !bnode%firstVertex not associated
-          WRITE(*,*)'DEBUG 1st',aElem%ind,aNode%ind,anode%firstvertex%tmp
-
         END DO !iEdge=1,bSide%nnodes
       END IF ! BC periodic
     END IF !   BC side
@@ -908,50 +909,6 @@ DO WHILE(ASSOCIATED(aElem))
   END DO !iSides
   aElem=>aElem%nextElem
 END DO !ELEMS
-
-
-
-CGNSElemEdgeToNode=-1
-! tet ( 4 nodes)
-CGNSElemEdgeToNode(4, 1,1:2)=(/1,2/)
-CGNSElemEdgeToNode(4, 2,1:2)=(/2,3/)
-CGNSElemEdgeToNode(4, 3,1:2)=(/3,1/)
-CGNSElemEdgeToNode(4, 4,1:2)=(/1,4/)
-CGNSElemEdgeToNode(4, 5,1:2)=(/2,4/)
-CGNSElemEdgeToNode(4, 6,1:2)=(/3,4/)
-! pyra (5nodes)
-CGNSElemEdgeToNode(5, 1,1:2)=(/1,2/)
-CGNSElemEdgeToNode(5, 2,1:2)=(/2,3/)
-CGNSElemEdgeToNode(5, 3,1:2)=(/3,4/)
-CGNSElemEdgeToNode(5, 4,1:2)=(/4,1/)
-CGNSElemEdgeToNode(5, 5,1:2)=(/1,5/)
-CGNSElemEdgeToNode(5, 6,1:2)=(/2,5/)
-CGNSElemEdgeToNode(5, 7,1:2)=(/3,5/)
-CGNSElemEdgeToNode(5, 8,1:2)=(/4,5/)
-! prism (6nodes)
-CGNSElemEdgeToNode(6, 1,1:2)=(/1,2/)
-CGNSElemEdgeToNode(6, 2,1:2)=(/2,3/)
-CGNSElemEdgeToNode(6, 3,1:2)=(/3,1/)
-CGNSElemEdgeToNode(6, 4,1:2)=(/1,4/)
-CGNSElemEdgeToNode(6, 5,1:2)=(/2,5/)
-CGNSElemEdgeToNode(6, 6,1:2)=(/3,6/)
-CGNSElemEdgeToNode(6, 7,1:2)=(/4,5/)
-CGNSElemEdgeToNode(6, 8,1:2)=(/5,6/)
-CGNSElemEdgeToNode(6, 9,1:2)=(/6,4/)
-! hexa (8nodes)
-CGNSElemEdgeToNode(8, 1,1:2)=(/1,2/)
-CGNSElemEdgeToNode(8, 2,1:2)=(/2,3/)
-CGNSElemEdgeToNode(8, 3,1:2)=(/3,4/)
-CGNSElemEdgeToNode(8, 4,1:2)=(/4,1/)
-CGNSElemEdgeToNode(8, 5,1:2)=(/1,5/)
-CGNSElemEdgeToNode(8, 6,1:2)=(/2,6/)
-CGNSElemEdgeToNode(8, 7,1:2)=(/3,7/)
-CGNSElemEdgeToNode(8, 8,1:2)=(/4,8/)
-CGNSElemEdgeToNode(8, 9,1:2)=(/5,6/)
-CGNSElemEdgeToNode(8,10,1:2)=(/6,7/)
-CGNSElemEdgeToNode(8,11,1:2)=(/7,8/)
-CGNSElemEdgeToNode(8,12,1:2)=(/8,5/)
-
 
 ! Build elem to localEdge / Vertex
 aElem=>firstElem
@@ -962,14 +919,12 @@ DO WHILE(ASSOCIATED(aElem))
   ! fill element vertex
   DO iNode=1,aElem%nNodes
     aNode=>aElem%Node(iNode)%np
-    WRITE(*,*)'DEBUG 2nd',aElem%ind,inode,aNode%ind
     CALL GetNewVertex(aElem%Vertex(iNode)%vp,Elem_in=aElem,localVertexID_in=iNode)
     vert=>aElem%Vertex(iNode)%vp
     IF(.NOT.ASSOCIATED(aNode%firstVertex))THEN
       aNode%FirstVertex=>vert
       vert%node=>aNode
     ELSE
-      WRITE(*,*)'DEBUG,3rd',aNode%FirstVertex%tmp
       vert%node=>aNode%FirstVertex%node
       vert%tmp=-1  ! mark as slave vertex
       next_vert=>aNode%FirstVertex%next_connected
@@ -1030,7 +985,6 @@ DO WHILE(ASSOCIATED(aElem))
   END DO !iEdge=1,aElem%nEdges
   aElem=>aElem%nextElem
 END DO !! ELEMS!!
-
 
 CALL timer(.FALSE.)
 END SUBROUTINE buildEdges

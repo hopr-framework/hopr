@@ -53,7 +53,7 @@ SUBROUTINE WriteMeshToHDF5(FileString)
 ! Subroutine to write Data to HDF5 format
 !===================================================================================================================================
 ! MODULES
-USE MOD_Mesh_Vars,ONLY:tElem,tSide,tEdge,tLocalEdge
+USE MOD_Mesh_Vars,ONLY:tElem,tSide,generateFEMconnectivity,tEdge,tLocalEdge
 USE MOD_Mesh_Vars,ONLY:FirstElem
 USE MOD_Mesh_Vars,ONLY:N
 USE MOD_Output_Vars,ONLY:dosortIJK
@@ -117,7 +117,6 @@ nEdges=0    !number of all element local Edges
 Elem=>firstElem
 DO WHILE(ASSOCIATED(Elem))
   nElems=nElems+1
-  nEdges=nEdges+Elem%nEdges
   ! Count nodes
   DO i=1,Elem%nNodes
     IF(Elem%Node(i)%np%ind.NE.0) CYCLE
@@ -165,22 +164,26 @@ DO WHILE(ASSOCIATED(Elem))
     nNodes = nNodes+Elem%nCurvedNodes
   END IF
   nSides = nSides+locnSides
-  ! Count edges
-  DO i=1,Elem%nEdges
-    lEdge=>Elem%localEdge(i)%ledp
-    aEdge=>lEdge%edge
-    IF(aEdge%ind.NE.-777777) THEN
-      nEdgeIDs=nEdgeIDs+1
-      aEdge%ind=-777777
-      IF(aEdge%FirstLocalEdge%ind.NE.-99999) THEN
-        nFEMEdgeIDs=nFEMEdgeIDs+1
-        aEdge%FirstLocalEdge%ind=-99999
-        IF(aEdge%FirstLocalEdge%tmp.LE.0) CALL abort(__STAMP__, &
-                                           'Something is wrong with edge multiplicity')
-        nFEMEdgeConnections=nFEMEdgeConnections+(aEdge%FirstLocalEdge%tmp-1)
+  IF(generateFEMconnectivity)THEN
+    nEdges=nEdges+Elem%nEdges
+    ! Count edges
+    DO i=1,Elem%nEdges
+      lEdge=>Elem%localEdge(i)%ledp
+      aEdge=>lEdge%edge
+      IF(aEdge%ind.NE.-777777) THEN
+        nEdgeIDs=nEdgeIDs+1
+        aEdge%ind=-777777
+        IF(aEdge%FirstLocalEdge%ind.NE.-99999) THEN
+          nFEMEdgeIDs=nFEMEdgeIDs+1
+          aEdge%FirstLocalEdge%ind=-99999
+          !!! COUNT connections here and save them to aEdge%FirstLocalEdge%tmp
+          IF(aEdge%FirstLocalEdge%tmp.LE.0) CALL abort(__STAMP__, &
+                                             'Something is wrong with edge multiplicity')
+          nFEMEdgeConnections=nFEMEdgeConnections+(aEdge%FirstLocalEdge%tmp-1)
+        END IF
       END IF
-    END IF
-  END DO
+    END DO
+  END IF !FEMCONNECT
   Elem=>Elem%nextElem
 END DO
 
@@ -243,39 +246,43 @@ DO WHILE(ASSOCIATED(Elem))
     END IF
     Side=>Side%nextElemSide
   END DO
-  ! Count edges
-  DO iEdge=1,Elem%nEdges
-    lEdge=>Elem%localEdge(iEdge)%ledp
-    aEdge=>lEdge%Edge
-    IF(aEdge%ind.EQ.-777777)THEN
-      EdgeID=EdgeID+1
-      aEdge%ind=EdgeID
-    END IF
-    IF(aEdge%FirstLocalEdge%ind.EQ.-99999)THEN
-      FEMEdgeID=FEMEdgeID+1
-      aEdge%FirstLocalEdge%ind=FEMEdgeID
-      nextLedge=>aEdge%FirstLocalEdge%next_connected
-      DO WHILE(ASSOCIATED(nextlEdge))
-        IF(nextLedge%tmp.NE.-1) CALL abort(__STAMP__, &
-                                           'Something wrong with nextLedge')
-        nextLedge%ind=FEMEdgeID
-        nextLedge=>nextLedge%next_connected
-      END DO
-    END IF
-  END DO
+  IF(generateFEMconnectivity)THEN
+    ! set edge counters
+    DO iEdge=1,Elem%nEdges
+      lEdge=>Elem%localEdge(iEdge)%ledp
+      aEdge=>lEdge%Edge
+      IF(aEdge%ind.EQ.-777777)THEN
+        EdgeID=EdgeID+1
+        aEdge%ind=EdgeID
+      END IF
+      IF(aEdge%FirstLocalEdge%ind.EQ.-99999)THEN
+        FEMEdgeID=FEMEdgeID+1
+        aEdge%FirstLocalEdge%ind=FEMEdgeID
+        nextLedge=>aEdge%FirstLocalEdge%next_connected
+        DO WHILE(ASSOCIATED(nextlEdge))
+          IF(nextLedge%tmp.NE.-1) CALL abort(__STAMP__, &
+                                             'Something wrong with nextLedge not being set')
+          nextLedge%ind=FEMEdgeID
+          nextLedge=>nextLedge%next_connected
+        END DO
+      END IF
+    END DO
+  END IF !FEMCONNECT
   Elem=>Elem%nextElem
 END DO !Elem
 
 IF(NodeID.NE.nNodeIDs) CALL abort(__STAMP__,&
                      'Sanity check: max(nodeID <> nNodeIDs!')
-IF(EdgeID.NE.nEdgeIDs) CALL abort(__STAMP__,&
-                     'Sanity check: max(edgeID <> nEdgeIDs!')
 IF(SideID.NE.nSideIDs) CALL abort(__STAMP__,&
                      'Sanity check: max(sideID <> nSideIDs!')
 IF(ElemID.NE.nElems) CALL abort(__STAMP__,&
                      'Sanity check: max(elemID <> nElems!')
-IF(FEMEdgeID.NE.nFEMEdgeIDs) CALL abort(__STAMP__,&
+IF(generateFEMconnectivity)THEN
+  IF(EdgeID.NE.nEdgeIDs) CALL abort(__STAMP__,&
+                     'Sanity check: max(edgeID <> nEdgeIDs!')
+  IF(FEMEdgeID.NE.nFEMEdgeIDs) CALL abort(__STAMP__,&
                      'Sanity check: max(femedgeID <> nFEMEdgeIDs!')
+END IF !FEMconnect
 
 !set Side Flip
 Elem=>firstElem
@@ -326,13 +333,15 @@ CALL WriteAttribute(File_ID,'HoprVersionInt',1,IntScalar=HoprVersionInt)
 CALL WriteAttribute(File_ID,'Ngeo',1,IntScalar=N)
 CALL WriteAttribute(File_ID,'nElems',1,IntScalar=nElems)
 CALL WriteAttribute(File_ID,'nSides',1,IntScalar=nSides)
-CALL WriteAttribute(File_ID,'nEdges',1,IntScalar=nEdges)
 CALL WriteAttribute(File_ID,'nNodes',1,IntScalar=nNodes)
 CALL WriteAttribute(File_ID,'nUniqueSides',1,IntScalar=nSideIDs)
-CALL WriteAttribute(File_ID,'nUniqueEdges',1,IntScalar=nEdgeIDs)
 CALL WriteAttribute(File_ID,'nUniqueNodes',1,IntScalar=nNodeIDs)
-CALL WriteAttribute(File_ID,'nFEMEdges',1,IntScalar=nFEMEdgeIDs)
-CALL WriteAttribute(File_ID,'nFEMEdgeConnections',1,IntScalar=nFEMEdgeConnections)
+IF(generateFEMconnectivity)THEN
+  CALL WriteAttribute(File_ID,'nEdges',1,IntScalar=nEdges)
+  CALL WriteAttribute(File_ID,'nUniqueEdges',1,IntScalar=nEdgeIDs)
+  CALL WriteAttribute(File_ID,'nFEMEdges',1,IntScalar=nFEMEdgeIDs)
+  CALL WriteAttribute(File_ID,'nFEMEdgeConnections',1,IntScalar=nFEMEdgeConnections)
+END IF !FEMCONNECT
 
 !WRITE ElemInfo,into (1,nElems)
 CALL WriteArrayToHDF5(File_ID,'ElemInfo',2,(/ElemInfoSize,nElems/),IntegerArray=ElemInfo)
@@ -342,12 +351,17 @@ DEALLOCATE(ElemInfo)
 CALL WriteArrayToHDF5(File_ID,'SideInfo',2,(/SideInfoSize,nSides/),IntegerArray=SideInfo)
 DEALLOCATE(SideInfo)
 
-!WRITE EdgeInfo
-CALL WriteArrayToHDF5(File_ID,'EdgeInfo',2,(/EdgeInfoSize,nEdges/),IntegerArray=EdgeInfo)
-DEALLOCATE(EdgeInfo)
+IF(generateFEMconnectivity)THEN
+  !TODO: WRITE FEMelemInfo instead of putting information in Eleminfo!!!
+  
+  !WRITE EdgeInfo
+  CALL WriteArrayToHDF5(File_ID,'EdgeInfo',2,(/EdgeInfoSize,nEdges/),IntegerArray=EdgeInfo)
+  DEALLOCATE(EdgeInfo)
 
-CALL WriteArrayToHDF5(File_ID,'EdgeConnectInfo',2,(/EDGEConnectInfoSize,nFEMEdgeConnections/),IntegerArray=EdgeConnectInfo)
-DEALLOCATE(EdgeConnectInfo)
+  CALL WriteArrayToHDF5(File_ID,'EdgeConnectInfo',2,(/EDGEConnectInfoSize,nFEMEdgeConnections/),IntegerArray=EdgeConnectInfo)
+  DEALLOCATE(EdgeConnectInfo)
+  !TODO: WRITE VERTEX INFO
+END IF !FEMCONNECT
 
 ! WRITE NodeCoords and NodeIDs
 CALL WriteArrayToHDF5(File_ID,'NodeCoords',2,(/3,nNodes/),RealArray=NodeCoords)
@@ -423,7 +437,7 @@ SUBROUTINE getMeshInfo()
 ! Subroutine prepares ElemInfo,Sideinfo,Nodeinfo,NodeCoords arrays
 !===================================================================================================================================
 ! MODULES
-USE MOD_Mesh_Vars,ONLY:tElem,tSide,tEdge,tlocalEdge
+USE MOD_Mesh_Vars,ONLY:tElem,tSide,generateFEMconnectivity,tEdge,tlocalEdge
 USE MOD_Mesh_Vars,ONLY:FirstElem
 USE MOD_Mesh_Vars,ONLY:N
 USE MOD_Mesh_Basis,ONLY:ISORIENTED
@@ -580,39 +594,43 @@ END DO
 IF(iSide.NE.nSides) CALL abort(__STAMP__,&
                      'Sanity check: nSides not equal to total number of sides!')
 
+IF(generateFEMconnectivity)THEN
+  !fill Edge Info
+  ALLOCATE(EdgeInfo(EdgeInfoSize,1:nEdges))
+  ALLOCATE(EdgeConnectInfo(EDGEConnectInfoSize,1:nFEMEdgeConnections))
+  EdgeInfo=0
+  EdgeConnectInfo=0
+  iEdge=0  !counter in EdgeInfo
+  jEdge=0  !counter in EdgeConnectInfo
+  
+  Elem=>firstElem
+  DO WHILE(ASSOCIATED(Elem))
+    DO iLocEdge=1,Elem%nEdges
+      lEdge=>Elem%localEdge(iLocEdge)%LEDP
+      aEdge=>lEdge%edge
+      iEdge=iEdge+1
+      EdgeInfo(EDGE_FEMEdgeID,iEdge)=ledge%ind*(MERGE(1,-1,lEdge%orientation))  ! negative sign means opposite orientation of local to global edge
+      EdgeInfo(EDGE_offsetIndEdgeConnect,iEdge)=jEdge
+      next_lEdge=>lEdge%next_connected
+      DO WHILE (ASSOCIATED(next_lEdge))
+        jEdge=jEdge+1
+        EdgeConnectInfo(EDGEConnect_nbElemID,jEdge)=next_lEdge%elem%ind*(MERGE(1,-1, (next_lEdge%tmp.GT.0) ))   ! + is master, -  is slave
+        EdgeConnectInfo(EDGEConnect_nbLocEdgeID,jEdge)=next_lEdge%localEdgeID*(MERGE(1,-1,next_lEdge%orientation))
+        next_lEdge=>next_lEdge%next_connected
+      END DO !
+      EdgeInfo(EDGE_lastIndEdgeConnect,iEdge)=jEdge
+      IF((EdgeInfo(EDGE_lastIndEdgeConnect,iEdge)-EdgeInfo(EDGE_offsetIndEdgeConnect,iEdge)).NE. (aEdge%FirstLocalEdge%tmp-1)) THEN
+        WRITE(*,*)'DEBUG',(EdgeInfo(EDGE_lastIndEdgeConnect,iEdge)-EdgeInfo(EDGE_offsetIndEdgeConnect,iEdge)),(aEdge%FirstLocalEdge%tmp-1)
+        CALL abort(__STAMP__, &
+                   "wrong number of edge connections in firstEdge%tmp")
+      END IF
+    END DO !iLoc
+    Elem=>Elem%nextElem
+  END DO
 
-!fill Edge Info
-ALLOCATE(EdgeInfo(EdgeInfoSize,1:nEdges))
-ALLOCATE(EdgeConnectInfo(EDGEConnectInfoSize,1:nFEMEdgeConnections))
-EdgeInfo=0
-EdgeConnectInfo=0
-iEdge=0  !counter in EdgeInfo
-jEdge=0  !counter in EdgeConnectInfo
+  !TODO: fill Vertex Info
 
-Elem=>firstElem
-DO WHILE(ASSOCIATED(Elem))
-  DO iLocEdge=1,Elem%nEdges
-    lEdge=>Elem%localEdge(iLocEdge)%LEDP
-    aEdge=>lEdge%edge
-    iEdge=iEdge+1
-    EdgeInfo(EDGE_FEMEdgeID,iEdge)=ledge%ind*(MERGE(1,-1,lEdge%orientation))  ! negative sign means opposite orientation of local to global edge
-    EdgeInfo(EDGE_offsetIndEdgeConnect,iEdge)=jEdge
-    next_lEdge=>lEdge%next_connected
-    DO WHILE (ASSOCIATED(next_lEdge))
-      jEdge=jEdge+1
-      EdgeConnectInfo(EDGEConnect_nbElemID,jEdge)=next_lEdge%elem%ind*(MERGE(1,-1, (next_lEdge%tmp.GT.0) ))   ! + is master, -  is slave
-      EdgeConnectInfo(EDGEConnect_nbLocEdgeID,jEdge)=next_lEdge%localEdgeID*(MERGE(1,-1,next_lEdge%orientation))
-      next_lEdge=>next_lEdge%next_connected
-    END DO !
-    EdgeInfo(EDGE_lastIndEdgeConnect,iEdge)=jEdge
-    IF((EdgeInfo(EDGE_lastIndEdgeConnect,iEdge)-EdgeInfo(EDGE_offsetIndEdgeConnect,iEdge)).NE. (aEdge%FirstLocalEdge%tmp-1)) THEN
-      CALL abort(__STAMP__, &
-                 "wrong length of edge connections")
-    END IF
-  END DO !iLoc
-  Elem=>Elem%nextElem
-END DO
-
+END IF !FEMCONNECT
 !fill GlobalNodeID
 ALLOCATE(NodeCoords(3,nNodes),GlobalNodeIDs(nNodes))
 iNode=0

@@ -393,6 +393,8 @@ END IF !PostDeform
 ! Connect
 ConformConnect=GETLOGICAL('ConformConnect','.TRUE.') ! Fast connect for conform mesh
 
+! build connect of edges and vertices:
+generateFEMconnectivity=GETLOGICAL('generateFEMconnectivity','.FALSE.') 
 ! Elem Check
 checkElemJacobians=GETLOGICAL('checkElemJacobians','.TRUE.')
 jacobianTolerance=GETREAL('jacobianTolerance','1.E-16')
@@ -436,6 +438,47 @@ ElemSideMapping(8,3,:) = (/2,3,7,6/)
 ElemSideMapping(8,4,:) = (/3,4,8,7/)
 ElemSideMapping(8,5,:) = (/1,5,8,4/)
 ElemSideMapping(8,6,:) = (/5,6,7,8/)
+
+CGNSElemEdgeToNode=-1
+! tet ( 4 nodes)
+CGNSElemEdgeToNode(4, 1,1:2)=(/1,2/)
+CGNSElemEdgeToNode(4, 2,1:2)=(/2,3/)
+CGNSElemEdgeToNode(4, 3,1:2)=(/3,1/)
+CGNSElemEdgeToNode(4, 4,1:2)=(/1,4/)
+CGNSElemEdgeToNode(4, 5,1:2)=(/2,4/)
+CGNSElemEdgeToNode(4, 6,1:2)=(/3,4/)
+! pyra (5nodes)
+CGNSElemEdgeToNode(5, 1,1:2)=(/1,2/)
+CGNSElemEdgeToNode(5, 2,1:2)=(/2,3/)
+CGNSElemEdgeToNode(5, 3,1:2)=(/3,4/)
+CGNSElemEdgeToNode(5, 4,1:2)=(/4,1/)
+CGNSElemEdgeToNode(5, 5,1:2)=(/1,5/)
+CGNSElemEdgeToNode(5, 6,1:2)=(/2,5/)
+CGNSElemEdgeToNode(5, 7,1:2)=(/3,5/)
+CGNSElemEdgeToNode(5, 8,1:2)=(/4,5/)
+! prism (6nodes)
+CGNSElemEdgeToNode(6, 1,1:2)=(/1,2/)
+CGNSElemEdgeToNode(6, 2,1:2)=(/2,3/)
+CGNSElemEdgeToNode(6, 3,1:2)=(/3,1/)
+CGNSElemEdgeToNode(6, 4,1:2)=(/1,4/)
+CGNSElemEdgeToNode(6, 5,1:2)=(/2,5/)
+CGNSElemEdgeToNode(6, 6,1:2)=(/3,6/)
+CGNSElemEdgeToNode(6, 7,1:2)=(/4,5/)
+CGNSElemEdgeToNode(6, 8,1:2)=(/5,6/)
+CGNSElemEdgeToNode(6, 9,1:2)=(/6,4/)
+! hexa (8nodes)
+CGNSElemEdgeToNode(8, 1,1:2)=(/1,2/)
+CGNSElemEdgeToNode(8, 2,1:2)=(/2,3/)
+CGNSElemEdgeToNode(8, 3,1:2)=(/3,4/)
+CGNSElemEdgeToNode(8, 4,1:2)=(/4,1/)
+CGNSElemEdgeToNode(8, 5,1:2)=(/1,5/)
+CGNSElemEdgeToNode(8, 6,1:2)=(/2,6/)
+CGNSElemEdgeToNode(8, 7,1:2)=(/3,7/)
+CGNSElemEdgeToNode(8, 8,1:2)=(/4,8/)
+CGNSElemEdgeToNode(8, 9,1:2)=(/5,6/)
+CGNSElemEdgeToNode(8,10,1:2)=(/6,7/)
+CGNSElemEdgeToNode(8,11,1:2)=(/7,8/)
+CGNSElemEdgeToNode(8,12,1:2)=(/8,5/)
 
 MeshInitDone=.TRUE.
 WRITE(UNIT_stdOut,'(A)')' INIT MESH DONE!'
@@ -686,6 +729,9 @@ DO iElem=1,nMeshElems
   END DO
   IF(mortarFound) EXIT !do loop
 END DO !iElem
+
+IF(mortarFound.AND.generateFEMconnectivity) CALL abort(__STAMP__, &
+                                 "generate FEM connectivity not yet implemented for mortar meshes!")
 
 IF(doExactSurfProjection) CALL ProjectToExactSurfaces()
 ! get element types
