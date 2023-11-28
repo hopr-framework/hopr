@@ -176,19 +176,19 @@ DO WHILE(ASSOCIATED(Elem))
         IF(aEdge%FirstLocalEdge%ind.NE.-99999) THEN
           nFEMEdgeIDs=nFEMEdgeIDs+1
           aEdge%FirstLocalEdge%ind=-99999
-          !!! COUNT connections here and save them to aEdge%FirstLocalEdge%tmp
-          IF(aEdge%FirstLocalEdge%tmp.LE.0) CALL abort(__STAMP__, &
-                                             'Something is wrong with edge multiplicity')
-          nFEMEdgeConnections=nFEMEdgeConnections+(aEdge%FirstLocalEdge%tmp-1)
         END IF
       END IF
+      !!! COUNT connections here and save them to aEdge%FirstLocalEdge%tmp
+      IF(aEdge%FirstLocalEdge%tmp.LE.0) CALL abort(__STAMP__, &
+      'Something is wrong with edge multiplicity')
+      nFEMEdgeConnections=nFEMEdgeConnections+(aEdge%FirstLocalEdge%tmp-1)
     END DO
   END IF !FEMCONNECT
   Elem=>Elem%nextElem
 END DO
 
 !NOW CALLED IN FILLMESH!!
-!! prepare sorting by space filling curve
+!! prepare sorting by space filling curvedic.ini (Failed)
 !! NOTE: SpaceFillingcurve is not used, if existing hdf5 mesh is read in and the sorting should stay identical
 !IF(useSpaceFillingCurve)THEN
 !  CALL SpaceFillingCurve()
@@ -611,16 +611,18 @@ IF(generateFEMconnectivity)THEN
       iEdge=iEdge+1
       EdgeInfo(EDGE_FEMEdgeID,iEdge)=ledge%ind*(MERGE(1,-1,lEdge%orientation))  ! negative sign means opposite orientation of local to global edge
       EdgeInfo(EDGE_offsetIndEdgeConnect,iEdge)=jEdge
-      next_lEdge=>lEdge%next_connected
+      !start the connection list from the firstLocalEdge 
+      next_lEdge=>lEdge%edge%FirstlocalEdge
       DO WHILE (ASSOCIATED(next_lEdge))
-        jEdge=jEdge+1
-        EdgeConnectInfo(EDGEConnect_nbElemID,jEdge)=next_lEdge%elem%ind*(MERGE(1,-1, (next_lEdge%tmp.GT.0) ))   ! + is master, -  is slave
-        EdgeConnectInfo(EDGEConnect_nbLocEdgeID,jEdge)=next_lEdge%localEdgeID*(MERGE(1,-1,next_lEdge%orientation))
+        IF(.NOT.((Elem%ind.EQ.next_lEdge%elem%ind).AND.(iLocEdge.EQ.next_lEdge%localEdgeID)))THEN !skip own edge "connection" (same element & same iLocEdge)
+          jEdge=jEdge+1
+          EdgeConnectInfo(EDGEConnect_nbElemID,jEdge)=next_lEdge%elem%ind*(MERGE(1,-1, (next_lEdge%tmp.GT.0) ))   ! + is master, -  is slave
+          EdgeConnectInfo(EDGEConnect_nbLocEdgeID,jEdge)=next_lEdge%localEdgeID*(MERGE(1,-1,next_lEdge%orientation))
+        END IF
         next_lEdge=>next_lEdge%next_connected
       END DO !
       EdgeInfo(EDGE_lastIndEdgeConnect,iEdge)=jEdge
       IF((EdgeInfo(EDGE_lastIndEdgeConnect,iEdge)-EdgeInfo(EDGE_offsetIndEdgeConnect,iEdge)).NE. (aEdge%FirstLocalEdge%tmp-1)) THEN
-        WRITE(*,*)'DEBUG',(EdgeInfo(EDGE_lastIndEdgeConnect,iEdge)-EdgeInfo(EDGE_offsetIndEdgeConnect,iEdge)),(aEdge%FirstLocalEdge%tmp-1)
         CALL abort(__STAMP__, &
                    "wrong number of edge connections in firstEdge%tmp")
       END IF
