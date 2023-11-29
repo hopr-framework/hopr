@@ -397,7 +397,7 @@ DEALLOCATE(SideInfo)
 IF(generateFEMconnectivity)THEN
   CALL WriteArrayToHDF5(File_ID,'FEMElemInfo',2,(/FEMElemInfoSize,nElems/),IntegerArray=FEMElemInfo)
   DEALLOCATE(FEMElemInfo)
-  
+
   !WRITE EdgeInfo
   CALL WriteArrayToHDF5(File_ID,'EdgeInfo',2,(/EdgeInfoSize,nEdges/),IntegerArray=EdgeInfo)
   DEALLOCATE(EdgeInfo)
@@ -405,13 +405,12 @@ IF(generateFEMconnectivity)THEN
   CALL WriteArrayToHDF5(File_ID,'EdgeConnectInfo',2,(/EDGEConnectInfoSize,nFEMEdgeConnections/),IntegerArray=EdgeConnectInfo)
   DEALLOCATE(EdgeConnectInfo)
 
-    !WRITE EdgeInfo
+  !WRITE EdgeInfo
   CALL WriteArrayToHDF5(File_ID,'VertexInfo',2,(/VertexInfoSize,nVertices/),IntegerArray=VertexInfo)
   DEALLOCATE(VertexInfo)
 
   CALL WriteArrayToHDF5(File_ID,'VertexConnectInfo',2,(/VertexConnectInfoSize,nFEMVertexConnections/),IntegerArray=VertexConnectInfo)
   DEALLOCATE(VertexConnectInfo)
-  !TODO: WRITE VERTEX INFO
 END IF !FEMCONNECT
 
 ! WRITE NodeCoords and NodeIDs
@@ -653,13 +652,14 @@ IF(generateFEMconnectivity)THEN
   iElem=0
   iEdge=0
   iVert=0
+  Elem=>firstElem
   DO WHILE(ASSOCIATED(Elem))
     iElem=iElem+1
-  
+
     FEMElemInfo(FEMELEM_FirstEdgeInd,iElem)=iEdge
     iEdge=iEdge+Elem%nEdges
     FEMElemInfo(FEMELEM_lastEdgeInd,iElem)=iEdge
-  
+
     FEMElemInfo(FEMELEM_FirstVertexInd,iElem)=iVert
     iVert=iVert+Elem%nNodes
     FEMElemInfo(FEMELEM_lastVertexInd,iElem)=iVert
@@ -673,7 +673,7 @@ IF(generateFEMconnectivity)THEN
   EdgeConnectInfo=0
   iEdge=0  !counter in EdgeInfo
   jEdge=0  !counter in EdgeConnectInfo
-  
+
   Elem=>firstElem
   DO WHILE(ASSOCIATED(Elem))
     DO iLocEdge=1,Elem%nEdges
@@ -682,7 +682,7 @@ IF(generateFEMconnectivity)THEN
       iEdge=iEdge+1
       EdgeInfo(EDGE_FEMEdgeID,iEdge)=ledge%ind*(MERGE(1,-1,lEdge%orientation))  ! negative sign means opposite orientation of local to global edge
       EdgeInfo(EDGE_offsetIndEdgeConnect,iEdge)=jEdge
-      !start the connection list from the firstLocalEdge 
+      !start the connection list from the firstLocalEdge
       next_lEdge=>lEdge%edge%FirstlocalEdge
       DO WHILE (ASSOCIATED(next_lEdge))
         IF(.NOT.((Elem%ind.EQ.next_lEdge%elem%ind).AND.(iLocEdge.EQ.next_lEdge%localEdgeID)))THEN !skip own edge "connection" (same element & same iLocEdge)
@@ -714,7 +714,7 @@ IF(generateFEMconnectivity)THEN
       vert=>Elem%Vertex(iLocVert)%vp
       aNode=>vert%node
       iVert=iVert+1
-      VertexInfo(VERTEX_FEMVertexID,iVert)=vert%ind 
+      VertexInfo(VERTEX_FEMVertexID,iVert)=vert%ind
       VertexInfo(VERTEX_offsetIndVertexConnect,iVert)=jVert
       !start the connection list from the firstVertex
       next_vert=>vert%node%FirstVertex
