@@ -798,7 +798,9 @@ IF(.NOT.generateFEMconnectivity)RETURN
 CALL Timer(.TRUE.)
 WRITE(UNIT_stdOut,'(132("~"))')
 WRITE(UNIT_stdOut,'(A)')'BUILD FEM connectivity of edges and vertices...'
-! set first local edge and back to its global edge
+
+
+! set first local edge / first Vertex for all periodic edges before, such that they all point to one single geometrical edge / vertex
 aElem=>firstElem
 DO WHILE(ASSOCIATED(aElem))
   nSides=nSides_from_nNodes(aElem%nNodes)
@@ -866,7 +868,7 @@ DO WHILE(ASSOCIATED(aElem))
           IF(.NOT.ASSOCIATED(bEdge%FirstLocalEdge))THEN
             IF(.NOT.ASSOCIATED(aEdge%FirstLocalEdge))THEN
               CALL getNewLocalEdge(aEdge%FirstLocalEdge,Elem_in=aElem,Edge_in=aEdge)
-              aEdge%FirstLocalEdge%localEdgeID=-1
+              aEdge%FirstLocalEdge%localEdgeID=-1  ! MARK PERIODIC FIRSTLOCALEDGE!
             END IF! aedge%firstlocalEdge not associated
             bEdge%FirstLocalEdge=>aEdge%FirstLocalEdge
           ELSE
@@ -874,7 +876,9 @@ DO WHILE(ASSOCIATED(aElem))
               aEdge%FirstLocalEdge=>bEdge%FirstLocalEdge
             ELSE
               !both are already associated, but they are periodic, be sure that they are synchronized (re-pointer!)
-              bEdge%FirstLocalEdge=>aEdge%FirstLocalEdge
+              IF(LOC(bEdge%FirstLocalEdge).NE.LOC(aEdge%FirstLocalEdge))THEN
+                bEdge%FirstLocalEdge=>aEdge%FirstLocalEdge
+              END IF
             END IF !aedge
           END IF !bedge%firstlocalEdge not associated
           !set firstVertex to the same global node for all periodic vertices found
@@ -883,7 +887,7 @@ DO WHILE(ASSOCIATED(aElem))
           IF(.NOT.ASSOCIATED(bNode%FirstVertex))THEN
             IF(.NOT.ASSOCIATED(aNode%FirstVertex))THEN
               CALL getNewVertex(aNode%FirstVertex,Elem_in=aElem,Node_in=aNode)
-              aNode%FirstVertex%localVertexID=-1
+              aNode%FirstVertex%localVertexID=-1  ! MARK PERIODIC FIRSTVERTEX!
             END IF! anode%firstVertex not associated
             bNode%FirstVertex=>aNode%FirstVertex
           ELSE  
@@ -891,7 +895,9 @@ DO WHILE(ASSOCIATED(aElem))
               aNode%FirstVertex=>bNode%FirstVertex
             ELSE
               !both are already associated, but they are periodic, be sure that they are synchronized (re-pointer!)
-              bNode%FirstVertex=>aNode%FirstVertex
+              IF(LOC(bNode%FirstVertex).NE.LOC(aNode%FirstVertex))THEN
+                bNode%FirstVertex=>aNode%FirstVertex
+              END IF
             END IF !anode%firstvertex not associated
           END IF !bnode%firstVertex not associated
         END DO !iEdge=1,bSide%nnodes
@@ -902,7 +908,7 @@ DO WHILE(ASSOCIATED(aElem))
   aElem=>aElem%nextElem
 END DO !ELEMS
 
-! Build elem to localEdge / Vertex
+! Build all elem to localEdge / Vertex pointer arrays, where each connection found is appended to the list of FirstLocalEdge->next_connection / FirstVertex -> next_connection
 aElem=>firstElem
 DO WHILE(ASSOCIATED(aElem))
   aElem%nEdges=nEdges_from_nNodes(aElem%nNodes)
@@ -979,7 +985,7 @@ DO WHILE(ASSOCIATED(aElem))
     ELSE
       IF((LOC(aNode%FirstVertex%node).EQ.LOC(aNode)).AND.(aNode%FirstVertex%localVertexID.EQ.-1))THEN !periodic vertex found, but not yet claimed by the attached elemnent
         IF(aNode%firstVertex%elem%ind.NE.aElem%ind) CALL abort(__STAMP__, &
-        "problem in firstvertex element association")
+                                                               "problem in firstvertex element association")
         aElem%Vertex(iNode)%vp=>aNode%FirstVertex
         vert=>aElem%Vertex(iNode)%vp
         vert%localVertexID=iNode

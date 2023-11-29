@@ -47,24 +47,26 @@ A mesh with curved elements has a fixed polynomial degree $N_{geo}>1$ for all el
 ---
 name: tab:mesh_file_attributes
 ---
-  |        **Attribute**        |       **Data type**       |y                                           **Description                                           |
+  |        **Attribute**        |       **Data type**       |                                           **Description**                                         |
   | :-------------------------- | :-----------------------: |       :------------------------------------------------------------------------------------       |
   |           Version           |            REAL           |                                         Mesh File Version                                         |
   |        Ngeo $\geq 1$        |          INTEGER          | Polynomial degree $N_{geo}$ of element mapping, used to determine the number of nodes per element |
   |            nElems           |          INTEGER          |                                  Total number of elements in mesh                                 |
   |            nSides           |          INTEGER          |                          Total number of sides (or element faces) in mesh                         |
-  |            nEdges           |          INTEGER          |                          Total number of entries  in the EdgeInfo array  (=sum over elements of nEdge(ElemType))  |
-  |            nVertices        |          INTEGER          |                          Total number of entries  in the VertexInfo array (=sum over elements of nVertices(ElemType)) |
   |            nNodes           |          INTEGER          |                                   Total number of nodes in mesh                                   |
   |         nUniqueSides        |          INTEGER          |                       Total number of geometrically unique sides in the mesh                      |
-  |         nUniqueEdges        |          INTEGER          |                       Total number of geometrically unique edges in the mesh                      |
   |         nUniqueNodes        |          INTEGER          |                       Total number of geometrically unique nodes in the mesh                      |
-  |         nFEMSides           |          INTEGER          |  Total number of topologically (includes periodicity) unique sides in the mes (needed for a FEM solver)  |
-  |         nFEMEdges           |          INTEGER          |  Total number of topologically (includes periodicity) unique edges in the mesh (needed for a FEM solver)  |
-  |         nFEMEdgeConnections |          INTEGER          |  Size of **EdgeConnectInfo** |
-  |         nFEMVertices        |          INTEGER          |  Total number of topologically (includes periodicity) unique vertices in the mesh (needed for a FEM solver)  |
-  |         nFEMVertexConnections |          INTEGER          |  Size of **VertexConnectInfo** |
   |             nBCs            |          INTEGER          |                                Size of the Boundary Condition list                                |
+  |         FEMconnect          | STRING "ON"/"OFF" | "ON" if FEM edge and vertex connection have been built and written to file.
+  | only for **FEMconnect="ON"**: |   |   |
+  |          ⮡ nEdges           |          INTEGER          |                          Total number of entries  in the EdgeInfo array  (=sum over elements of nEdge(ElemType))  |
+  |          ⮡ nVertices        |          INTEGER          |                          Total number of entries  in the VertexInfo array (=sum over elements of nVertices(ElemType)) |
+  |        ⮡ nUniqueEdges        |          INTEGER          |                       Total number of geometrically unique edges in the mesh                      |
+  |        ⮡  nFEMSides           |          INTEGER          |  Total number of topologically (includes periodicity) unique sides in the mes (needed for a FEM solver)  |
+  |        ⮡  nFEMEdges           |          INTEGER          |  Total number of topologically (includes periodicity) unique edges in the mesh (needed for a FEM solver)  |
+  |        ⮡  nFEMEdgeConnections |          INTEGER          |  Size of **EdgeConnectInfo** |
+  |        ⮡  nFEMVertices        |          INTEGER          |  Total number of topologically (includes periodicity) unique vertices in the mesh (needed for a FEM solver)  |
+  |       ⮡ nFEMVertexConnections |          INTEGER          |  Size of **VertexConnectInfo** |
 ```
 
 ## Data Arrays
@@ -84,12 +86,9 @@ name: tab:mesh_data_arrays
 ---
   |        **Array Name**       |                                    **Description**                                              |  **Type**     |         **Size**           |
   | :-------------------------- |                               :-----------------------                                          | :------------ |     :---------------       |
-  |         **ElemInfo**        | Start\End positions of element data in **SideInfo** / **EdgeInfo**/**VertexInfo**/**NodeCoords**|   INTEGER     | (1:10,1:**nElems**$^*$)    |
+  |         **ElemInfo**        | Start\End positions of element data in **SideInfo** /**NodeCoords**                             |    INTEGER     | (1:6,1:**nElems**$^*$)    |
   |         **SideInfo**        |                         Side Data / Connectivity information                                    |   INTEGER     |  (1:5,1:**nSides**$^*$)    |
   |        **EdgeInfo**         |              Element Edge  information  and offsets in **EdgeConnectInfo**                      |   INTEGER     |  (1:3,1:**nEdges**$^*$)    |
-  |     **EdgeConnectInfo**     |        Connectivity information  for each element edge  (needed for a FEM solver)               |   INTEGER     |    (1:2,1:nFEMEdgeConnections)          |
-  |       **VertexInfo**        |         Element Vertex Data information and and offsets in **VertexConnectInfo**                |   INTEGER     |  (1:3,1:**nVertices**$^*$) |
-  |    **VertexConnectInfo**    |        Connectivity information for each element vertex (needed for a FEM solver)               |   INTEGER     |    (1:2,1:nFEMVertexConnections)        |
   |        **NodeCoords**       |                                   Node Coordinates                                              |    REAL       |  (1:3,1:**nNodes**$^*$)    |
   |      **GlobalNodeIDs**      |                              Globally unique node index                                         |   INTEGER     |    (1:**nNodes**$^*$)      |
   |           BCNames           |          List of user-defined boundary condition names (max. 255 Characters)                    |   STRING      |       (1:**nBCs**)         |
@@ -97,6 +96,11 @@ name: tab:mesh_data_arrays
   |       ElemBarycenters       |                          Barycenter location of each element                                    |    REAL       |  (1:3,1:**nElems**$^*$)    |
   |          ElemWeight         |               Element Weights for domain decomposition (=1 by default)                          |    REAL       |    (1:**nElems**$^*$)      |
   |         ElemCounter         |                mesh statistics (no. of elements of each element type)                           |   INTEGER     |        (1:2,1:11)          |
+  | only for **FEMconnect="ON"**: |   |   |   |
+  |       ⮡ **FEMElemInfo**     | Start\End positions of element data in **EdgeInfo**/**VertexInfo**                              |   INTEGER     | (1:4,1:**nElems**$^*$)    |
+  |    ⮡  **EdgeConnectInfo**     |        Connectivity information  for each element edge  (needed for a FEM solver)               |   INTEGER     |    (1:2,1:nFEMEdgeConnections)          |
+  |      ⮡  **VertexInfo**        |         Element Vertex Data information and and offsets in **VertexConnectInfo**                |   INTEGER     |  (1:3,1:**nVertices**$^*$) |
+  |  ⮡   **VertexConnectInfo**    |        Connectivity information for each element vertex (needed for a FEM solver)               |   INTEGER     |    (1:2,1:nFEMVertexConnections)        | 
 ```
 
 
@@ -143,7 +147,7 @@ name: tab:elem_info
 |               |                                                                           |
 |      :---     |                                    :---                                   |
 | Name in file: |                                **ElemInfo**                               |
-|     Type:     |                 INTEGER, Size: Array(1:10,1:**nElems**$^*$)               |
+|     Type:     |                 INTEGER, Size: Array(1:6,1:**nElems**$^*$)               |
 |  Description: | Array containing elements, one element per row, **row number is elemID**. |
 ```
 
@@ -157,12 +161,12 @@ and the pyramid in zone $2$.  A detailed list of the element type encoding is fo
 ---
 name: tab:elem_info_array
 ---
-|   | *Element Type* | *Zone* | *offsetIndSIDE* | *lastIndSIDE* | *offsetIndNODE* | *lastIndNODE* |*offsetIndEDGE* | *lastIndEDGE* |*offsetIndVERTEX* | *lastIndVERTEX* |
-| - |        -       |    -   |        -        |       -       |        -        |       -       |        -        |       -       |        -        |       -         |
-| 1 |       116      |    1   |        0        |       5       |        0        |       6       |        0        |       9       |        0        |      6          |
-| 2 |       118      |    1   |        5        |       11      |        6        |       14      |        9        |       21      |        6        |       14        |
-| 3 |       104      |    2   |        11       |       15      |        14       |       18      |        21       |       27      |        14       |       18        |
-| 4 |       115      |    2   |        15       |       20      |        18       |       23      |        27       |       35      |        18       |       23        |
+|   | *Element Type* | *Zone* | *offsetIndSIDE* | *lastIndSIDE* | *offsetIndNODE* | *lastIndNODE* |
+| - |        -       |    -   |        -        |       -       |        -        |       -       |
+| 1 |       116      |    1   |        0        |       5       |        0        |       6       |
+| 2 |       118      |    1   |        5        |       11      |        6        |       14      |
+| 3 |       104      |    2   |        11       |       15      |        14       |       18      |
+| 4 |       115      |    2   |        15       |       20      |        18       |       23      |
 ```
 
 
@@ -176,13 +180,55 @@ name: tab:elem_info_def
 |            *Zone*:               |                                                   Element group number.                                                  |
 | *offsetIndSIDE/lastIndSIDE*:     |                               Each element has a range of sides in the **SideInfo** array.                               |
 | *offsetIndNODE/lastIndNODE*:     | Each element has a range of node coordinates in the **NodeCoords** array and **GlobalNodeIDs** array for unique indices. |
+```
+
+The range and the size are always defined as: *Range=[offset+1,last], Size=last-offset*
+
+### FEM Element Information (FEMElemInfo)
+
+This array will only exist if `FEMConnect="ON"` (hopr parameterfile flag `generateFEMconnectivity=T`).
+
+```{table} FEM Element Information
+---
+name: tab:femelem_info
+---
+|               |                                                                           |
+|      :---     |                                    :---                                   |
+| Name in file: |                                **FEMElemInfo**                               |
+|     Type:     |                 INTEGER, Size: Array(1:4,1:**nElems**$^*$)               |
+|  Description: | Array containing elements, one element per row, **row number is elemID**. |
+```
+
+
+The example mesh {numref}`fig:exmesh` with 4 elements is summarized in table {numref}`tab:elem_info_array`.
+The example shows the four different elements (prism/hexahedron/tetrahedra/pyramid), the prism and hexa are in zone $1$ and the tet
+and the pyramid in zone $2$.  A detailed list of the element type encoding is found in Section {ref}`userguide/meshformat:Element Types`.
+
+
+```{table} **FEMElemInfo** array for example 3D mesh with 4 elements.
+---
+name: tab:femelem_info_array
+---
+|   |*offsetIndEDGE* | *lastIndEDGE* |*offsetIndVERTEX* | *lastIndVERTEX* |
+| - |        -        |       -       |        -        |       -         |
+| 1 |        0        |       9       |        0        |      6          |
+| 2 |        9        |       21      |        6        |       14        |
+| 3 |        21       |       27      |        14       |       18        |
+| 4 |        27       |       35      |        18       |       23        |
+```
+
+
+```{table} **FEMElemInfo** definitions.
+---
+name: tab:femelem_info_def
+---
+|                                  |                                                                                                                          |
+|               -                  |                                                             -                                                            |
 | *offsetIndEDGE/lastIndEDGE*:     | Each element has a range of edges in the **EdgeInfo** array.                                                             |
 | *offsetIndVERTEX/lastIndVERTEX*: | Each element has a range of edges in the **VertexInfo** array.                                                           |
 ```
 
 The range and the size are always defined as: *Range=[offset+1,last], Size=last-offset*
-
-
 
 
 ### Side Information (SideInfo)
@@ -247,6 +293,8 @@ name: tab:side_info_def
 
 ### Edge Information (EdgeInfo)
 
+These arrays will only exist if `FEMConnect="ON"` (hopr parameterfile flag `generateFEMconnectivity=T`).
+
 ```{figure} figures/2d_edge_vertex_connectivity_example.jpg
 ---
 name: fig:exmesh2d
@@ -270,7 +318,7 @@ name: tab:edge_info
 | Name in file: |                                               **EdgeInfo**                                               |
 |     Type:     |                                INTEGER, Size: Array(1:3,1:**nEdges**$^*$)                                |
 |  Description: | Edge array, all information of one element is  stored continuously (CGNS ordering, \rf{fig:CGNS})       |
-|               |     in the  range 'offsetIndEDGE+1:lastIndEDGE' from **ElemInfo**.                                       |
+|               |     in the  range 'offsetIndEDGE+1:lastIndEDGE' from **FEMElemInfo**.                                    |
 ```
 
 
@@ -280,7 +328,7 @@ The **EdgeInfo** array for the example mesh {numref}`fig:exmesh2d` with 4 elemen
 ---
 name: tab:edge_info_array
 ---
-|    | (+/- orientation)FEMEdgeID  | offsetIndEDGEConnect | LastIndEDGEConnect | [#ElemID,locEdgeID] |  [in **ElemInfo**]    |
+|    | (+/- orientation)FEMEdgeID  | offsetIndEDGEConnect | LastIndEDGEConnect | [#ElemID,locEdgeID] |  [in **FEMElemInfo**]    |
 | -  |      -                       |         -            |         -          |  -                  |          -            |
 | 1  |    - 6                       |         0            |         1          | [#1,1]              | [(offsetIndEDGE,1)+1] |
 | 2  |    - 10                      |         1            |         2          | [#1,2]              |                       |
@@ -343,6 +391,8 @@ name: tab:edge_conn_info_def
 
 ### Vertex Information (VertexInfo)
 
+These arrays will only exist if `FEMConnect="ON"` (hopr parameterfile flag `generateFEMconnectivity=T`).
+
 The **VertexInfo** array includes the `FEMVertexID` of each local element vertex in the same order as the CGNS corners as well as the `offsetIndVERTEXConnect` and the `lastIndVERTEXConnect`
 which refer to the corresponding position in the additional **VertexConnectInfo** array. Here, the `nbElemID` as well as the `localNodeID` in the corresponding `nbElemID` are saved. 
 
@@ -358,14 +408,14 @@ name: tab:vertex_info
 | Name in file: |                                                 **VertexInfo**                                          |
 |     Type:     |                                 INTEGER, Size: Array(1:3,1:**nVertices**$^*$)                           |
 |  Description: | Vertex array, all information of one element is a  stored continuously (CGNS ordering, \rf{fig:CGNS})   |
-|               |    in the  range 'offsetIndVERTEX+1:lastIndVERTEX' from **ElemInfo**.                                   |
+|               |    in the  range 'offsetIndVERTEX+1:lastIndVERTEX' from **FEMElemInfo**.                                   |
 ```
 
 ```{table}  **VertexInfo** array for example 2D mesh with 4 elements.
 ---
 name: tab:vertex_info_array
 ---
-|    | FEMVertexID | offsetIndVERTEXConnect | lastIndVERTEXConnect | [#ElemID,locVertexID] | [    *in ElemInfo*     ]|
+|    | FEMVertexID | offsetIndVERTEXConnect | lastIndVERTEXConnect | [#ElemID,locVertexID] | [    *in FEMElemInfo*     ]|
 |  - |      -      |            -           |           -          |  -                    |            -            |
 |  1 |      5      |            0           |           2          | [#1,1]                | [(offsetIndVERTEX,1)+1 ]|
 |  2 |      6      |            2           |           4          | [#1,2]                |                         |
