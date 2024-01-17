@@ -275,6 +275,8 @@ REAL             :: DxMaxToDxMin(3)  ! ?
 REAL             :: X0(3)   ! MeshType=1: origin of the physical domain  
 REAL             :: DX(3)   ! MeshType=1: dimensions of the physical domain
 REAL             :: XP(3,8) ! MeshType=2: 8 Corner Points 
+REAL             :: a3, eta0
+REAL             :: ElemSize(3)
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! BOUNDARY CONDITIONS
 !-----------------------------------------------------------------------------------------------------------------------------------

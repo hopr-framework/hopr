@@ -70,7 +70,7 @@ CALL ChebyshevGaussNodesAndWeights(PP_N,xCG, w)
 CALL ChebyGaussLobNodesAndWeights( PP_N,xCGL,w)
 
 ypEqui=yp*PP_N
-ypLG  =yp/((xLG( 0)+1.)*0.5) 
+ypLG  =yp/((xLG( 0)+1.)*0.5)
 ypLGL =yp/((xLGL(1)+1.)*0.5)
 ypCG  =yp/((xCG( 0)+1.)*0.5)
 ypCGL =yp/((xCGL(1)+1.)*0.5)

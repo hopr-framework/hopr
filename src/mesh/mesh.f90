@@ -136,6 +136,12 @@ ELSEIF (MeshMode .EQ. 11) THEN
   CASE(1,11) ! cartesian domain X0,Y0,Z0,DX,DY,DZ
     X0 = GETREALARRAY('X0',3,'0.,0.,0.')
     DX = GETREALARRAY('DX',3,'1.,1.,1.')
+  CASE(10) ! cubic stretching in y-direction (Colonius)
+    X0       = GETREALARRAY('X0',3,'0.,0.,0.')
+    DX       = GETREALARRAY('DX',3,'1.,1.,1.')
+    a3       = GETREAL('a3','1.')
+    eta0     = GETREAL('eta0','1.')
+    ElemSize = GETREALARRAY('ElemSize',3,'0.,0.,0.')
   CASE(2) ! trilinear with 8 points
     XP(:,1) = GETREALARRAY('GeometricXP1',3,'0.,0.,0.')
     XP(:,2) = GETREALARRAY('GeometricXP2',3,'1.,0.,0.')

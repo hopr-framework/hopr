@@ -12,7 +12,7 @@
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -30,7 +30,7 @@ USE MOD_Globals
 IMPLICIT NONE
 PRIVATE
 !-----------------------------------------------------------------------------------------------------------------------------------
-! GLOBAL VARIABLES 
+! GLOBAL VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 
 INTERFACE CurvedCartesianMesh
@@ -114,12 +114,14 @@ USE MOD_Mesh_Vars,ONLY:getNewSide,getNewNode,getNewBC
 USE MOD_Mesh_Vars,ONLY:deleteSide,deleteNode
 USE MOD_Mesh_Vars,ONLY:BoundaryOrder,nElems,BCIndex
 USE MOD_Mesh_Vars,ONLY:stretchType,fac,DXMaxToDXMin
+USE MOD_Mesh_Vars,ONLY:a3,eta0,ElemSize
 USE MOD_IO_HDF5  ,ONLY:Elem_IJK,nElems_IJK
+! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT/OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tNodePtr)               :: CurvedNode(0:BoundaryOrder-1,0:BoundaryOrder-1,0:BoundaryOrder-1)   ! ?
 TYPE(tNodePtr),POINTER       :: Mnodes(:,:,:)   ! ?
 TYPE(tElem),POINTER          :: aElem   ! ?
@@ -156,7 +158,7 @@ DO l=0,np(1)
     DO n=0,np(3)
             CALL GetNewNode(Mnodes(l,m,n)%np)
             NodeInd=NodeInd+1
-            Mnodes(l,m,n)%np%ind=NodeInd 
+            Mnodes(l,m,n)%np%ind=NodeInd
     END DO !n
   END DO !m
 END DO !l
@@ -181,8 +183,8 @@ DO iDir=1,3
         DR(iDir)%d(ii)=DR(iDir)%d(ii-1)*fac(iDir)
       END DO
     CASE(3) ! bell shaped exp(-s^2), s=[-1,1]
-            ! DR= 1+ (dxmax/dxmin-2)*(exp(-(s*fac)^2)-exp(-(1*fac)^2))/(exp(-(0*fac)^2)-exp(-(1*fac)^2)) 
-            ! fac>1, more stretching outwards, fac<1 less stretching  
+            ! DR= 1+ (dxmax/dxmin-2)*(exp(-(s*fac)^2)-exp(-(1*fac)^2))/(exp(-(0*fac)^2)-exp(-(1*fac)^2))
+            ! fac>1, more stretching outwards, fac<1 less stretching
       s=-1
       ds=2./(nElems(iDir)-1)
       DO ii=1,nElems(iDir)
@@ -191,8 +193,8 @@ DO iDir=1,3
         s=s+ds
       END DO
     CASE(4) ! half bell shaped exp(-s^2), s=[-1,0]
-            ! DR= 1+ (dxmax/dxmin-2)*(exp(-(s*fac)^2)-exp(-(1*fac)^2))/(exp(-(0*fac)^2)-exp(-(1*fac)^2)) 
-            ! fac>1, more stretching outwards, fac<1 less stretching  
+            ! DR= 1+ (dxmax/dxmin-2)*(exp(-(s*fac)^2)-exp(-(1*fac)^2))/(exp(-(0*fac)^2)-exp(-(1*fac)^2))
+            ! fac>1, more stretching outwards, fac<1 less stretching
       ds=(DxMaxToDxmin(iDir)-1.)/(1.-DxMaxToDxmin(iDir)*exp((-1+1./REAL(nElems(iDir)))*fac(iDir)))
       DO ii=1,nElems(iDir)
         DR(iDir)%d(ii)=1.+ds*exp((-1.+REAL(ii)/REAL(nElems(iDir)))*fac(iDir))
@@ -210,7 +212,7 @@ DEALLOCATE(DR(1)%d,DR(2)%d,DR(3)%d)
 
 
 ! Build nodes
-CALL BuildPhysicalDomain(NGeo,nElems,X_Ngeo)
+CALL BuildPhysicalDomain(NGeo,nElems,X_Ngeo,a3,eta0,ElemSize)
 !start position x2 in unit square grid
 ! calculate node postions, x1(:) coordinates in unit square grid
 ElemID=PRODUCT(nElems)
@@ -223,7 +225,7 @@ DO kk=1,nElems(3)
             l=i+(ii-1)*Ngeo
             m=j+(jj-1)*Ngeo
             n=k+(kk-1)*Ngeo
-            Mnodes(l,m,n)%np%x(:)=X_Ngeo(:,i,j,k,ii,jj,kk) 
+            Mnodes(l,m,n)%np%x(:)=X_Ngeo(:,i,j,k,ii,jj,kk)
             CurvedNode(i,j,k)%np=>Mnodes(l,m,n)%np
           END DO !i
         END DO !j
@@ -240,7 +242,7 @@ END DO !kk
 DO l=0,np(1)
   DO m=0,np(2)
     DO n=0,np(3)
-      Mnodes(l,m,n)%np%tmp=0 
+      Mnodes(l,m,n)%np%tmp=0
       IF(n.EQ.0) Mnodes(l,m,n)%np%tmp=Mnodes(l,m,n)%np%tmp+1 !zeta minus
       IF(m.EQ.0) Mnodes(l,m,n)%np%tmp=Mnodes(l,m,n)%np%tmp+20 !eta minus
       IF(l.EQ.np(1) ) Mnodes(l,m,n)%np%tmp=Mnodes(l,m,n)%np%tmp+300 !xi plus
@@ -289,6 +291,7 @@ SUBROUTINE BuildRefDomain(Nin,nElems,R_glob,DR1,DR2,DR3)
 !===================================================================================================================================
 ! MODULES
 USE MOD_Mesh_Vars,ONLY:fac,fac2,stretchType,DxMaxToDxMin
+! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT VARIABLES
@@ -371,7 +374,7 @@ DO dd=1,2
         END DO !jj=1,nElems(2)
       END DO !kk=1,nElems(3)
     END IF
- 
+
   CASE(7) ! sin  symmetric mesh
     Pi = 4.*ATAN(1.)
     IF(.NOT.((fac(dd).EQ.1.).AND.(fac2(dd).EQ.1))) THEN
@@ -385,7 +388,7 @@ DO dd=1,2
                   r1 = R_glob(dd,i,j,k,ii,jj,kk) !coordinate in stretching direction
                   r2 = R_glob(ee,i,j,k,ii,jj,kk) !perpendicular coordinate
                   tmpfac=0.5*(fac2(dd)*(1+r2)+fac(dd)*(1-r2))
-                  R_glob(dd,i,j,k,ii,jj,kk)= r1-2*(tmpfac-1.)/(tmpfac+1.)*SIN(Pi*r1)/(2.*Pi) 
+                  R_glob(dd,i,j,k,ii,jj,kk)= r1-2*(tmpfac-1.)/(tmpfac+1.)*SIN(Pi*r1)/(2.*Pi)
                 END DO !i=0:Nin
               END DO !j=0:Nin
             END DO !k=0:Nin
@@ -398,7 +401,7 @@ DO dd=1,2
            ! its the normalized integral of the function in Case(3):
            ! r = \int_{-1}^s 1+(dxmaxtodxmin-1)/(1-e^(-f^2))*( e^(-s^2 f^2)-e^(-f^2) ) ds
            ! => r= x*[1-e^(-f^2)*(1+(dxmaxtodxmin-1)/(1-e^(-f^2)))] +(dxmaxtodxmin-1)/(1-e^(-f^2))*(\int_{-1}^s e^(-s^2 f^2)ds)
-           ! the integral of the exponential function is the error function erf,  
+           ! the integral of the exponential function is the error function erf,
            ! and the integral is the normalized, so that  r is in [-1,1]
     IF(.NOT.(DxMaxToDxMin(dd).EQ.1.)) THEN
       Pi = 4.*ATAN(1.)
@@ -413,7 +416,7 @@ DO dd=1,2
               DO j=0,Nin
                 DO i=0,Nin
                   r1 = R_glob(dd,i,j,k,ii,jj,kk) !coordinate in stretching direction
-                  R_glob(dd,i,j,k,ii,jj,kk)=((r1+1.)*c1+c2*(ERF(r1*fac(dd))-ERF(-fac(dd))))/(c1+c2*ERF(fac(dd)))-1. 
+                  R_glob(dd,i,j,k,ii,jj,kk)=((r1+1.)*c1+c2*(ERF(r1*fac(dd))-ERF(-fac(dd))))/(c1+c2*ERF(fac(dd)))-1.
                 END DO !i=0:Nin
               END DO !j=0:Nin
             END DO !k=0:Nin
@@ -427,43 +430,45 @@ END DO !dd=1,2
 END SUBROUTINE BuildRefDomain
 
 
-SUBROUTINE BuildPhysicalDomain(Nin,nElems,X)
+SUBROUTINE BuildPhysicalDomain(Nin,nElems,X,a3,eta0,ElemSize)
 !===================================================================================================================================
 ! compute the coordinates (X,Y,Z) in the physical space by evaluating at r,s,t positions of reference points
 !===================================================================================================================================
 USE MOD_Mesh_Vars,ONLY:CurvedMeshType,WhichMapping,X0,DX,XP,fac
 ! MODULES
+! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT VARIABLES
-INTEGER,INTENT(IN) :: Nin,nElems(3) 
+INTEGER,INTENT(IN) :: Nin,nElems(3)
+REAL,INTENT(IN)    :: a3,eta0,ElemSize(3)
 ! We use the CGNS notation of the Hexeader: http://www.grc.nasa.gov/WWW/cgns/sids/conv.html#unst_hexa
                         !      P8------P7
                         !     /|      /|
                         !    P5------P6|
                         !    | P4----|-P3
                         !    |/      |/
-                        !    P1------P2  
+                        !    P1------P2
 ! Faces
-                        !F1              P1,P4,P3,P2      
-                        !F2              P1,P2,P6,P5     
-                        !F3              P2,P3,P7,P6    
-                        !F4              P3,P4,P8,P7   
-                        !F5              P1,P5,P8,P4  
+                        !F1              P1,P4,P3,P2
+                        !F2              P1,P2,P6,P5
+                        !F3              P2,P3,P7,P6
+                        !F4              P3,P4,P8,P7
+                        !F5              P1,P5,P8,P4
                         !F6              P5,P6,P7,P8
 ! Edges
-                        !E1              P1,P2           
-                        !E2              P2,P3          
-                        !E3              P3,P4         
-                        !E4              P4,P1        
-                        !E5              P1,P5       
-                        !E6              P2,P6      
-                        !E7              P3,P7     
-                        !E8              P4,P8    
-                        !E9              P5,P6    
-                        !E10             P6,P7    
-                        !E11             P7,P8  
-                        !E12             P8,P5  
+                        !E1              P1,P2
+                        !E2              P2,P3
+                        !E3              P3,P4
+                        !E4              P4,P1
+                        !E5              P1,P5
+                        !E6              P2,P6
+                        !E7              P3,P7
+                        !E8              P4,P8
+                        !E9              P5,P6
+                        !E10             P6,P7
+                        !E11             P7,P8
+                        !E12             P8,P5
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT/OUTPUT VARIABLES
 REAL,INTENT(INOUT) :: X(3,0:Nin,0:Nin,0:Nin,nElems(1),nElems(2),nElems(3)) ! IN: contains the Ref Domain coords r,s,t
@@ -488,13 +493,41 @@ CASE(1) ! cartesian domain X0,Y0,Z0,DX,DY,DZ
           DO j=0,Nin
             DO i=0,Nin
               ! overwrite r,s,t with x,y,z
-              X(:,i,j,k,ii,jj,kk)=X0(:)+(1.+X(:,i,j,K,ii,jj,kk))*DXh(:) 
+              X(:,i,j,k,ii,jj,kk)=X0(:)+(1.+X(:,i,j,K,ii,jj,kk))*DXh(:)
             END DO !i=0:Nin
           END DO !j=0:Nin
         END DO !k=0:Nin
       END DO !ii=1,nElems(1)
     END DO !jj=1,nElems(2)
   END DO !kk=1,nElems(3)
+CASE(10) ! Colonius stretching
+  DXh(:)=0.5*DX(:)
+  DO kk=1,nElems(3)
+    DO jj=1,nElems(2)
+      DO ii=1,nElems(1)
+        ! loop over Chebyshev points
+        DO k=0,Nin
+          DO j=0,Nin
+            DO i=0,Nin
+              ! overwrite r,s,t with x,y,z
+              X(:,i,j,k,ii,jj,kk)=X0(:)+(1.+X(:,i,j,K,ii,jj,kk))*DXh(:)
+              X(2,i,j,k,ii,jj,kk)=a3*((REAL((jj-1)*(Nin)+j)-eta0)*ElemSize(2))**3.+(REAL((jj-1)*(Nin)+j)-eta0)*ElemSize(2)
+            END DO !i=0:Nin
+          END DO !j=0:Nin
+        END DO !k=0:Nin
+      END DO !ii=1,nElems(1)
+    END DO !jj=1,nElems(2)
+  END DO !kk=1,nElems(3)
+  !------------------------------------------------------------------------------------------------------
+  ! Testing the physical domain of the mesh in y-direction
+  !------------------------------------------------------------------------------------------------------
+  ! DO jj=1,nElems(2)
+  !   WRITE(*,*)'j=1',jj, X(2,0,1,0,1,jj,1)
+  ! END DO
+  ! DO jj=1,nElems(2)
+  !   X(2,0,3,0,1,jj,1)= X(2,0,6,0,1,jj,1)!-X(2,0,1,0,1,jj,1)
+  !   WRITE(*,*)'Elemsize',jj, X(2,0,3,0,1,jj,1)
+  ! END DO
 CASE(2) !trilinear domain
   DO kk=1,nElems(3)
     DO jj=1,nElems(2)
@@ -530,7 +563,7 @@ CASE(2) !trilinear domain
                                                          +XP(:,8)*(1.-R_loc(1)) &
                                                                  *(1.+R_loc(2)) &
                                                                  *(1.+R_loc(3)) )
-            END DO !i=0:Nin                    
+            END DO !i=0:Nin
           END DO !j=0:Nin
         END DO !k=0:Nin
       END DO !ii=1,nElems(1)
@@ -556,8 +589,8 @@ CASE(3) ! general curved domain
               ! store the local coordinates r,s,t
               R_loc = X(:,i,j,k,ii,jj,kk)
               ! overwrite r,s,t with x,y,z
-              ! As we have to subtract the contribution of the edges, the contribution of the 
-              ! corner nodes is subtracted two times.... we just add another contribution of 
+              ! As we have to subtract the contribution of the edges, the contribution of the
+              ! corner nodes is subtracted two times.... we just add another contribution of
               ! corner points to compensate
               X(:,i,j,k,ii,jj,kk)=0.125*( XP(:,1)*(1.-R_loc(1)) &
                                                                  *(1.-R_loc(2)) &
@@ -598,7 +631,7 @@ CASE(3) ! general curved domain
                                                            +FP(:,3)*(1.+R_loc(1)) &
                                                            +FP(:,4)*(1.+R_loc(2)) &
                                                            +FP(:,5)*(1.-R_loc(1)) &
-                                                           +FP(:,6)*(1.+R_loc(3))) 
+                                                           +FP(:,6)*(1.+R_loc(3)))
             ! Determine the coordinates of the projection of the ref Point on the 12 Edges EP
             CALL EvaluateFace(EP(:, 1),(/R_loc(1),-1./),DX,XP,WhichMapping,1)
             CALL EvaluateFace(EP(:, 2),(/+1.,R_loc(2)/),DX,XP,WhichMapping,1)
@@ -638,8 +671,8 @@ CASE(3) ! general curved domain
                                                            +EP(:,11)*(1.+R_loc(2)) &
                                                                     *(1.+R_loc(3)) &
                                                            +EP(:,12)*(1.-R_loc(1)) &
-                                                                    *(1.+R_loc(3))) 
-            END DO !i=0:Nin                    
+                                                                    *(1.+R_loc(3)))
+            END DO !i=0:Nin
           END DO !j=0:Nin
         END DO !k=0:Nin
       END DO !ii=1,nElems(1)
@@ -652,18 +685,18 @@ CASE(11) ! use a global stretching function in all directions, input parameter f
       ! loop over Chebyshev points
       DO k=0,Nin;DO j=0,Nin;DO i=0,Nin
         ! overwrite r,s,t with x,y,z
-        X(1,i,j,k,ii,jj,kk)=X0(1)+(fac(1)**(0.5*(1.+X(1,i,j,K,ii,jj,kk)))-1.)*DXh(1) 
-      END DO; END DO; END DO 
-    END DO; END DO; END DO 
+        X(1,i,j,k,ii,jj,kk)=X0(1)+(fac(1)**(0.5*(1.+X(1,i,j,K,ii,jj,kk)))-1.)*DXh(1)
+      END DO; END DO; END DO
+    END DO; END DO; END DO
   ELSE
     DXh(1)=0.5*DX(1)
     DO kk=1,nElems(3); DO jj=1,nElems(2); DO ii=1,nElems(1)
       ! loop over Chebyshev points
       DO k=0,Nin;DO j=0,Nin;DO i=0,Nin
         ! overwrite r,s,t with x,y,z
-        X(1,i,j,k,ii,jj,kk)=X0(1)+(1.+X(1,i,j,K,ii,jj,kk))*DXh(1) 
-      END DO; END DO; END DO 
-    END DO; END DO; END DO 
+        X(1,i,j,k,ii,jj,kk)=X0(1)+(1.+X(1,i,j,K,ii,jj,kk))*DXh(1)
+      END DO; END DO; END DO
+    END DO; END DO; END DO
   END IF
   IF(fac(2).GT.1.) THEN
     DXh(2)=DX(2)/(fac(2)-1.)
@@ -671,18 +704,18 @@ CASE(11) ! use a global stretching function in all directions, input parameter f
       ! loop over Chebyshev points
       DO k=0,Nin;DO j=0,Nin;DO i=0,Nin
         ! overwrite r,s,t with x,y,z
-        X(2,i,j,k,ii,jj,kk)=X0(2)+(fac(2)**(0.5*(1.+X(2,i,j,K,ii,jj,kk)))-1.)*DXh(2) 
-      END DO; END DO; END DO 
-    END DO; END DO; END DO 
+        X(2,i,j,k,ii,jj,kk)=X0(2)+(fac(2)**(0.5*(1.+X(2,i,j,K,ii,jj,kk)))-1.)*DXh(2)
+      END DO; END DO; END DO
+    END DO; END DO; END DO
   ELSE
     DXh(2)=0.5*DX(2)
     DO kk=1,nElems(3); DO jj=1,nElems(2); DO ii=1,nElems(1)
       ! loop over Chebyshev points
       DO k=0,Nin;DO j=0,Nin;DO i=0,Nin
         ! overwrite r,s,t with x,y,z
-        X(2,i,j,k,ii,jj,kk)=X0(2)+(1.+X(2,i,j,K,ii,jj,kk))*DXh(2) 
-      END DO; END DO; END DO 
-    END DO; END DO; END DO 
+        X(2,i,j,k,ii,jj,kk)=X0(2)+(1.+X(2,i,j,K,ii,jj,kk))*DXh(2)
+      END DO; END DO; END DO
+    END DO; END DO; END DO
   END IF
   IF(fac(3).GT.1.) THEN
     DXh(3)=DX(3)/(fac(3)-1.)
@@ -690,18 +723,18 @@ CASE(11) ! use a global stretching function in all directions, input parameter f
       ! loop over Chebyshev points
       DO k=0,Nin;DO j=0,Nin;DO i=0,Nin
         ! overwrite r,s,t with x,y,z
-        X(3,i,j,k,ii,jj,kk)=X0(3)+(fac(3)**(0.5*(1.+X(3,i,j,K,ii,jj,kk)))-1.)*DXh(3) 
-      END DO; END DO; END DO 
-    END DO; END DO; END DO 
+        X(3,i,j,k,ii,jj,kk)=X0(3)+(fac(3)**(0.5*(1.+X(3,i,j,K,ii,jj,kk)))-1.)*DXh(3)
+      END DO; END DO; END DO
+    END DO; END DO; END DO
   ELSE
     DXh(3)=0.5*DX(3)
     DO kk=1,nElems(3); DO jj=1,nElems(2); DO ii=1,nElems(1)
       ! loop over Chebyshev points
       DO k=0,Nin;DO j=0,Nin;DO i=0,Nin
         ! overwrite r,s,t with x,y,z
-        X(3,i,j,k,ii,jj,kk)=X0(3)+(1.+X(3,i,j,K,ii,jj,kk))*DXh(3) 
-      END DO; END DO; END DO 
-    END DO; END DO; END DO 
+        X(3,i,j,k,ii,jj,kk)=X0(3)+(1.+X(3,i,j,K,ii,jj,kk))*DXh(3)
+      END DO; END DO; END DO
+    END DO; END DO; END DO
   END IF
 END SELECT
 END SUBROUTINE BuildPhysicalDomain
@@ -713,6 +746,7 @@ SUBROUTINE EvaluateFace(X,Para,DX,XP,WhichMapping,WhichFace)
 !===================================================================================================================================
 ! MODULES
 USE MOD_Mesh_Vars,ONLY:R_0,R_INF,DY,PHI
+! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT/OUTPUT VARIABLES
@@ -727,13 +761,13 @@ REAL,DIMENSION(3)   :: Corner1,Corner2,Corner3,Corner4 ! values of the 4 corner 
 REAL                :: PI,Z_Value,Fac,Para2(2)  ! ?
 !===================================================================================================================================
 SELECT CASE(WhichMapping)
-CASE(1) ! TriLinearMapping 
+CASE(1) ! TriLinearMapping
   SELECT CASE(WhichFace)
   CASE(1) ! Face 1, Zeta=-1, Para = Xi,Eta
-    X = 0.25*( XP(:,1)*(1.-Para(1))*(1.-Para(2))& 
-              +XP(:,2)*(1.+Para(1))*(1.-Para(2))& 
-              +XP(:,3)*(1.+Para(1))*(1.+Para(2))& 
-              +XP(:,4)*(1.-Para(1))*(1.+Para(2))) 
+    X = 0.25*( XP(:,1)*(1.-Para(1))*(1.-Para(2))&
+              +XP(:,2)*(1.+Para(1))*(1.-Para(2))&
+              +XP(:,3)*(1.+Para(1))*(1.+Para(2))&
+              +XP(:,4)*(1.-Para(1))*(1.+Para(2)))
   CASE(2) ! Face 2, Eta=-1, Para = Xi,Zeta
     X = 0.25*( XP(:,1)*(1.-Para(1))*(1.-Para(2))&
               +XP(:,2)*(1.+Para(1))*(1.-Para(2))&
@@ -768,39 +802,39 @@ CASE(2) ! Vulgo No Tron
               +XP(:,2)*(1.+Para(1))*(1.-Para(2))&
               +XP(:,3)*(1.+Para(1))*(1.+Para(2))&
               +XP(:,4)*(1.-Para(1))*(1.+Para(2)))&
-              +(/0.,0.,DX(3)/)*(1.-Para(1)**2)*(1.-Para(2)**2) 
+              +(/0.,0.,DX(3)/)*(1.-Para(1)**2)*(1.-Para(2)**2)
   CASE(2) ! Face 2, Eta=-1, Para = Xi,Zeta
     X = 0.25*( XP(:,1)*(1.-Para(1))*(1.-Para(2))&
               +XP(:,2)*(1.+Para(1))*(1.-Para(2))&
               +XP(:,5)*(1.-Para(1))*(1.+Para(2))&
               +XP(:,6)*(1.+Para(1))*(1.+Para(2)))&
-              +(/0.,DX(2),0./)*(1.-Para(1)**2)*(1.-Para(2)**2) 
+              +(/0.,DX(2),0./)*(1.-Para(1)**2)*(1.-Para(2)**2)
 
   CASE(3) ! Face 3, Xi=+1, Para = Eta, Zeta
     X = 0.25*( XP(:,2)*(1.-Para(1))*(1.-Para(2))&
               +XP(:,3)*(1.+Para(1))*(1.-Para(2))&
               +XP(:,6)*(1.-Para(1))*(1.+Para(2))&
               +XP(:,7)*(1.+Para(1))*(1.+Para(2)))&
-              +(/DX(1),0.,0./)*(1.-Para(1)**2)*(1.-Para(2)**2) 
+              +(/DX(1),0.,0./)*(1.-Para(1)**2)*(1.-Para(2)**2)
 
   CASE(4) ! Face 4, Eta=+1, Para = Xi, Zeta
     X = 0.25*( XP(:,3)*(1.+Para(1))*(1.-Para(2))&
               +XP(:,4)*(1.-Para(1))*(1.-Para(2))&
               +XP(:,7)*(1.+Para(1))*(1.+Para(2))&
               +XP(:,8)*(1.-Para(1))*(1.+Para(2)))&
-              +(/0.,DX(2),0./)*(1.-Para(1)**2)*(1.-Para(2)**2) 
+              +(/0.,DX(2),0./)*(1.-Para(1)**2)*(1.-Para(2)**2)
   CASE(5) ! Face 5, Xi=-1, Para = Eta, Zeta
     X = 0.25*( XP(:,1)*(1.-Para(1))*(1.-Para(2))&
               +XP(:,4)*(1.+Para(1))*(1.-Para(2))&
               +XP(:,5)*(1.-Para(1))*(1.+Para(2))&
               +XP(:,8)*(1.+Para(1))*(1.+Para(2)))&
-              +(/DX(1),0.,0./)*(1.-Para(1)**2)*(1.-Para(2)**2) 
+              +(/DX(1),0.,0./)*(1.-Para(1)**2)*(1.-Para(2)**2)
   CASE(6) ! Face 6, Zeta=+1, Xi, Eta
     X = 0.25*( XP(:,5)*(1.-Para(1))*(1.-Para(2))&
               +XP(:,6)*(1.+Para(1))*(1.-Para(2))&
               +XP(:,7)*(1.+Para(1))*(1.+Para(2))&
               +XP(:,8)*(1.-Para(1))*(1.+Para(2)))&
-              +(/0.,0.,DX(3)/)*(1.-Para(1)**2)*(1.-Para(2)**2) 
+              +(/0.,0.,DX(3)/)*(1.-Para(1)**2)*(1.-Para(2)**2)
   END SELECT
 CASE(3) ! half cylinder, Kopriva Book pg. 263 (we change y and z direction!! Changed to segment: PHI=180deg for half cylinder)
   PI=ACOS(-1.)
@@ -814,7 +848,7 @@ CASE(3) ! half cylinder, Kopriva Book pg. 263 (we change y and z direction!! Cha
     ! Scale azimuth of half cylinder
     Para2(2)= Fac*(Para(2)+1.)-1.
     ! Determine the values of the face and move it to y=-dy
-    ! GammaI 
+    ! GammaI
     Gamma1 = -r_0 * COS(PI*(Para2(2) + 1.)*0.5)*e1 + r_0*sin(PI*(Para2(2) + 1.)*0.5)*e2
     Gamma2 = (r_0 + (r_inf-r_0)*(Para2(1)+1.)*0.5)*e1
     Gamma3 = -r_inf * COS(PI*(Para2(2) + 1.)*0.5)*e1 + r_inf*sin(PI*(Para2(2) + 1.)*0.5)*e2
@@ -824,7 +858,7 @@ CASE(3) ! half cylinder, Kopriva Book pg. 263 (we change y and z direction!! Cha
     Corner2 = (r_0 + (r_inf-r_0)*(-1.+1.)*0.5)*e1 != Gamma2 mit Para = -1.: Para2=-1
     Corner3 = -r_inf * COS(PI*((2.*Fac-1.) + 1.)*0.5)*e1 + r_inf*sin(PI*((2.*Fac-1.) + 1.)*0.5)*e2 != Gamma3 mit Para = +1.: Para2=2*Fac-1
     Corner4 = (-r_0 - (r_inf-r_0)*((2.*Fac-1.)+1.)*0.5)*e1 != Gamma4 mit Para = +1.: Para2=2*Fac-1
-    ! Now use the classic "2D" coons mapping to determine the face, Kopriva Book pg. 230 
+    ! Now use the classic "2D" coons mapping to determine the face, Kopriva Book pg. 230
     X = 0.5 * ( Gamma4*(1.-Para2(1)) + Gamma2*(1.+Para2(1)) + Gamma1*(1.-Para2(2)) + Gamma3*(1.+Para2(2)))&
       - 0.25* ( (1.-Para2(1))*(Corner1*(1.-Para2(2))+Corner4*(1.+Para2(2)))+(1.+Para2(1))*(Corner2*(1.-Para2(2))+Corner3*(1.+Para2(2))))
     X(3) = -dy
@@ -858,7 +892,7 @@ CASE(3) ! half cylinder, Kopriva Book pg. 263 (we change y and z direction!! Cha
     ! Scale azimuth of half cylinder
     Para2(2)= Fac*(Para(2)+1.)-1.
     ! Determine the values of the face and move it to y=+dy
-    ! GammaI 
+    ! GammaI
     Gamma1 = -r_0 * COS(PI*(Para2(2) + 1.)*0.5)*e1 + r_0*sin(PI*(Para2(2) + 1.)*0.5)*e2
     Gamma2 = (r_0 + (r_inf-r_0)*(Para2(1)+1.)*0.5)*e1
     Gamma3 = -r_inf * COS(PI*(Para2(2) + 1.)*0.5)*e1 + r_inf*sin(PI*(Para2(2) + 1.)*0.5)*e2
@@ -868,7 +902,7 @@ CASE(3) ! half cylinder, Kopriva Book pg. 263 (we change y and z direction!! Cha
     Corner2 = (r_0 + (r_inf-r_0)*(-1.+1.)*0.5)*e1 != Gamma2 mit Para = -1.: Para2=-1
     Corner3 = -r_inf * COS(PI*((2.*Fac-1.) + 1.)*0.5)*e1 + r_inf*sin(PI*((2.*Fac-1.) + 1.)*0.5)*e2 != Gamma3 mit Para = +1.: Para2=2*Fac-1
     Corner4 = (-r_0 - (r_inf-r_0)*((2.*Fac-1.)+1.)*0.5)*e1 != Gamma4 mit Para = +1.: Para2=2*Fac-1
-    ! Now use the classic "2D" coons mapping to determine the face, Kopriva Book pg. 230 
+    ! Now use the classic "2D" coons mapping to determine the face, Kopriva Book pg. 230
     X = 0.5 * ( Gamma4*(1.-Para2(1)) + Gamma2*(1.+Para2(1)) + Gamma1*(1.-Para2(2)) + Gamma3*(1.+Para2(2)))&
       - 0.25* ( (1.-Para2(1))*(Corner1*(1.-Para2(2))+Corner4*(1.+Para2(2)))+(1.+Para2(1))*(Corner2*(1.-Para2(2))+Corner3*(1.+Para2(2))))
     X(3)=dy
@@ -882,7 +916,7 @@ CASE(4) ! full cylinder, Kopriva Book pg. 263 (we change y and z direction!!)
   SELECT CASE(WhichFace)
   CASE(1) ! Face 1, Zeta=-1, Para = Xi,Eta
     ! Determine the values of the face and move it to y=-dy
-    ! GammaI 
+    ! GammaI
     Gamma1 = +r_0 * COS(PI*(Para(2) + 1.)*0.5)*e1 - r_0*sin(PI*(Para(2) + 1.)*0.5)*e2
     Gamma2 = (r_0 + (r_inf-r_0)*(Para(1)+1.)*0.5)*e1
     Gamma3 = +r_inf * COS(PI*(Para(2) + 1.)*0.5)*e1 - r_inf*sin(PI*(Para(2) + 1.)*0.5)*e2
@@ -892,7 +926,7 @@ CASE(4) ! full cylinder, Kopriva Book pg. 263 (we change y and z direction!!)
     Corner2 = (/+r_0,0.,0./) != Gamma2 mit Para(2) = -1. = XP2 without y component
     Corner3 = (/+r_inf,0.,0./) != Gamma3 mit Para(1) = +1. = XP6 without y component
     Corner4 = (/+r_inf,0.,0./) != Gamma4 mit Para(2) = +1. = XP7 without y component
-    ! Now use the classic "2D" coons mapping to determine the face, Kopriva Book pg. 230 
+    ! Now use the classic "2D" coons mapping to determine the face, Kopriva Book pg. 230
     X = 0.5 * ( Gamma4*(1.-Para(1)) + Gamma2*(1.+Para(1)) + Gamma1*(1.-Para(2)) + Gamma3*(1.+Para(2)))&
       - 0.25* ( (1.-Para(1))*(Corner1*(1.-Para(2))+Corner4*(1.+Para(2)))+(1.+Para(1))*(Corner2*(1.-Para(2))+Corner3*(1.+Para(2))))
     X(3) = -dy
@@ -917,7 +951,7 @@ CASE(4) ! full cylinder, Kopriva Book pg. 263 (we change y and z direction!!)
   CASE(6) !  Face 6, Zeta=+1, Xi, Eta
     ! The same as Face 2, except that we have now +dy instead of -dy in y direction!
     ! Determine the values of the face and move it to y=+dy
-    ! GammaI 
+    ! GammaI
     Gamma1 = r_0 * COS(PI*(Para(2) + 1.)*0.5)*e1 - r_0*sin(PI*(Para(2) + 1.)*0.5)*e2
     Gamma2 = (r_0 + (r_inf-r_0)*(Para(1)+1.)*0.5)*e1
     Gamma3 = r_inf * COS(PI*(Para(2) + 1.)*0.5)*e1 - r_inf*sin(PI*(Para(2) + 1.)*0.5)*e2
@@ -927,11 +961,11 @@ CASE(4) ! full cylinder, Kopriva Book pg. 263 (we change y and z direction!!)
     Corner2 = (/r_0,0.,0./) != Gamma2 mit Para(2) = -1.
     Corner3 = (/r_inf,0.,0./) != Gamma3 mit Para(1) = +1.
     Corner4 = (/r_inf,0.,0./) != Gamma4 mit Para(2) = +1.
-    ! Now use the classic "2D" coons mapping to determine the face, Kopriva Book pg. 230 
+    ! Now use the classic "2D" coons mapping to determine the face, Kopriva Book pg. 230
     X = 0.5 * ( Gamma4*(1.-Para(1)) + Gamma2*(1.+Para(1)) + Gamma1*(1.-Para(2)) + Gamma3*(1.+Para(2)))&
       - 0.25* ( (1.-Para(1))*(Corner1*(1.-Para(2))+Corner4*(1.+Para(2)))+(1.+Para(1))*(Corner2*(1.-Para(2))+Corner3*(1.+Para(2))))
     X(3)=dy
- 
+
   END SELECT !whichface
 
 CASE(5) !SINE BUMP
@@ -949,42 +983,42 @@ CASE(5) !SINE BUMP
     Z_Value=R_0*(1. - MIN(DX(1)/R_inf,1.)**2)**6
     gamma1= DX(1)*Para(1)*e1 + R_0*(1. - MIN(ABS(DX(1)*Para(1))/R_inf,1.)**2)**6*e3
     gamma2= DX(1)*e1+ (Z_Value*(1.-Para(2))*0.5 + DX(3)*(1+Para(2)))*e3
-    gamma3= DX(1)*Para(1)*e1 + 2.*DX(3)*e3 
+    gamma3= DX(1)*Para(1)*e1 + 2.*DX(3)*e3
     gamma4=-DX(1)*e1+ (Z_Value*(1.-Para(2))*0.5 + DX(3)*(1+Para(2)))*e3
     ! Determine the 4 corner points of the face
     Corner1 = (/-DX(1),0.,Z_Value/) != Gamma1 mit Para(1) = -1.
     Corner2 = (/+DX(1),0.,Z_Value/) != Gamma2 mit Para(2) = -1.
     Corner3 = (/+DX(1),0.,2.*DX(3)/) != Gamma3 mit Para(1) = +1.
     Corner4 = (/-DX(1),0.,2.*DX(3)/) != Gamma4 mit Para(2) = +1.
-    ! Now use the classic "2D" coons mapping to determine the face, Kopriva Book pg. 230 
+    ! Now use the classic "2D" coons mapping to determine the face, Kopriva Book pg. 230
     X = 0.5 * ( Gamma4*(1.-Para(1)) + Gamma2*(1.+Para(1)) + Gamma1*(1.-Para(2)) + Gamma3*(1.+Para(2)))&
       - 0.25* ( (1.-Para(1))*(Corner1*(1.-Para(2))+Corner4*(1.+Para(2)))+(1.+Para(1))*(Corner2*(1.-Para(2))+Corner3*(1.+Para(2))))
     X(2)=DX(2)
   CASE(3) ! Face 3, Xi=+1, Para = Eta, Zeta
     Z_Value=R_0*(1. - MIN(DX(1)/R_inf,1.)**2)**6
     X(1)=DX(1)
-    X(2)=DX(2)*Para(1) 
+    X(2)=DX(2)*Para(1)
     X(3)=Z_Value*(1.-Para(2))*0.5+DX(3)*(1.+Para(2))
   CASE(4) ! Face 4, Eta=+1, Para = Xi, Zeta
     !gamma1= DX(1)*Para(1)*e1 + R_0*0.5*(1.+cos(MIN(ABS(DX(1)*Para(1))/R_inf,1.)*PI))*e3
     Z_Value=R_0*(1. - MIN(DX(1)/R_inf,1.)**2)**6
     gamma1= DX(1)*Para(1)*e1 + R_0*(1. - MIN(ABS(DX(1)*Para(1))/R_inf,1.)**2)**6*e3
     gamma2= DX(1)*e1+ (Z_Value*(1.-Para(2))*0.5 + DX(3)*(1+Para(2)))*e3
-    gamma3= DX(1)*Para(1)*e1 + 2.*DX(3)*e3 
+    gamma3= DX(1)*Para(1)*e1 + 2.*DX(3)*e3
     gamma4=-DX(1)*e1+ (Z_Value*(1.-Para(2))*0.5 + DX(3)*(1+Para(2)))*e3
     ! Determine the 4 corner points of the face
     Corner1 = (/-DX(1),0.,Z_Value/) != Gamma1 mit Para(1) = -1.
     Corner2 = (/+DX(1),0.,Z_Value/) != Gamma2 mit Para(2) = -1.
     Corner3 = (/+DX(1),0.,2.*DX(3)/) != Gamma3 mit Para(1) = +1.
     Corner4 = (/-DX(1),0.,2.*DX(3)/) != Gamma4 mit Para(2) = +1.
-    ! Now use the classic "2D" coons mapping to determine the face, Kopriva Book pg. 230 
+    ! Now use the classic "2D" coons mapping to determine the face, Kopriva Book pg. 230
     X = 0.5 * ( Gamma4*(1.-Para(1)) + Gamma2*(1.+Para(1)) + Gamma1*(1.-Para(2)) + Gamma3*(1.+Para(2)))&
       - 0.25* ( (1.-Para(1))*(Corner1*(1.-Para(2))+Corner4*(1.+Para(2)))+(1.+Para(1))*(Corner2*(1.-Para(2))+Corner3*(1.+Para(2))))
     X(2)=-DX(2)
   CASE(5) ! Face 5, Xi=-1, Para = Eta, Zeta
     Z_Value=R_0*(1. - MIN(DX(1)/R_inf,1.)**2)**6
     X(1)=-DX(1)
-    X(2)=DX(2)*Para(1) 
+    X(2)=DX(2)*Para(1)
     X(3)=Z_Value*(1.-Para(2))*0.5+DX(3)*(1.+Para(2))
   CASE(6) ! Face 6, Zeta=+1, Xi, Eta
     X(1:2)=DX(1:2)*Para(1:2)
@@ -1013,7 +1047,7 @@ CASE(6) !quadratic duct (a la lounge)
     Corner2 = (/1.,0.,1./) != Gamma2 mit Para(2) = -1.
     Corner3 = (/2./3.,0.,7./6./) != Gamma3 mit Para(1) = +1.
     Corner4 = (/0.,0.,0.5/) != Gamma4 mit Para(2) = +1.
-    ! Now use the classic "2D" coons mapping to determine the face, Kopriva Book pg. 230 
+    ! Now use the classic "2D" coons mapping to determine the face, Kopriva Book pg. 230
     X = 0.5 * ( Gamma4*(1.-Para(1)) + Gamma2*(1.+Para(1)) + Gamma1*(1.-Para(2)) + Gamma3*(1.+Para(2)))&
       - 0.25* ( (1.-Para(1))*(Corner1*(1.-Para(2))+Corner4*(1.+Para(2)))+(1.+Para(1))*(Corner2*(1.-Para(2))+Corner3*(1.+Para(2))))
     X(2)=0.25
@@ -1031,7 +1065,7 @@ CASE(6) !quadratic duct (a la lounge)
     Corner2 = (/1.,0.,1./) != Gamma2 mit Para(2) = -1.
     Corner3 = (/2./3.,0.,7./6./) != Gamma3 mit Para(1) = +1.
     Corner4 = (/0.,0.,0.5/) != Gamma4 mit Para(2) = +1.
-    ! Now use the classic "2D" coons mapping to determine the face, Kopriva Book pg. 230 
+    ! Now use the classic "2D" coons mapping to determine the face, Kopriva Book pg. 230
     X = 0.5 * ( Gamma4*(1.-Para(1)) + Gamma2*(1.+Para(1)) + Gamma1*(1.-Para(2)) + Gamma3*(1.+Para(2)))&
       - 0.25* ( (1.-Para(1))*(Corner1*(1.-Para(2))+Corner4*(1.+Para(2)))+(1.+Para(1))*(Corner2*(1.-Para(2))+Corner3*(1.+Para(2))))
     X(2)=-0.25

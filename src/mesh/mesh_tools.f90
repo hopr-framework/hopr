@@ -12,7 +12,7 @@
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -30,7 +30,7 @@ MODULE MOD_Mesh_Tools
 IMPLICIT NONE
 PRIVATE
 !-----------------------------------------------------------------------------------------------------------------------------------
-! GLOBAL VARIABLES 
+! GLOBAL VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! Private Part ---------------------------------------------------------------------------------------------------------------------
 ! Public Part ----------------------------------------------------------------------------------------------------------------------
@@ -81,13 +81,13 @@ USE MOD_Mesh_Vars,ONLY:nBoundarySplines,nPeriodicSplines,nInnerSplines
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tElem),POINTER            :: Elem  ! ?
 TYPE(tSide),POINTER            :: Side  ! ?
-INTEGER                        :: splineCounter(3) ! 1: Boundary splines, 2: periodic splines, 3: 
+INTEGER                        :: splineCounter(3) ! 1: Boundary splines, 2: periodic splines, 3:
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT VARIABLES
-INTEGER, SAVE                  :: CallCount=0   ! Counter for calls of this subroutine, used for 
+INTEGER, SAVE                  :: CallCount=0   ! Counter for calls of this subroutine, used for
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 LOGICAL                        :: hasChanged  ! ?
@@ -157,7 +157,7 @@ IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tElem),POINTER             :: Elem  ! ?
 REAL                            :: BaryScale,BaryCoords(3)  ! ?
 INTEGER                         :: nVal,iNode,iElem,nElems  ! ?
@@ -237,14 +237,15 @@ IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tElem),POINTER             :: Elem  ! ?
 TYPE(tSide),POINTER             :: Side   ! ?
+INTEGER                         :: SideID
 REAL                            :: BaryScale,BaryCoords(3)  ! ?
 INTEGER                         :: nVal,iNode,iBCside,nBCSides  ! ?
 INTEGER                         :: NodeMap(1:4,3:4)  ! ?
 CHARACTER(LEN=255)              :: FileString  ! ?
-CHARACTER(LEN=255)              :: VarNames(6)  ! ?
+CHARACTER(LEN=255)              :: VarNames(7)  ! ?
 REAL,ALLOCATABLE                :: Coord(:,:,:),Solution(:,:,:)  ! ?
 
 PARAMETER (BaryScale   = 1.0)
@@ -269,13 +270,14 @@ END DO
 WRITE(UNIT_stdOut,*)'  #BCSides ',nBCSides
 filestring=TRIM(ProjectName)//'_'//'Debugmesh_BC'
 ! Open/Create file and file header for 2D/3D Debugmesh.
-nVal=6
+nVal=7
 Varnames(1)='BCIndex'
 Varnames(2)='BCType'
 Varnames(3)='BCCurveIndex'
 Varnames(4)='BCState'
 Varnames(5)='BCAlpha'
 Varnames(6)='ElemID'
+Varnames(7)='SideID'
 
 NodeMap=0
 !mapping from iNode to i,j,k [0;1]
@@ -285,11 +287,13 @@ NodeMap(:,4)=(/1,2,4,3/) !quad
 ALLOCATE(Coord(3,1:4,nBCSides))
 ALLOCATE(Solution(nVal,1:4,nBCSides))
 iBCSide=0
+SideID =0
 ! Write nodes
 Elem=>firstElem
 DO WHILE(ASSOCIATED(elem))
   Side=>Elem%firstSide
   DO WHILE(ASSOCIATED(Side))
+    SideID=SideID+1
     IF(ASSOCIATED(Side%BC))THEN
       iBCSide=iBCside+1
       BaryCoords=0.
@@ -306,6 +310,7 @@ DO WHILE(ASSOCIATED(elem))
       Solution(4,:,iBCside)=Side%BC%BCState
       Solution(5,:,iBCside)=Side%BC%BCAlphaInd
       Solution(6,:,iBCside)=Elem%ind
+      Solution(7,:,iBCside)=SideID
     END IF
     Side=>Side%nextElemSide
   END DO
@@ -624,7 +629,7 @@ USE MOD_Mesh_Vars,ONLY:tElem,tSide,tEdge,N
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tElem),POINTER,INTENT(IN) :: Elem  ! ?
 INTEGER,INTENT(IN)             :: value ! value to set tmp to
 LOGICAL,INTENT(IN),OPTIONAL    :: whichMarker(8) ! 1/2: elem corner/curved, 3/4: side corner/curved, 5/6: edge corner/curved
@@ -692,7 +697,7 @@ END SUBROUTINE SetTempMarker
 SUBROUTINE checkMortarWatertight()
 !===================================================================================================================================
 ! Checks if surface normals of mortars are defined such that the mesh is freestream preserving =^ watertight
-! builds a 1D basis to change equidistant -> gauss points (0:N_GP) and then use tensor-product gauss 
+! builds a 1D basis to change equidistant -> gauss points (0:N_GP) and then use tensor-product gauss
 ! for differentiation and integration. n_GP=N should be exact, since normal vector is of degree (2*N-1 ,2*N-1)
 ! since its a dot product of two polynomials of degree (N-1,N) * (N,N-1)
 !===================================================================================================================================
@@ -773,17 +778,17 @@ DO WHILE(ASSOCIATED(Elem))
 
       NsurfBig=EvalNsurf(XgeoSide)
       NsurfSmall=0.
-      DO p=1,Side%nMortars 
+      DO p=1,Side%nMortars
         CALL PackGeo(N,Side%MortarSide(p)%sp,XgeoSide)
         NsurfSmall(:,p)=EvalNsurf(XgeoSide)
-      END DO 
+      END DO
       NsurfErr= ABS(NsurfBig(1)-SUM(NsurfSmall(1,:))) &
                +ABS(NsurfBig(2)-SUM(NsurfSmall(2,:))) &
                +ABS(NsurfBig(3)-SUM(NsurfSmall(3,:)))
       IF(NsurfErr.GT.1.0E-12) THEN
         ERRWRITE(*,*) &
                  '================> Mortar is not watertight, ERROR=',NsurfErr,' >1.0E-12, big side corners:'
-        ERRWRITE(*,*)'Nsurf: ', NsurfBig 
+        ERRWRITE(*,*)'Nsurf: ', NsurfBig
         ERRWRITE(*,*)'   P1: ', Side%OrientedNode(1)%np%x
         ERRWRITE(*,*)'   P2: ', Side%OrientedNode(2)%np%x
         ERRWRITE(*,*)'   P3: ', Side%OrientedNode(3)%np%x
@@ -797,7 +802,7 @@ DO WHILE(ASSOCIATED(Elem))
           ERRWRITE(*,*)'    P2: ', Side%MortarSide(p)%sp%OrientedNode(2)%np%x
           ERRWRITE(*,*)'    P3: ', Side%MortarSide(p)%sp%OrientedNode(3)%np%x
           ERRWRITE(*,*)'    P4: ', Side%MortarSide(p)%sp%OrientedNode(4)%np%x
-        END DO 
+        END DO
         WaterTight=WaterTight+1
         maxNsurfErr=max(maxNsurfErr,NsurfErr)
       END IF ! diffsurf>0
@@ -839,7 +844,7 @@ DO WHILE(ASSOCIATED(Elem))
               pf=N-q; qf=N-p;
             CASE(4)
               pf=p; qf=N-q;
-            END SELECT  
+            END SELECT
 
             XCheck=XGeoSide(:,p,q) + vec
 
@@ -916,8 +921,8 @@ CONTAINS
         END DO
         nVec=CROSS(dXdxiGP(:),dXdetaGP(:))
         Nsurf(:)=Nsurf(:)+wGP(i)*wGP(j)*nVec(:)
-      END DO !i 
-    END DO !j 
+      END DO !i
+    END DO !j
   END FUNCTION EvalNsurf
 
 END SUBROUTINE checkMortarWaterTight
