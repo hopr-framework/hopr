@@ -29,7 +29,7 @@ MODULE MOD_ReadInTools
 !===================================================================================================================================
 ! MODULES
 USE MOD_Globals
-USE ISO_VARYING_STRING
+USE MOD_ISO_VARYING_STRING
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 PRIVATE
@@ -45,6 +45,7 @@ PUBLIC::GETREALARRAY
 PUBLIC::IgnoredStrings
 PUBLIC::FillStrings
 PUBLIC::STRICMP
+PUBLIC::FinalizeStrings
 
 !===================================================================================================================================
 
@@ -106,6 +107,10 @@ END INTERFACE
 
 INTERFACE DeleteString
   MODULE PROCEDURE DeleteString
+END INTERFACE
+
+INTERFACE FinalizeStrings
+  MODULE PROCEDURE FinalizeStrings
 END INTERFACE
 
 TYPE tString
@@ -464,7 +469,7 @@ SUBROUTINE IgnoredStrings()
 ! Prints out remaining strings in list after read-in is complete
 !===================================================================================================================================
 ! MODULES
-USE ISO_VARYING_STRING
+USE MOD_ISO_VARYING_STRING
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -493,7 +498,7 @@ SUBROUTINE FillStrings(IniFile)
 ! with "firstString"
 !===================================================================================================================================
 ! MODULES
-USE ISO_VARYING_STRING
+USE MOD_ISO_VARYING_STRING
 USE,INTRINSIC :: ISO_FORTRAN_ENV,ONLY:IOSTAT_END
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
@@ -509,6 +514,7 @@ CHARACTER(LEN=255)                     :: HelpStr,Str  ! ?
 CHARACTER(LEN=300)                     :: File  ! ?
 TYPE(Varying_String)                   :: aStr,bStr,Separator  ! ?
 INTEGER                                :: EOF  ! ?
+LOGICAL                                :: newString
 !===================================================================================================================================
 ! Check if we have read in ini file already
 IF (ReadInDone) RETURN
@@ -529,46 +535,49 @@ OPEN(UNIT   = 103,        &
 EOF=0
 
 NULLIFY(Str1,Str2)
+newString = .FALSE.
 DO WHILE(EOF.NE.IOSTAT_END)
   IF(.NOT.ASSOCIATED(Str1)) CALL GetNewString(Str1)
-    ! Read line from file
-    CALL Get(103,aStr,iostat=EOF)
-    Str=aStr
-!IPWRITE(*,*)'Reading: ',Str,EOF
-    IF (EOF.NE.IOSTAT_END) THEN
-      ! Remove comments with "!"
-      CALL Split(aStr,Str1%Str,"!")
-      ! Remove comments with "#"
-      CALL Split(Str1%Str,bStr,"#")
-      Str1%Str=bStr
-      ! Remove "%" sign from old ini files, i.e. mesh% disc% etc.
-      CALL Split(Str1%Str,bStr,"%",Separator,Back=.false.)
-      ! If we have a newtype ini file, take the other part
-      IF(LEN(CHAR(Separator)).EQ.0) Str1%Str=bStr
-      ! Remove blanks
-      Str1%Str=Replace(Str1%Str," ","",Every=.true.)
-      ! Remove tabulator
-      Str1%Str=Replace(Str1%Str,CHAR(9),"",Every=.true.)
-      ! Replace brackets
-      Str1%Str=Replace(Str1%Str,"(/"," ",Every=.true.)
-      Str1%Str=Replace(Str1%Str,"/)"," ",Every=.true.)
-      ! Replace commas
-      Str1%Str=Replace(Str1%Str,","," ",Every=.true.)
-      ! Lower case
-      CALL LowCase(CHAR(Str1%Str),HelpStr)
-      ! If we have a remainder (no comment only)
-      IF(LEN_TRIM(HelpStr).GT.2) THEN
-        Str1%Str=Var_Str(HelpStr)
-        IF(.NOT.ASSOCIATED(Str2)) THEN
-          FirstString=>Str1
-        ELSE
-          Str2%NextStr=>Str1
-          Str1%PrevStr=>Str2
-        END IF
-        Str2=>Str1
-        CALL GetNewString(Str1)
+
+  ! Read line from file
+  CALL Get(103,aStr,iostat=EOF)
+  Str=aStr
+  IF (EOF.NE.IOSTAT_END) THEN
+    IF (newString) CALL GetNewString(Str1)
+    newString = .FALSE.
+    ! Remove comments with "!"
+    CALL Split(aStr,Str1%Str,"!")
+    ! Remove comments with "#"
+    CALL Split(Str1%Str,bStr,"#")
+    Str1%Str=bStr
+    ! Remove "%" sign from old ini files, i.e. mesh% disc% etc.
+    CALL Split(Str1%Str,bStr,"%",Separator,Back=.false.)
+    ! If we have a newtype ini file, take the other part
+    IF(LEN(CHAR(Separator)).EQ.0) Str1%Str=bStr
+    ! Remove blanks
+    Str1%Str=Replace(Str1%Str," ","",Every=.true.)
+    ! Remove tabulator
+    Str1%Str=Replace(Str1%Str,CHAR(9),"",Every=.true.)
+    ! Replace brackets
+    Str1%Str=Replace(Str1%Str,"(/"," ",Every=.true.)
+    Str1%Str=Replace(Str1%Str,"/)"," ",Every=.true.)
+    ! Replace commas
+    Str1%Str=Replace(Str1%Str,","," ",Every=.true.)
+    ! Lower case
+    CALL LowCase(CHAR(Str1%Str),HelpStr)
+    ! If we have a remainder (no comment only)
+    IF(LEN_TRIM(HelpStr).GT.2) THEN
+      Str1%Str=Var_Str(HelpStr)
+      IF(.NOT.ASSOCIATED(Str2)) THEN
+        FirstString=>Str1
+      ELSE
+        Str2%NextStr=>Str1
+        Str1%PrevStr=>Str2
       END IF
+      Str2=>Str1
+      newString = .TRUE.
     END IF
+  END IF
 END DO
 CLOSE(103)
 
@@ -598,7 +607,7 @@ SUBROUTINE UserDefinedVars()
 ! Get the user defined variables
 !===================================================================================================================================
 ! MODULES
-USE iso_varying_string
+USE MOD_ISO_VARYING_STRING
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -656,7 +665,7 @@ SUBROUTINE GetDefVar(DefVar)
 ! Get the user defined variables
 !===================================================================================================================================
 ! MODULES
-USE iso_varying_string
+USE MOD_ISO_VARYING_STRING
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -910,7 +919,7 @@ SUBROUTINE getPImultiplies(helpstr)
 ! it with the value of pi=3.1415... etc. and oes a multiplication.
 !===================================================================================================================================
 ! MODULES
-USE iso_varying_string
+USE MOD_ISO_VARYING_STRING
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -965,5 +974,19 @@ DO WHILE(.NOT. finished)
 END DO
 helpstr=trim(char(dstr))
 END SUBROUTINE getPImultiplies
+
+
+!===================================================================================================================================
+!> Clear parameters list 'prms'.
+!===================================================================================================================================
+SUBROUTINE FinalizeStrings()
+IMPLICIT NONE
+! LOCAL VARIABLES
+!===================================================================================================================================
+
+DEALLOCATE(FirstString)
+FirstString => null()
+
+END SUBROUTINE FinalizeStrings
 
 END MODULE MOD_ReadInTools

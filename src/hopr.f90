@@ -33,7 +33,7 @@ USE MOD_Commandline_Arguments, ONLY: ParseCommandlineArguments,int2strf
 USE MOD_Mesh,                  ONLY: InitMesh,FillMesh
 USE MOD_Mesh_Vars,             ONLY: negativeJacobians,jacobianTolerance
 USE MOD_Output,                ONLY: InitOutput
-USE MOD_ReadInTools,           ONLY: IgnoredStrings
+USE MOD_ReadInTools,           ONLY: IgnoredStrings,FinalizeStrings
 USE MOD_Search,                ONLY: InitSearch
 #ifdef _OPENMP
 USE omp_lib
@@ -78,6 +78,9 @@ CALL InitSearch()
 CALL IgnoredStrings()
 ! Now build mesh!
 CALL FillMesh()
+! Finalization
+CALL FinalizeStrings()
+! Output
 WRITE(UNIT_stdOut,'(132("="))')
 IF(negativeJacobians.GT.0) THEN
   WRITE(UNIT_stdOut,'(A,A,A)')' HOPR finished: Mesh "',TRIM(ProjectName)//'_mesh.h5','" written to HDF5 file.'
