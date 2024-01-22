@@ -64,6 +64,10 @@ INTERFACE BuildEdges
   MODULE PROCEDURE BuildEdges
 END INTERFACE
 
+INTERFACE BuildFEMconnectivity
+  MODULE PROCEDURE BuildFEMconnectivity
+END INTERFACE
+
 INTERFACE FlushMesh
   MODULE PROCEDURE FlushMesh
 END INTERFACE
@@ -99,6 +103,7 @@ PUBLIC::CreateSides
 !PUBLIC::AdjustOrientedNodes
 PUBLIC::GetBoundaryIndex
 PUBLIC::BuildEdges
+PUBLIC::buildFEMconnectivity
 PUBLIC::FlushMesh
 PUBLIC::assignBC
 PUBLIC::isOriented
@@ -615,9 +620,9 @@ SUBROUTINE buildEdges()
 ! If the edge is not  oriented, it goes from orientedNode(i+1)-> orientedNode(i)
 !===================================================================================================================================
 ! MODULES
-USE MOD_Mesh_Vars,ONLY:tElem,tSide,tEdge,tNode,tEdgePtr,tLocalEdge,tVertex
-USE MOD_Mesh_Vars,ONLY:firstElem,generateFEMconnectivity,CGNSElemEdgeToNode
-USE MOD_Mesh_Vars,ONLY:GetNewEdge,getNewLocalEdge,getNewVertex
+USE MOD_Mesh_Vars,ONLY:tElem,tSide,tEdge,tNode,tEdgePtr
+USE MOD_Mesh_Vars,ONLY:firstElem
+USE MOD_Mesh_Vars,ONLY:GetNewEdge
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT VARIABLES
@@ -628,16 +633,13 @@ IMPLICIT NONE
 TYPE(tElem),POINTER          :: aElem  ! ?
 TYPE(tSide),POINTER          :: aSide,bSide   ! ?
 TYPE(tEdge),POINTER          :: aEdge,bEdge  ! ?
-TYPE(tLocalEdge),POINTER     :: lEdge,nextlEdge  ! ?
 TYPE(tEdgePtr)               :: smallEdges(4)  ! ?
 TYPE(tNode),POINTER          :: aNode,bNode ! ?
-TYPE(tVertex),POINTER        :: vert,next_vert
-INTEGER                      :: i,iSide,jSide,iEdge,jEdge,kEdge,iNode,iPlus,nSides,EdgeInd,nNodes  ! ?
+INTEGER                      :: iSide,jSide,iEdge,jEdge,kEdge,iNode,iPlus,nSides,EdgeInd,nNodes  ! ?
 INTEGER                      :: indA(2),indB(2,4),indTmp(2)
 INTEGER                      :: edgeCount  ! ?
 LOGICAL                      :: edgeFound  ! ?
 INTEGER                      :: nSides_from_nNodes(4:8)=(/4,5,5,-1, 6/)
-INTEGER                      :: nEdges_from_nNodes(4:8)=(/6,8,9,-1,12/)
 !===================================================================================================================================
 
 CALL Timer(.TRUE.)
@@ -793,13 +795,53 @@ DO WHILE(ASSOCIATED(aElem))
   aElem=>aElem%nextElem
 END DO !! ELEMS!!
 CALL timer(.FALSE.)
+END SUBROUTINE buildEdges
 
-IF(.NOT.generateFEMconnectivity)RETURN
-
+SUBROUTINE buildFEMconnectivity()
+!===================================================================================================================================
+! Fill the FEM edge and Vertex connectivity as a pointer datastructure:
+! We already have unique pointers for geometric "nodes" and geometric "edges" (buildEdges needed before calling this routine!)
+! If periodic BCs are present, its important that a "FEM vertex" and a "FEM edge"=`LocalEdge` are unique in a topological sense,
+! which is different to the geometrical uniqueness. 
+! For example, a 1 element fully periodic domain has 8 unique nodes, but only one FEM vertex, 
+! and it has 12 unique edges geometrically, but only 3 FEM edges (3 x (4 geometric edges)). 
+!
+! FEM  connectivity means that each geometric entity (vertex/edge) of an element needs to have a list of all elements 
+! which are connected via that entity. There is only one geometric entity  that "owns" this list (=master edge/vertex),
+! which is then accessed via the `FirstLocalEdge`/`FirstVertex` pointer (not associated for "slave" entities).
+! In this list, there is then a `nextEdge`/`nextVertex` pointer, 
+! and the number of connections is counted in the `FirstLocalEdge%tmp`/`FirstVertex%tmp`.
+! First we loop through all element sides which have a periodic neighbor, where we use
+! the `orientedNodes` to access the neighbors edges and vertices, and add their connection to the pointer list.
+! Then we loop through all sides again to fill the remaining edge and vertex connectivity into the pointer list.
+! The pointer datastructure will be translated into the hdf5 meshfile data in "WriteMeshToHDF5" routine. 
+!===================================================================================================================================
+! MODULES
+  USE MOD_Mesh_Vars,ONLY:tElem,tSide,tEdge,tNode,tEdgePtr,tLocalEdge,tVertex
+  USE MOD_Mesh_Vars,ONLY:firstElem,CGNSElemEdgeToNode
+  USE MOD_Mesh_Vars,ONLY:getNewLocalEdge,getNewVertex
+  IMPLICIT NONE
+!-----------------------------------------------------------------------------------------------------------------------------------
+! INPUT VARIABLES
+!-----------------------------------------------------------------------------------------------------------------------------------
+! OUTPUT VARIABLES
+!-----------------------------------------------------------------------------------------------------------------------------------
+! LOCAL VARIABLES
+  TYPE(tElem),POINTER          :: aElem  ! ?
+  TYPE(tSide),POINTER          :: aSide,bSide   ! ?
+  TYPE(tEdge),POINTER          :: aEdge,bEdge  ! ?
+  TYPE(tLocalEdge),POINTER     :: lEdge,nextlEdge  ! ?
+  TYPE(tNode),POINTER          :: aNode,bNode ! ?
+  TYPE(tVertex),POINTER        :: vert,next_vert
+  INTEGER                      :: i,iSide,iEdge,iNode,iPlus,nSides
+  INTEGER                      :: indA(2),indTmp(2)
+  LOGICAL                      :: edgeFound  ! ?
+  INTEGER                      :: nSides_from_nNodes(4:8)=(/4,5,5,-1, 6/)
+  INTEGER                      :: nEdges_from_nNodes(4:8)=(/6,8,9,-1,12/)
+!===================================================================================================================================
 CALL Timer(.TRUE.)
 WRITE(UNIT_stdOut,'(132("~"))')
 WRITE(UNIT_stdOut,'(A)')'BUILD FEM connectivity of edges and vertices...'
-
 
 ! set first local edge / first Vertex for all periodic edges before, such that they all point to one single geometrical edge / vertex
 aElem=>firstElem
@@ -973,6 +1015,7 @@ DO WHILE(ASSOCIATED(aElem))
                   'something is wrong cannot find edge in element')
     END IF
   END DO !iEdge=1,aElem%nEdges
+
   ALLOCATE(aElem%Vertex(aElem%nNodes))
   ! fill element vertex
   DO iNode=1,aElem%nNodes
@@ -1008,7 +1051,7 @@ DO WHILE(ASSOCIATED(aElem))
 END DO !! ELEMS!!
 
 CALL timer(.FALSE.)
-END SUBROUTINE buildEdges
+END SUBROUTINE buildFEMconnectivity
 
 
 SUBROUTINE FlushMesh()

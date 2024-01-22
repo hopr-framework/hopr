@@ -502,13 +502,13 @@ USE MOD_Curved,           ONLY: buildCurvedElementsFromVolume,buildCurvedElement
 USE MOD_Curved,           ONLY: readNormals
 USE MOD_Curved,           ONLY: ProjectToExactSurfaces
 USE MOD_Curved,           ONLY: RebuildMortarGeometry
-USE MOD_Mesh_Basis,       ONLY: BuildEdges,ElemGeometry,FindElemTypes
+USE MOD_Mesh_Basis,       ONLY: BuildEdges,BuildFEMconnectivity,ElemGeometry,FindElemTypes
 USE MOD_Mesh_Connect,     ONLY: Connect
 USE MOD_Mesh_Connect,     ONLY: Connect2DMesh
 USE MOD_GlobalUniqueNodes,ONLY: GlobalUniqueNodes
 USE MOD_CartMesh,         ONLY: CartesianMesh
 USE MOD_CurvedCartMesh,   ONLY: CurvedCartesianMesh
-USE MOD_Mesh_Tools,       ONLY: CountSplines,Netvisu,BCvisu,chkspl_surf,chkspl_vol
+USE MOD_Mesh_Tools,       ONLY: CountSplines,Netvisu,BCvisu,chkspl_surf,chkspl_vol,FEMnetVisu
 USE MOD_Mesh_Tools,       ONLY: CheckMortarWaterTight
 USE MOD_Mesh_PostDeform,  ONLY: PostDeform
 USE MOD_Output_HDF5,      ONLY: WriteMeshToHDF5
@@ -648,6 +648,7 @@ IF(MeshMode .GT. 0)THEN
   IF(useCurveds.AND.Logging) CALL CountSplines()  ! In case of restart there can be splines
 END IF
 CALL buildEdges()
+IF(generateFEMconnectivity) CALL buildFEMconnectivity()
 
 ! check if sides to be curved exist
 curvedFound=.FALSE.
@@ -799,6 +800,7 @@ IF(checkElemJacobians) CALL CheckJacobians()
 
 IF(useCurveds .AND. Logging) CALL CountSplines()   ! In case of restart there can be splines
 CALL WriteMeshToHDF5(TRIM(ProjectName)//'_mesh.h5')
+IF(DebugVisu.AND.generateFEMconnectivity)CALL FEMnetVisu()  ! visualize FEM faces/edges/vertices
 WRITE(UNIT_stdOut,'(132("~"))')
 CALL Timer(.FALSE.)
 END SUBROUTINE fillMesh
