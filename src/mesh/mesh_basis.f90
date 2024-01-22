@@ -452,7 +452,8 @@ IF((Elem%nNodes.LT.4) .OR. (Elem%nNodes.GT.8)) THEN
   CALL abort(__STAMP__, 'Unknown 3D Elem%nNodes in CreateSides')
 ENDIF
 
-iSide=1
+iSide =  1
+Side  => Elem%firstSide
 DO
   IF(iSide .EQ. 1) THEN
     IF(buildSides) CALL getNewSide(Elem%firstSide,nNodesElemSideMapping(Elem%nNodes,iSide))   !sidenNodesmapping(iSide))
@@ -818,7 +819,7 @@ DO WHILE(ASSOCIATED(aElem))
 
           ! aSide + edge from aNode->bNode
           IF(aSide%edgeOrientation(iEdge))THEN
-            aNode=>aSide%OrientedNode(iEdge)%np 
+            aNode=>aSide%OrientedNode(iEdge)%np
             bNode=>aSide%OrientedNode(iPlus)%np
           ELSE
             aNode=>aSide%OrientedNode(iPlus)%np
@@ -841,7 +842,7 @@ DO WHILE(ASSOCIATED(aElem))
                                          'problem in finding periodic side aEdge')
 
           !now for the periodic side (bSide,edge from anode->bnode)
-          IF(bSide%edgeOrientation(iEdge))THEN      
+          IF(bSide%edgeOrientation(iEdge))THEN
             aNode=>bSide%OrientedNode(iEdge)%np
             bNode=>bSide%OrientedNode(iPlus)%np
           ELSE
@@ -890,7 +891,7 @@ DO WHILE(ASSOCIATED(aElem))
               aNode%FirstVertex%localVertexID=-1  ! MARK PERIODIC FIRSTVERTEX!
             END IF! anode%firstVertex not associated
             bNode%FirstVertex=>aNode%FirstVertex
-          ELSE  
+          ELSE
             IF(.NOT.ASSOCIATED(aNode%FirstVertex))THEN
               aNode%FirstVertex=>bNode%FirstVertex
             ELSE
@@ -925,7 +926,7 @@ DO WHILE(ASSOCIATED(aElem))
     DO i=1,2  ! loop anode, bnode
       IF(i.EQ.1)THEN
         aEdge=>aNode%firstEdge
-      ELSE 
+      ELSE
         aEdge=>bNode%firstEdge
       END IF
       DO WHILE (ASSOCIATED(aEdge))
@@ -938,7 +939,7 @@ DO WHILE(ASSOCIATED(aElem))
         aEdge=>aEdge%nextEdge
       END DO
       IF(edgeFound) EXIT
-    END DO !i=1,2  
+    END DO !i=1,2
     IF (edgeFound) THEN
       IF(.NOT.ASSOCIATED(aEdge%firstLocalEdge))THEN
         CALL getNewLocalEdge(aElem%LocalEdge(iEdge)%ledp,Elem_in=aElem,localEdgeID_in=iEdge)
@@ -999,7 +1000,7 @@ DO WHILE(ASSOCIATED(aElem))
           next_vert=>next_vert%next_connected
         END DO
         next_vert%next_connected=>vert  !append to vertex connectivity list
-      END IF 
+      END IF
     END IF
     aNode%FirstVertex%tmp=aNode%FirstVertex%tmp+1  !vertex multiplicity counted on FirstVertex%tmp (master vertex)
   END DO !iNode

@@ -134,10 +134,10 @@ TYPE tLocalEdge ! provides data structure for local element edges, needed for ed
   TYPE(tElem),POINTER                 ::       elem                   ! pointer to element connected to that edge
   INTEGER                             ::       localEdgeID            !local edge id in connected element (CGNS standard)
   LOGICAL                             ::       orientation            ! orientation from local to global edge (True: same, False: opposite)
-  INTEGER                             ::       ind                    ! used for global FEMedge index (topological, so with periodic BCs)                
-  INTEGER                             ::       tmp                    ! used as counter for the list of edge connections 
+  INTEGER                             ::       ind                    ! used for global FEMedge index (topological, so with periodic BCs)
+  INTEGER                             ::       tmp                    ! used as counter for the list of edge connections
 END TYPE tLocalEdge
-                                                                                                                    
+
 TYPE tNode ! provides data structure for local node
   TYPE(tNormal),POINTER               ::       firstNormal            ! pointer to first normal of node
   TYPE(tEdge),POINTER                 ::       firstEdge              ! pointer to first normal of node
@@ -156,7 +156,7 @@ TYPE tVertex ! provides data structure for local element "vertices", needed for 
   TYPE(tVertex),POINTER               ::       next_connected         !  pointer to next connected vertex
   TYPE(tElem),POINTER                 ::       elem                   ! pointer to element connected to that vertex
   INTEGER                             ::       localVertexID          ! local vertex id in connected element (CGNS standard)
-  INTEGER                             ::       ind                    ! used for global FEMVertex index (topological, so with periodic BCs)                
+  INTEGER                             ::       ind                    ! used for global FEMVertex index (topological, so with periodic BCs)
   INTEGER                             ::       tmp                    ! used as counter for the list of vertex connections
 END TYPE tVertex
 
@@ -937,7 +937,7 @@ TYPE(tNode),POINTER,INTENT(INOUT) :: Node   ! ?
 IF(.NOT. ASSOCIATED(Node)) RETURN
 Node%refCount=Node%refCount-1   ! In general nodes are used by more than one side / element -> Node%refCount > 1
 IF(Node%refCount .LE. 0)THEN  ! Node%refCount = 0 means that node is not used any more
-!  DEALLOCATE(Node)
+  ! DEALLOCATE(Node)
   NULLIFY(Node)
   NodeCount=NodeCount-1
 END IF

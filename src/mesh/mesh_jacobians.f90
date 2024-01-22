@@ -13,7 +13,7 @@
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -32,7 +32,7 @@ USE MOD_Globals
 IMPLICIT NONE
 PRIVATE
 !-----------------------------------------------------------------------------------------------------------------------------------
-! GLOBAL VARIABLES 
+! GLOBAL VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! Private Part ---------------------------------------------------------------------------------------------------------------------
 ! Public Part ----------------------------------------------------------------------------------------------------------------------
@@ -90,7 +90,7 @@ DO i=0,N
   xEq(i)=2.*REAL(i)/REAL(N) -1.
 END DO !i
 ! take derivatives on Gauss-Lobatto points
-! interpolate Eq (N)-> GL (N), derivative on GL (N) 
+! interpolate Eq (N)-> GL (N), derivative on GL (N)
 
 CALL LegGaussLobNodesAndWeights(N,xGL)
 CALL PolynomialDerivativeMatrix(N,xGL,DGL)
@@ -125,7 +125,7 @@ DO WHILE(ASSOCIATED(aElem))
   Jac(:,:,:) = EvalJac(Xgeo)
   maxJac=MAXVAL(ABS(Jac))
   minJac=MINVAL(Jac)
-   
+
   scaledJac(iElem)=minJac/maxJac
   ! Check that Nodal Jacobians are positive
   !DO k=0,nAnalyze; DO j=0,nAnalyze; DO i=0,nAnalyze
@@ -169,15 +169,15 @@ scaledJacStat(:)=0
 
 DO iElem=1,nMeshElems
   i=CEILING(MAX(0.,scaledJac(iElem)*10))
-  scaledJacStat(i)=scaledJacStat(i)+1 
+  scaledJacStat(i)=scaledJacStat(i)+1
 END DO
 WRITE(Unit_StdOut,'(A)') ' Number of element with scaled Jacobians ranging between:'
 WRITE(Unit_StdOut,'(A)') '   <  0.0  <  0.1  <  0.2  <  0.3  <  0.4  <  0.5  <  0.6  <  0.7  <  0.8  <  0.9  <  1.0 '
 DO i=0,10
-  WRITE(Unit_StdOut,'(I6,X,A1)',ADVANCE='NO')scaledJacStat(i),'|'
+  WRITE(Unit_StdOut,'(I6,1X,A1)',ADVANCE='NO')scaledJacStat(i),'|'
 END DO
 WRITE(Unit_StdOut,'(A1)')' '
- 
+
 
 CALL Timer(.FALSE.)
 WRITE(UNIT_StdOut,'(132("="))')

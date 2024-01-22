@@ -407,8 +407,7 @@ REAL,INTENT(INOUT)  :: B(dim1,nRHS) ! Right hand side of the system
 !-----------------------------------------------------------------------------------------------------------------------------------
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES
-INTEGER            :: IPIV(dim1),INFO,lwork ! ?
-REAL               :: WORK(dim1*dim1)  ! ?
+INTEGER            :: IPIV(dim1),INFO  ! ?
 !===================================================================================================================================
 ! DGETRF computes an LU factorization of a general M-by-N matrix A
 ! using partial pivoting with row interchanges. A will be overwritten with LU factorization.

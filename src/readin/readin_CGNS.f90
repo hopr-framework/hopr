@@ -73,7 +73,6 @@ SUBROUTINE ReadCGNSmesh()
 USE MOD_Mesh_Vars,ONLY:nMeshFiles,MeshFileName
 USE MOD_Mesh_Vars,ONLY:MeshDim
 USE MOD_Mesh_Vars,ONLY:n2dNodes
-USE MOD_Mesh_Vars,ONLY:nZones
 USE MOD_Mesh_Vars,ONLY:FirstElem
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
@@ -337,8 +336,8 @@ DO iSect=1,nSect ! Vol. and Face elems
 #endif /*(PP_CGNS_VERSION>=4000)*/
 
   ! Check if 2D element is not oriented in z+, check only first element#
+  orient2D=.TRUE. !
   IF(MeshDim .EQ. 2)THEN
-    orient2D=.TRUE. !
     IF(SectionElemType .EQ. MIXED) THEN
       locType=LocalConnect(1)
       iStart=2
@@ -503,6 +502,7 @@ DO iBC=1,nCGNSBC
     END IF
 
     ! I think we will finish the boundaries
+    SideIsBCSide=.FALSE.
     DO iElem=1,nElems
       Side=>Elems(iElem)%EP%firstSide
       DO WHILE(ASSOCIATED(Side))
@@ -768,6 +768,7 @@ IF(nSkipZ.NE.1)THEN
     scalprod=SUM(dir(whichdir,:)*(/0.,0.,1./))
     IF(ABS(scalprod).GT.0.95) EXIT
   END DO
+  zFit = .FALSE.
   SELECT CASE(whichDir)
   CASE(1)
     stepk=nSkipZ
@@ -779,14 +780,14 @@ IF(nSkipZ.NE.1)THEN
     stepm=nSkipZ
     zFit=.NOT.(MOD((irmax(3)-1),stepm).NE.0)
   END SELECT
-  IF(.NOT.zfit)THEN
+  IF(.NOT.zFit)THEN
     IF(useCurveds)THEN
       WRITE(UNIT_StdOut,'(A)') 'WARNING: cannot read block, step=(order-1)*nSkipZ does not fit with block elem size.'
     ELSE
       WRITE(UNIT_StdOut,'(A)') 'WARNING: cannot read block, nSkipZ does not fit with block elem size.'
     END IF
     RETURN
-  END IF !zfit
+  END IF !zFit
 
   ! Now apply nSkip in z-dir
   ALLOCATE(NodeCoordsTmp(3,1:((irmax(1)-1)/stepk)+1,1:((irmax(2)-1)/stepl)+1,1:((irmax(3)-1)/stepm)+1))

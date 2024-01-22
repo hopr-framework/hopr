@@ -13,7 +13,7 @@
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -31,7 +31,7 @@ USE MOD_Output_Vars,ONLY:sfc_type
 IMPLICIT NONE
 PRIVATE
 !-----------------------------------------------------------------------------------------------------------------------------------
-! GLOBAL VARIABLES 
+! GLOBAL VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 
 TYPE tBox
@@ -115,16 +115,16 @@ IF(nElems.GT.1)THEN
     END IF
   END DO
   CALL setBoundingBox(SCBox,lower,upper)
-  
+
   DO iElem=1,nElems
     IntList(iElem) = COORD2INT(SCBox, ElemBary(iElem,:))
   END DO
-  
+
   ! Now sort the elements according to their index on the space filling curve.
   CALL Qsort1DoubleInt1Pint(IntList, IDList)
 ELSE
   IDList=1
-END IF  
+END IF
 CALL Timer(.FALSE.)
 END SUBROUTINE SortElemsBySpaceFillingCurve
 
@@ -167,9 +167,9 @@ CASE('hilbertZ')
 CASE DEFAULT
   CALL abort(__STAMP__, &
         'sfc_type does not exist (only hilbert,morton,mortonZ,hilbertZ)')
-  
+
 END SELECT
-END FUNCTION COORD2INT 
+END FUNCTION COORD2INT
 
 
 FUNCTION EVAL_MORTON(intcoords,nBits,nDim) RESULT(ind)
@@ -180,12 +180,12 @@ FUNCTION EVAL_MORTON(intcoords,nBits,nDim) RESULT(ind)
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT VARIABLES
+INTEGER,INTENT(IN)          :: nDim             ! ?
 INTEGER(KIND=8),INTENT(IN)  :: intcoords(nDim)  ! ?
-INTEGER,INTENT(IN)          :: nBits  ! ?
-INTEGER,INTENT(IN)          :: nDim  ! ?
+INTEGER,INTENT(IN)          :: nBits            ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
-INTEGER(KIND=8)             :: ind  ! ?
+INTEGER(KIND=8)             :: ind              ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES
 INTEGER         :: dir,i
@@ -208,11 +208,12 @@ SUBROUTINE EVAL_MORTON_ARR(ind,intcoords,nP,nBits)
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT VARIABLES
+INTEGER,INTENT(IN)          :: nP               ! ?
 INTEGER(KIND=8),INTENT(IN)  :: intcoords(3,nP)  ! ?
-INTEGER,INTENT(IN)          :: nBits,nP  ! ?
+INTEGER,INTENT(IN)          :: nBits            ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
-INTEGER(KIND=8),INTENT(OUT) :: ind(nP)  ! ?
+INTEGER(KIND=8),INTENT(OUT) :: ind(nP)           ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES
 INTEGER         :: dir,i
