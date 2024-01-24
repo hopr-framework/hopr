@@ -349,7 +349,7 @@ DO WHILE(ASSOCIATED(Elem))
           EXIT
         END IF
       END DO
-      IF(.NOT.found) STOP 'Flip not found'
+      IF(.NOT.found) CALL abort(__STAMP__,'Flip not found')
       Side%flip=iNode
       IF(.NOT.ASSOCIATED(Side%connection)) CALL ABORT(__STAMP__, &
         'Side connection should be associated for non-oreinted side')
@@ -608,7 +608,7 @@ DO WHILE(ASSOCIATED(Elem))
     IF (Side%MortarType.GT.0) THEN ! Mortar master side (only implemented for Quad-sides!!!)
       IF(ASSOCIATED(Side%Connection)) CALL abort(__STAMP__,&
                                                  'Mortar master with connection is not allowed')
-      IF(Side%flip.NE.0) STOP 'Problem with flip on mortar'
+      IF(Side%flip.NE.0) CALL abort(__STAMP__,'Problem with flip on mortar')
       SideInfo(SIDE_nbElemID,iSide)= -Side%MortarType
       SideInfo(SIDE_nbLocSide_flip,iSide)=0
       DO iMortar=1,Side%nMortars

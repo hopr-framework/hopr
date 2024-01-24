@@ -87,7 +87,7 @@ DO WHILE(ASSOCIATED(Elem))
   END IF
   Side=>Elem%firstSide
   DO iSide=1,6
-    IF(.NOT.ASSOCIATED(Side)) STOP 'Problem Side Pointer not associated'
+    IF(.NOT.ASSOCIATED(Side)) CALL abort(__STAMP__,'Problem Side Pointer not associated')
     IF(ASSOCIATED(Side%CurvedNode))THEN
       WRITE(UNIT_stdOut,*)  &
            'WARNING! Rotation only implemented for linear hexas and hexas only with volume curvednodes (no sides curved)!'
@@ -147,7 +147,7 @@ DO WHILE(ASSOCIATED(Elem))
     END IF
   END DO
   IF(.NOT.found) THEN
-    STOP "Element with no axis aligned with z direction found, cannot perform z orientation!"
+    CALL abort(__STAMP__,'Element with no axis aligned with z direction found, cannot perform z orientation!')
   END IF
   switch=2
   IF(scalprod.GT.0) switch=1 !else is set to 2
@@ -344,7 +344,7 @@ IF (InitZOrient) THEN
       END IF
     END DO
     IF(.NOT.found) THEN
-      STOP "Element with no axis aligned with z direction found, cannot perform z correction!"
+      CALL abort(__STAMP__,'Element with no axis aligned with z direction found, cannot perform z correction!')
     END IF
     whichdirArr(Elem%ind)=whichdir
     IF(scalprod.GT.0) orientArr(Elem%ind)=1 !else is set to 2
@@ -481,7 +481,7 @@ DO WHILE(ASSOCIATED(lastElem))
     Elem%tmp=0
     firstLayer= .FALSE.
     IF(ASSOCIATED(Side%BC)) THEN
-      IF(zcounter .NE. nElemsZ) STOP "Specified nElemsZ not correct."
+      IF(zcounter .NE. nElemsZ) CALL abort(__STAMP__,'Specified nElemsZ not correct.')
       zplusSide=>Side
       IF(zPeriodic)THEN
         nPeriodicSides=nPeriodicSides+2
@@ -503,7 +503,7 @@ DO WHILE(ASSOCIATED(lastElem))
             fNode=iNode
           END IF
         END DO
-        IF(fNode.EQ.0)STOP 'Problem with zPeriodic'
+        IF(fNode.EQ.0) CALL abort(__STAMP__,'Problem with zPeriodic')
         dominant=.FALSE.
         IF(zminusSide%Elem%ind .LT. zplusSide%Elem%ind) dominant=.TRUE.
         IF(dominant) THEN

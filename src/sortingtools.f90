@@ -12,7 +12,7 @@
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -31,6 +31,7 @@
 !*      $Author: iaghinde $
 !*
 !*****************************************************************************!
+#include "hopr.h"
 
 MODULE MOD_SortingTools
   !----------------------------------------------------------------------------
@@ -144,7 +145,7 @@ IMPLICIT NONE
 END SUBROUTINE Qsort1Int
 SUBROUTINE Partition1Int(A,marker)
 !===================================================================================================================================
-!  Sorting routine used by QSort1int above. This routine is PRIVATE 
+!  Sorting routine used by QSort1int above. This routine is PRIVATE
 !===================================================================================================================================
 ! MODULES
 ! IMPLICIT VARIABLE HANDLING
@@ -226,7 +227,7 @@ END SUBROUTINE Qsort1Int1PInt
 
 SUBROUTINE Partition1Int1PInt(A,P,marker)
 !===================================================================================================================================
-!  Sorting routine used by QSort1int above. This routine is PRIVATE 
+!  Sorting routine used by QSort1int above. This routine is PRIVATE
 !===================================================================================================================================
 ! MODULES
 ! IMPLICIT VARIABLE HANDLING
@@ -312,7 +313,7 @@ END SUBROUTINE Qsort1DoubleInt1PInt
 
 SUBROUTINE Partition1DoubleInt1PInt(A,P,marker)
 !===================================================================================================================================
-!  Sorting routine used by QSort1int above. This routine is PRIVATE 
+!  Sorting routine used by QSort1int above. This routine is PRIVATE
 !===================================================================================================================================
 ! MODULES
 ! IMPLICIT VARIABLE HANDLING
@@ -862,6 +863,7 @@ RECURSIVE SUBROUTINE MSortNInt(A,N,ind)
 ! Sorts array of integers
 !===================================================================================================================================
 ! MODULES
+USE MOD_Globals, ONLY: abort
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -876,7 +878,7 @@ INTEGER               :: i,first,sA
 !===================================================================================================================================
 sA=SIZE(A,2)
 IF((N.LE.0).OR.(sA.EQ.1)) RETURN
-IF(N > SIZE(A,1)-ind+1) STOP 'Number of entries to sort greater then array dimension!'
+IF(N > SIZE(A,1)-ind+1) CALL abort(__STAMP__,'Number of entries to sort greater then array dimension!')
 
 CALL MergeSortInt(A,ind)
 IF(N.EQ.1) RETURN
@@ -972,6 +974,7 @@ RECURSIVE SUBROUTINE MSortNLong(A,N,ind)
 ! Sorts array of integers
 !===================================================================================================================================
 ! MODULES
+USE MOD_Globals, ONLY: abort
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -986,7 +989,7 @@ INTEGER               :: i,first,sA
 !===================================================================================================================================
 sA=SIZE(A,2)
 IF((N.LE.0).OR.(sA.EQ.1)) RETURN
-IF(N > SIZE(A,1)-ind+1) STOP 'Number of entries to sort greater then array dimension!'
+IF(N > SIZE(A,1)-ind+1) CALL abort(__STAMP__,'Number of entries to sort greater then array dimension!')
 
 CALL MergeSortLong(A,ind)
 IF(N.EQ.1) RETURN

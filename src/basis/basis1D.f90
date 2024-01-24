@@ -12,7 +12,7 @@
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -30,7 +30,7 @@ MODULE MOD_Basis1D
 IMPLICIT NONE
 PRIVATE
 !-----------------------------------------------------------------------------------------------------------------------------------
-! GLOBAL VARIABLES 
+! GLOBAL VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! Private Part ---------------------------------------------------------------------------------------------------------------------
 ! Public Part ----------------------------------------------------------------------------------------------------------------------
@@ -74,11 +74,11 @@ INTERFACE PolynomialDerivativeMatrix
    MODULE PROCEDURE PolynomialDerivativeMatrix
 END INTERFACE
 
-INTERFACE BarycentricWeights 
-   MODULE PROCEDURE BarycentricWeights 
+INTERFACE BarycentricWeights
+   MODULE PROCEDURE BarycentricWeights
 END INTERFACE
 
-INTERFACE InitializeVandermonde 
+INTERFACE InitializeVandermonde
    MODULE PROCEDURE InitializeVandermonde
 END INTERFACE
 
@@ -128,14 +128,14 @@ INTEGER,INTENT(IN) :: Deg          ! polynomial DEGREE of Jacobi Polynomial
 ! OUTPUT VARIABLES
 REAL,INTENT(OUT)   :: P(nNodes)      ! value of Jacobi polynomial N at all positions x
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 REAL,DIMENSION(nNodes) :: P_0,P_1  ! ?
 REAL                   :: gamma0,gamma1,gammaf(1:alpha+beta+2)  ! ?
 REAL                   :: aold,anew,bnew  ! ?
 REAL                   :: ri,ralpha,rbeta       !temp
 INTEGER                :: i,h1,h2  ! ?
 !===================================================================================================================================
-!fill gamma function, only for integer values, replace by real gamma function, if needed. Intrinsic gamma function only with GNU 
+!fill gamma function, only for integer values, replace by real gamma function, if needed. Intrinsic gamma function only with GNU
 ralpha=REAL(alpha)
 rbeta=REAL(beta)
 gammaf(1:2)=1
@@ -179,7 +179,7 @@ END SUBROUTINE JacobiP
 
 SUBROUTINE  GradJacobiP(nNodes,x,alpha,beta,Deg,GradP)
 !===================================================================================================================================
-! evaluates the first derivative of the Nth Jacobi-polynomial at position xi, 
+! evaluates the first derivative of the Nth Jacobi-polynomial at position xi,
 ! Algorithm in book of hesthaven and found in his matlab code
 ! The Jacobi Polynomials P_i^{(alpha,beta)}(x) are orthonormal with respect to the weighting function in the interval [-1,1]
 ! w(x)=(1-x)^alpha(1+x)^beta
@@ -196,7 +196,7 @@ INTEGER,INTENT(IN) :: Deg        ! polynomial DEGREE of Jacobi Polynomial
 ! OUTPUT VARIABLES
 REAL,INTENT(OUT)   :: GradP(nNodes)      ! value of the gradient of Jacobi polynomial N at all positions x
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 REAL,DIMENSION(nNodes) :: P  ! ?
 !===================================================================================================================================
 IF(Deg.EQ.0)THEN
@@ -226,13 +226,13 @@ INTEGER,INTENT(IN) :: Deg          ! polynomial DEGREE of Jacobi Polynomial
 ! OUTPUT VARIABLES
 REAL,INTENT(OUT)   :: P(nNodes,0:Deg)      ! value of Jacobi polynomial N at all positions x
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 REAL                   :: gamma0,gamma1,gammaf(1:alpha+beta+2)  ! ?
 REAL                   :: aold,anew,bnew  ! ?
 REAL                   :: ri,ralpha,rbeta       !temp
 INTEGER                :: i,h1,h2  ! ?
 !===================================================================================================================================
-!fill gamma function, only for integer values, replace by real gamma function, if needed. Intrinsic gamma function only with GNU 
+!fill gamma function, only for integer values, replace by real gamma function, if needed. Intrinsic gamma function only with GNU
 ralpha=REAL(alpha)
 rbeta=REAL(beta)
 gammaf(1:2)=1
@@ -272,7 +272,7 @@ END SUBROUTINE JacobiP_all
 
 SUBROUTINE  GradJacobiP_all(nNodes,x,alpha,beta,Deg,GradP)
 !===================================================================================================================================
-! evaluates the first derivative of the Nth Jacobi-polynomial at position xi, 
+! evaluates the first derivative of the Nth Jacobi-polynomial at position xi,
 ! Algorithm in book of hesthaven and found in his matlab code
 ! The Jacobi Polynomials P_i^{(alpha,beta)}(x) are orthonormal with respect to the weighting function in the interval [-1,1]
 ! w(x)=(1-x)^alpha(1+x)^beta
@@ -289,7 +289,7 @@ INTEGER,INTENT(IN) :: Deg        ! polynomial DEGREE of Jacobi Polynomial
 ! OUTPUT VARIABLES
 REAL,INTENT(OUT)   :: GradP(nNodes,0:Deg)      ! value of the gradient of Jacobi polynomial N at all positions x
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 REAL,DIMENSION(nNodes,0:Deg) :: P  ! ?
 INTEGER                      :: i  ! ?
 !===================================================================================================================================
@@ -318,7 +318,7 @@ REAL,INTENT(IN)              :: r1D(nNodes1D)   ! node positions in reference sp
 ! OUTPUT VARIABLES
 REAL,INTENT(OUT)             :: VdM1D(0:nNodes1D-1,0:Deg)   ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 !===================================================================================================================================
 CALL JacobiP_all(nNodes1D,r1D, 0, 0, Deg,Vdm1D(:,:))
 END SUBROUTINE Vandermonde1D
@@ -338,7 +338,7 @@ REAL,INTENT(IN)              :: r1D(nNodes1D)   ! node positions in reference sp
 ! OUTPUT VARIABLES
 REAL,INTENT(OUT)             :: gradVdM1D(0:nNodes1D-1,0:Deg)   ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 !===================================================================================================================================
 CALL GradJacobiP_all(nNodes1D,r1D, 0, 0,Deg,gradVdM1D(:,:))
 END SUBROUTINE GradVandermonde1D
@@ -445,7 +445,7 @@ SUBROUTINE ChebyshevGaussNodesAndWeights(N_in,xGP,wGP)
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 !input parameters
-INTEGER,INTENT(IN)        :: N_in       ! polynomial degree, (N_in+1) CLpoints 
+INTEGER,INTENT(IN)        :: N_in       ! polynomial degree, (N_in+1) CLpoints
 !-----------------------------------------------------------------------------------------------------------------------------------
 !output parameters
 REAL,INTENT(OUT)          :: xGP(0:N_in)  ! Gausspoint positions for the reference interval [-1,1]
@@ -473,13 +473,13 @@ SUBROUTINE ChebyGaussLobNodesAndWeights(N_in,xGP,wGP)
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT VARIABLES
-INTEGER,INTENT(IN)        :: N_in       ! polynomial degree, (N_in+1) CLpoints 
+INTEGER,INTENT(IN)        :: N_in       ! polynomial degree, (N_in+1) CLpoints
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 REAL,INTENT(OUT)          :: xGP(0:N_in)  ! Gausspoint positions for the reference interval [-1,1]
 REAL,INTENT(OUT),OPTIONAL :: wGP(0:N_in)  ! Gausspoint weights
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 INTEGER            :: iGP  ! ?
 !===================================================================================================================================
 DO iGP=0,N_in
@@ -499,14 +499,15 @@ END SUBROUTINE ChebyGaussLobNodesAndWeights
 SUBROUTINE LegendreGaussNodesAndWeights(N_in,xGP,wGP)
 !===================================================================================================================================
 ! algorithm 23, Kopriva
-! starting with Chebychev point positions, a Newton method is used to find the roots 
+! starting with Chebychev point positions, a Newton method is used to find the roots
 ! of the Legendre Polynomial L_(N_in+1), which are the positions of Gausspoints
 ! uses LegendrePolynomialAndDerivative subroutine
 !===================================================================================================================================
+USE MOD_Globals, ONLY: abort
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 !input parameters
-INTEGER,INTENT(IN)        :: N_in              ! polynomial degree, (N_in+1) Gausspoints 
+INTEGER,INTENT(IN)        :: N_in              ! polynomial degree, (N_in+1) Gausspoints
 !-----------------------------------------------------------------------------------------------------------------------------------
 !output parameters
 REAL,INTENT(OUT)          :: xGP(0:N_in)       ! Gausspoint positions for the reference interval [-1,1]
@@ -545,13 +546,13 @@ ELSE ! N_in>1
       xGP(iGP)=-cos(cheb_tmp*REAL(2*iGP+1)) !initial guess
       ! Newton iteration
       DO iter=0,nIter
-        WRITE(*,*)iter,xGP(iGP)    !DEBUG  
+        WRITE(*,*)iter,xGP(iGP)    !DEBUG
         CALL LegendrePolynomialAndDerivative(N_in+1,xGP(iGP),L_Np1,Lder_Np1)
         dx=-L_Np1/Lder_Np1
         xGP(iGP)=xGP(iGP)+dx
         IF(abs(dx).LT.Tol*abs(xGP(iGP))) EXIT
       END DO !iter
-      STOP 
+      CALL abort(__STAMP__,'Maximum iteration steps >10 in Newton iteration for Legendre Gausspoint!')
     END IF ! (iter.GT.nIter)
     CALL LegendrePolynomialAndDerivative(N_in+1,xGP(iGP),L_Np1,Lder_Np1)
     xGP(N_in-iGP)=-xGP(iGP)
@@ -575,7 +576,7 @@ END SUBROUTINE LegendreGaussNodesAndWeights
 SUBROUTINE qAndLEvaluation(N_in,x,q,qder,L)
 !===================================================================================================================================
 ! algorithm 24, Kopriva
-! evaluate the polynomial q=L_{N_in+1}-L_{N_in-1} and its derivative at position x[-1,1] 
+! evaluate the polynomial q=L_{N_in+1}-L_{N_in-1} and its derivative at position x[-1,1]
 ! recursive algorithm using the N_in-1 N_in-2 Legendre polynomials
 !===================================================================================================================================
 IMPLICIT NONE
@@ -605,7 +606,7 @@ DO iLegendre=2,N_in
   Lder_Nm1=Lder
 END DO ! iLegendre
 q=REAL(2*N_in+1)/REAL(N_in+1)*(x*L -L_Nm2) !L_{N_in+1}-L_{N_in-1} !L_Nm2 is L_Nm1, L_Nm1 was overwritten!
-qder= REAL(2*N_in+1)*L             !Lder_{N_in+1}-Lder_{N_in-1} 
+qder= REAL(2*N_in+1)*L             !Lder_{N_in+1}-Lder_{N_in-1}
 END SUBROUTINE qAndLEvaluation
 
 
@@ -613,14 +614,15 @@ END SUBROUTINE qAndLEvaluation
 SUBROUTINE LegGaussLobNodesAndWeights(N_in,xGP,wGP)
 !===================================================================================================================================
 ! algorithm 25, Kopriva
-! starting with initial guess by Parter Relation, a Newton method is used to find the roots 
+! starting with initial guess by Parter Relation, a Newton method is used to find the roots
 ! of the Legendre Polynomial Lder_(N_in), which are the positions of Gausspoints
 ! uses qAndLEvaluation subroutine
 !===================================================================================================================================
+USE MOD_Globals, ONLY: abort
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 !input parameters
-INTEGER,INTENT(IN)        :: N_in                ! polynomial degree (N_in+1) Gausspoints 
+INTEGER,INTENT(IN)        :: N_in                ! polynomial degree (N_in+1) Gausspoints
 !-----------------------------------------------------------------------------------------------------------------------------------
 !output parameters
 REAL,INTENT(OUT)          :: xGP(0:N_in)         ! Gausspoint positions for the reference interval [-1,1]
@@ -658,13 +660,13 @@ IF(N_in.GT.1)THEN
       xGP(iGP)=-cos(cont1*(REAL(iGP)+0.25)-cont2/(REAL(iGP)+0.25)) !initial guess
       ! Newton iteration
       DO iter=0,nIter
-        WRITE(*,*)'iter,x^i',iter,xGP(iGP)     !DEBUG 
+        WRITE(*,*)'iter,x^i',iter,xGP(iGP)     !DEBUG
         CALL qAndLEvaluation(N_in,xGP(iGP),q,qder,L)
         dx=-q/qder
         xGP(iGP)=xGP(iGP)+dx
         IF(abs(dx).LT.Tol*abs(xGP(iGP))) EXIT
       END DO ! iter
-      STOP 
+      CALL abort(__STAMP__,'Maximum iteration steps >10 in Newton iteration for LGL point')
     END IF ! (iter.GT.nIter)
     CALL qAndLEvaluation(N_in,xGP(iGP),q,qder,L)
     xGP(N_in-iGP)=-xGP(iGP)
@@ -690,13 +692,13 @@ SUBROUTINE BarycentricWeights(N_in,xGP,wBary)
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT VARIABLES
-INTEGER,INTENT(IN) :: N_in               ! polynomial degree 
+INTEGER,INTENT(IN) :: N_in               ! polynomial degree
 REAL,INTENT(IN)    :: xGP(0:N_in)        ! Gausspoint positions for the reference interval [-1,1]
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 REAL,INTENT(OUT)   :: wBary(0:N_in)      ! barycentric weights
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 INTEGER            :: iGP,jGP  ! ?
 !===================================================================================================================================
 wBary(:)=1.
@@ -723,7 +725,7 @@ REAL,INTENT(IN)    :: xGP(0:N_in)       ! Gausspoint positions for the reference
 ! OUTPUT VARIABLES
 REAL,INTENT(OUT)   :: D(0:N_in,0:N_in)     ! differentiation Matrix
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 INTEGER            :: iGP,iLagrange  ! ?
 REAL               :: wBary(0:N_in)   ! ?
 !===================================================================================================================================
@@ -757,7 +759,7 @@ REAL,INTENT(IN)    :: wBary(0:N_in) ! Barycentric weights
 ! OUTPUT VARIABLES
 REAL,INTENT(OUT)   :: L(0:N_in)     ! Lagrange basis functions evaluated at x
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 INTEGER                   :: iGP  ! ?
 LOGICAL                   :: xEqualGP ! is x equal to a Gauss Point
 REAL                      :: DummySum  ! ?
@@ -801,7 +803,7 @@ REAL,INTENT(IN)    :: wBary_In(0:N_In)  ! ?
 ! OUTPUT VARIABLES
 REAL,INTENT(OUT)   :: Vdm(0:N_Out,0:N_In)  ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 INTEGER            :: iXi  ! ?
 !===================================================================================================================================
 DO iXi=0,N_Out
@@ -814,13 +816,13 @@ END SUBROUTINE InitializeVandermonde
 SUBROUTINE LegendrePolynomialAndDerivative(N_in,x,L,Lder)
 !===================================================================================================================================
 ! algorithm 22, Kopriva
-! evaluate the Legendre polynomial L_N and its derivative at position x[-1,1] 
+! evaluate the Legendre polynomial L_N and its derivative at position x[-1,1]
 ! recursive algorithm using the N_in-1 N_in-2 Legendre polynomials
 !===================================================================================================================================
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 !input parameters
-INTEGER,INTENT(IN)        :: N_in     ! polynomial degree, (N+1) CLpoints 
+INTEGER,INTENT(IN)        :: N_in     ! polynomial degree, (N+1) CLpoints
 REAL,INTENT(IN)    :: x      ! coordinate value in the interval [-1,1]
 !-----------------------------------------------------------------------------------------------------------------------------------
 !output parameters
@@ -883,7 +885,7 @@ ELSE ! x, y not zero
 END IF ! x,y zero
 END FUNCTION ALMOSTEQUAL
 
-SUBROUTINE GetMortarVandermonde(Ngeo, M_0_1, M_0_2) 
+SUBROUTINE GetMortarVandermonde(Ngeo, M_0_1, M_0_2)
 !----------------------------------------------------------------------------------------------------------------------------------!
 ! description
 !----------------------------------------------------------------------------------------------------------------------------------!
@@ -892,7 +894,7 @@ SUBROUTINE GetMortarVandermonde(Ngeo, M_0_1, M_0_2)
 ! insert modules here
 !----------------------------------------------------------------------------------------------------------------------------------!
 IMPLICIT NONE
-! INPUT / OUTPUT VARIABLES 
+! INPUT / OUTPUT VARIABLES
 INTEGER,INTENT(IN)      :: Ngeo
 REAL,INTENT(OUT)        :: M_0_1(0:Ngeo,0:Ngeo), M_0_2(0:Ngeo,0:Ngeo)
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -902,8 +904,8 @@ INTEGER                       :: i
 REAL,DIMENSION(0:Ngeo)        :: x,wBary
 !===================================================================================================================================
 DO i=0,Ngeo
-  x(i) = -1 + i*2./Ngeo  
-END DO 
+  x(i) = -1 + i*2./Ngeo
+END DO
 CALL BarycentricWeights(Ngeo,x,wBary)
 
 !build interpolation operators M 0->1,M 0->2

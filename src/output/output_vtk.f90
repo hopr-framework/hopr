@@ -103,14 +103,14 @@ IF(kindFloat.EQ.4) THEN
 ELSEIF(kindFloat.EQ.8)THEN
   strfloat='Float64'
 ELSE 
-  STOP 'kindFloat not implemented in output vtk'
+  CALL abort(__STAMP__,'kindFloat not implemented in output vtk')
 END IF
 sizefloat=SIZEOF_F(FLOATdummy)
 sizeInt  =SIZEOF_F(INTdummy)
 
 IF(vecdim.LT.dim1) THEN
   WRITE(*,*)'WARNING:dim1 should be > vecdim! dim1= ',dim1,' vecdim= ',vecdim
-  STOP
+  CALL abort(__STAMP__,'WARNING:dim1 should be > vecdim!')
 END IF
 ! Line feed character
 lf = char(10)

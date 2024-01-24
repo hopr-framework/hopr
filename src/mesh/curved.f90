@@ -595,7 +595,7 @@ DO WHILE(ASSOCIATED(aElem))
     aNormal=>aElem%node(j)%np%firstNormal
     DO WHILE (ASSOCIATED(aNormal))
         nFaceID=min(5,SIZE(aNormal%FaceID))
-        IF(nFaceID.LT.1) STOP 'nFaceID<1'
+        IF(nFaceID.LT.1) CALL abort(__STAMP__,'nFaceID<1')
         nFaceIDs(nFaceID) = nFaceIDs(nFaceID)+1
       aNormal=>aNormal%nextNormal
     END DO
@@ -2821,7 +2821,7 @@ DO p=1,2
       XGeo1Dsmall(:,N-l,p)=XGeo1DTmp(:,l) 
     END DO
   ELSE 
-    STOP "Error: Edges of mortar master and slave do not conform!"
+    CALL abort(__STAMP__,'Error: Edges of mortar master and slave do not conform!')
   END IF
   CALL UnpackGeo(N,XGeo1DSmall(:,:,p),smallEdge)
   IF(ASSOCIATED(smallEdge%MortarEdge)) &

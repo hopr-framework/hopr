@@ -191,7 +191,7 @@ CASE(4)   ! template is not periodic only use for single element
   tetMap(:,3)=(/5,6,7,2/)
   tetMap(:,4)=(/7,8,5,4/)
   tetMap(:,5)=(/2,4,5,7/)
-  IF(ANY(cartmesh%nElems.GT.1)) STOP 'The selected mesh template is not periodic and can only be used for a single element.'
+  IF(ANY(cartmesh%nElems.GT.1)) CALL abort(__STAMP__,'The selected mesh template is not periodic and can only be used for a single element.')
 CASE(5)
   nTets=12
   !Center node of box is required
@@ -219,7 +219,7 @@ CASE(5)
 
 
 CASE DEFAULT
-  STOP 'The selected mesh template does not exist for tetrahedra.'
+  CALL abort(__STAMP__,'The selected mesh template does not exist for tetrahedra.')
 END SELECT
 
 DO i=1,nTets
@@ -540,8 +540,7 @@ DO iZone=1,nZones
     ELSE !l0 active
       dx(i_Dim)=e1(i_Dim)/ABS(cartMesh%l0(i_Dim)) ! l/l0
       IF(dx(i_Dim) .LT. (1.-PP_RealTolerance)) THEN ! l0 > l
-        !CALL abort(__STAMP__,  & 
-         stop  'stretching error, length l0 longer than grid region, in direction '  !,i_Dim,999.)
+         CALL abort(__STAMP__,'Stretching error, length l0 longer than grid region, in direction')
       END IF
       IF(ABS(CartMesh%factor(i_Dim)) .LT. PP_RealTolerance ) THEN ! fac=0 , (nElem,l0) given, fac calculated
         ! 
@@ -573,16 +572,14 @@ DO iZone=1,nZones
             fac(i_Dim)= fac(i_Dim) - F/dF
             iter=iter+1
           END DO
-          IF(iter.GT.1000) STOP 'Newton iteration for computing the stretching function has failed.'
+          IF(iter.GT.1000) CALL abort(__STAMP__,'Newton iteration for computing the stretching function has failed.')
           fac(i_Dim)=fac(i_Dim)**SIGN(1.,CartMesh%l0(i_Dim)) ! sign for direction
         END IF
       END IF
       WRITE(UNIT_stdOut,*)'   -stretching factor in dir',i_Dim,'is now', fac(i_Dim)  
     END IF
 
-    IF( ABS((nElems(i_Dim)-1.)*LOG(fac(i_Dim))/LOG(10.)) .GE. 4. )                      &
-      !CALL abort(__STAMP__, &
-       stop  'stretching error, length ratio > 1.0E4 in direction '  !,i_Dim,999.)
+    IF( ABS((nElems(i_Dim)-1.)*LOG(fac(i_Dim))/LOG(10.)) .GE. 4. )CALL abort(__STAMP__,'Stretching error, length ratio > 1.0E4 in direction')
     IF(ABS(fac(i_Dim)-1.) .GT. PP_RealTolerance ) THEN
       dx(i_Dim)=(1.-fac(i_Dim))/(1.-fac(i_Dim)**nElems(i_Dim)) ! first length to start
     ELSE !equidistant case

@@ -122,7 +122,7 @@ IF(usecurveds) THEN
   IF(N.NE.Ngeo) THEN
     WRITE(*,*) 'boundary order of inifile = ',N+1,&
                ' does not match the boundary order in the mesh file:', Ngeo+1
-    STOP
+    CALL abort(__STAMP__,'boundary order of inifile does not match the boundary order in the mesh file')
   END IF
 END IF
 !----------------------------------------------------------------------------------------------------------------------------
@@ -323,7 +323,7 @@ DO iElem=1,nElems
         END DO !j=1,Side%nNodes
       ELSE !not oriented
         aSide%flip=MOD(Sideinfo(SIDE_nbLocSide_Flip,iSide),10)
-        IF((aSide%flip.LT.0).OR.(aSide%flip.GT.4)) STOP 'NodeID doesnt belong to side'
+        IF((aSide%flip.LT.0).OR.(aSide%flip.GT.4)) CALL abort(__STAMP__,'NodeID doesnt belong to side')
         k=aSide%flip
         DO j=1,aSide%nNodes
           aSide%OrientedNode(j)%np=>aSide%Node(k)%np
@@ -337,7 +337,7 @@ DO iElem=1,nElems
       DO iMortar=1,aSide%nMortars
         iSide=iSide+1
         aSide%mortarSide(iMortar)%sp%Elem=>Elem
-        IF(SideInfo(SIDE_ID,iSide).LT.0) STOP 'Problem in Mortar readin,should be flip=0'
+        IF(SideInfo(SIDE_ID,iSide).LT.0) CALL abort(__STAMP__,'Problem in Mortar readin,should be flip=0')
         aSide%mortarSide(iMortar)%sp%flip=0
         aSide%mortarSide(iMortar)%sp%Ind=ABS(SideInfo(SIDE_ID,iSide))
       END DO !iMortar
@@ -637,7 +637,7 @@ END IF
 
 ! Read boundary types from HDF5 file
 CALL GetHDF5DataSize(File_ID,'BCType',nDims,HSize)
-IF(HSize(2).NE.nBCs) STOP 'Problem in readBC'
+IF(HSize(2).NE.nBCs) CALL abort(__STAMP__,'Problem in readBC')
 ERRWRITE(*,*)'BCType: ',nDims,HSize(:)
 DEALLOCATE(HSize)
 ALLOCATE(BCType(4,nBCs))

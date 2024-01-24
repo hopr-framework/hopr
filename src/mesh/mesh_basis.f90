@@ -689,7 +689,7 @@ DO WHILE(ASSOCIATED(aElem))
         WRITE(*,*) 'node1%x',aSide%OrientedNode(iEdge)%np%x
         WRITE(*,*) 'node2%x',aSide%OrientedNode(iPlus)%np%x
 
-        STOP
+        CALL abort(__STAMP__,'Problem with node%ind in buildEdges')
       END IF
 
       edgeFound=.FALSE.
@@ -765,9 +765,7 @@ DO WHILE(ASSOCIATED(aElem))
       END DO
 
       IF(edgeCount.EQ.3) CYCLE
-      IF(edgeCount.NE.4) THEN
-        STOP 'Mismatch of neighbour edge count of non-conforming edges.'
-      END IF
+      IF(edgeCount.NE.4) CALL abort(__STAMP__,'Mismatch of neighbour edge count of non-conforming edges.')
 
       ! now select the 2 edges of the found 4 edges, sharing a common node
       DO jEdge=1,3

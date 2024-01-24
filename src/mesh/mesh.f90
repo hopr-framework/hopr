@@ -381,7 +381,7 @@ IF(meshPostDeform.GT.0) THEN
   IF(postConnect.EQ.3)THEN
     IF(nVV.GT.0)THEN
       tmpInt=  CNTSTR('postVV','0')
-      IF(tmpInt.NE.nVV) STOP 'postVV must be specified for all previous vv!'
+      IF(tmpInt.NE.nVV) CALL abort(__STAMP__,'postVV must be specified for all previous vv!')
       ALLOCATE(postVV(3,nVV))
       DO i=1,nVV
         postVV(:,i)=GETREALARRAY('postvv',3)

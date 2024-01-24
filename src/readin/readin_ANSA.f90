@@ -503,9 +503,10 @@ SUBROUTINE readStar_split(firstElem_in,FileName)
 ! at firstElem_in. 
 !===================================================================================================================================
 ! MODULES
-USE MOD_Mesh_Vars,ONLY:tElem,tSide,tSidePtr,tNodePtr
-USE MOD_Mesh_Vars,ONLY:ElemCount,SideCount
-USE MOD_Mesh_Vars,ONLY:getNewElem,getNewSide,getNewNode
+USE MOD_Globals   ,ONLY: abort
+USE MOD_Mesh_Vars ,ONLY: tElem,tSide,tSidePtr,tNodePtr
+USE MOD_Mesh_Vars ,ONLY: ElemCount,SideCount
+USE MOD_Mesh_Vars ,ONLY: getNewElem,getNewSide,getNewNode
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -556,9 +557,7 @@ nElems=0
 DO                    ! ElemID, 8 Nodes, PID, ???
   READ(105,*,iostat=os) dummy1, conn(:),dummy2,dummy3
   IF(os.NE.0) EXIT !end of file
-  IF(conn(5).NE.0) THEN
-  STOP 'not surface elements!'
-  END IF
+  IF(conn(5).NE.0) CALL abort(__STAMP__,'not surface elements!')
   nElems=nElems+1
 END DO
 CLOSE(105)

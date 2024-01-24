@@ -588,16 +588,16 @@ SUBROUTINE buildElem(elem,elemCount,gmshElemType,Nodes,nodeInds)
 !> Assigning the nodes of a 2D/3D element
 !===================================================================================================================================
 ! MODULES
-USE MOD_Basis_Vars,ONLY:TetraMap,PyraMap,PrismMap,HexaMap
-USE MOD_Mesh_Vars,ONLY:tElem,tElemPtr,tSide,tNode,tNodePtr
-USE MOD_Mesh_Vars,ONLY:N, MeshDim
-USE MOD_Mesh_Vars,ONLY:getNewElem,getNewBC
-USE MOD_Mesh_Vars,ONLY:useCurveds,rebuildCurveds
-USE MOD_Mesh_Basis,ONLY:createSides
-USE MOD_Readin_GMSH_Vars,ONLY:bOrd,getGMSHVolumeMapping,GMSH_TYPES
-USE MOD_Readin_GMSH_Vars,ONLY:tetMapGMSH,pyrMapGMSH,priMapGMSH,hexMapGMSH
-USE MOD_Readin_GMSH_Vars,ONLY:tetMapCGNSToGMSH,pyrMapCGNSToGMSH,priMapCGNSToGMSH,hexMapCGNSToGMSH
-USE MOD_Readin_GMSH_Vars,ONLY:quadMapCGNSToGMSH
+USE MOD_Basis_Vars       ,ONLY: TetraMap,PyraMap,PrismMap,HexaMap
+USE MOD_Mesh_Vars        ,ONLY: tElem,tElemPtr,tSide,tNode,tNodePtr
+USE MOD_Mesh_Vars        ,ONLY: N, MeshDim
+USE MOD_Mesh_Vars        ,ONLY: getNewElem,getNewBC
+USE MOD_Mesh_Vars        ,ONLY: useCurveds,rebuildCurveds
+USE MOD_Mesh_Basis       ,ONLY: createSides
+USE MOD_Readin_GMSH_Vars ,ONLY: bOrd,getGMSHVolumeMapping,GMSH_TYPES
+USE MOD_Readin_GMSH_Vars ,ONLY: tetMapGMSH,pyrMapGMSH,priMapGMSH,hexMapGMSH
+USE MOD_Readin_GMSH_Vars ,ONLY: tetMapCGNSToGMSH,pyrMapCGNSToGMSH,priMapCGNSToGMSH,hexMapCGNSToGMSH
+USE MOD_Readin_GMSH_Vars ,ONLY: quadMapCGNSToGMSH
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -649,7 +649,7 @@ DO i=1,elem%ep%nNodes
   CASE(8)
     elem%ep%node(i)%np => Nodes(nodeInds(HexMapCGNSToGMSH(i)))%np
   CASE DEFAULT
-    STOP 'Unknown element type!'
+    CALL abort(__STAMP__,'Unknown element type!')
   END SELECT
   elem%ep%node(i)%np%refCount = elem%ep%node(i)%np%refCount+1
 END DO
@@ -665,10 +665,10 @@ IF(useCurveds .AND. (bOrd.GT.2) .AND.(.NOT.rebuildCurveds))THEN
     CASE(4)
       elem%ep%curvedNode(i)%np => Nodes(nodeInds(tetMapGMSH(tetraMap(i,1),tetraMap(i,2),tetraMap(i,3))))%np
     CASE(5)
-      STOP 'High order pyramids not implemented yet for GMSH!'
+      CALL abort(__STAMP__,'High order pyramids not implemented yet for GMSH!')
       elem%ep%curvedNode(i)%np => Nodes(nodeInds(pyrMapGMSH(pyraMap(i,1),pyraMap(i,2),pyraMap(i,3))))%np
     CASE(6)
-      STOP 'High order prisms not implemented yet for GMSH!'
+      CALL abort(__STAMP__,'High order prisms not implemented yet for GMSH!')
       elem%ep%curvedNode(i)%np => Nodes(nodeInds(priMapGMSH(prismMap(i,1),prismMap(i,2),prismMap(i,3))))%np
     CASE(8)
       elem%ep%curvedNode(i)%np => Nodes(nodeInds(hexMapGMSH(hexaMap(i,1),hexaMap(i,2),hexaMap(i,3))))%np

@@ -148,7 +148,7 @@ DO iFile=1,nMeshFiles
     CALL abortCGNS(__STAMP__,CGNSFile)
   IF((INT(CellDim) .NE. MeshDim))THEN! .OR. (PhysDim .NE. MeshDim))THEN
     WRITE(UNIT_stdOut,*)'ERROR-Invalid dimensions in CGNS file: CellDim=',CellDim,', PhysDim=',PhysDim,'(MeshDim=',MeshDim,')'
-    STOP
+    CALL abort(__STAMP__,'ERROR-Invalid dimensions in CGNS file')
   END IF
   ! Get number of zones in CGNSBase
   CALL CG_NZONES_F(CGNSfile,CGNSBase,nCGNSZones,iError)
@@ -164,7 +164,7 @@ DO iFile=1,nMeshFiles
     ELSEIF(ZoneType.EQ.Unstructured)THEN
       CALL ReadCGNSMeshUnstruct(FirstElem,CGNSFile,CGNSBase,iZone,nZonesGlob,nNodesGlob)
     ELSE
-      STOP 'Wrong zone type specifier, should be structured or unstructured.'
+      CALL abort(__STAMP__,'Wrong zone type specifier, should be structured or unstructured.')
     END IF
 
 

@@ -232,8 +232,7 @@ IF (CntStr.EQ.0) THEN
     CntStr=IntProposal
   ELSE
     SWRITE(UNIT_StdOut,*) 'Inifile missing necessary keyword item : ',TRIM(TmpKey)
-    CALL abort(__STAMP__, &
-         'Code stopped during inifile parsing!')
+    CALL abort(__STAMP__,'Code stopped during inifile parsing!')
   END IF
 END IF
 END FUNCTION CNTSTR
@@ -633,8 +632,7 @@ DO i=1,nDefVars
     IF (INDEX(TRIM(CHAR(DefVar(1,i))),TRIM(CHAR(DefVar(1,j)))).NE.0) THEN
       SWRITE(UNIT_StdOut,*) '!! WARNING !! Problem with DEFVAR ', TRIM(CHAR(DefVar(1,i)))
       SWRITE(UNIT_StdOut,*) '  a part of this variable name was already used in DEFVAR ' ,TRIM(CHAR(DefVar(1,j)))
-      CALL abort(__STAMP__, &
-         'DEFVAR: do not reuse same strings for variable names! Code stopped during inifile parsing!')
+      CALL abort(__STAMP__,'DEFVAR: do not reuse same strings for variable names! Code stopped during inifile parsing!')
     END IF
   END DO
   Str1=>FirstString
@@ -709,8 +707,7 @@ DefVarIsRealarray=(CHAR(vStr1).EQ.'(real')
 
 IF(.NOT.((DefVarIsInt).OR.(DefVarIsIntArray).OR.(DefVarIsReal).OR.(defVarIsRealarray) ))THEN
   SWRITE(UNIT_StdOut,*) 'DEFVAR not correctly defined: ',TRIM(HelpStr)
-    CALL abort(__STAMP__, &
-         'Code stopped during inifile parsing!')
+    CALL abort(__STAMP__,'Code stopped during inifile parsing!')
 END IF
 
 IF(DefVarIsIntArray.OR.DefVarIsRealArray)THEN
@@ -833,8 +830,7 @@ DO WHILE(.NOT.Found)
   IF (.NOT.ASSOCIATED(Str1)) THEN
     IF (.NOT.PRESENT(Proposal)) THEN
       SWRITE(UNIT_StdOut,*) 'Inifile missing necessary keyword item : ',TRIM(TmpKey)
-      CALL abort(__STAMP__, &
-           'Code stopped during inifile parsing!')
+      CALL abort(__STAMP__,'Code stopped during inifile parsing!')
     ELSE ! Return default value
 !      CALL LowCase(TRIM(Proposal),Str)
       Str=TRIM(Proposal)

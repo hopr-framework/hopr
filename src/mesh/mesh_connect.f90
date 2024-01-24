@@ -723,11 +723,11 @@ DO iSide=1,nNonConformingSides-2
             smallSide2=>tmpSide
           END IF
         ELSE
-          STOP 'ERROR: Mortar type could not be identified!'
+          CALL abort(__STAMP__,'ERROR: Mortar type could not be identified!')
         END IF
 
         bigSide%nMortars=2
-        IF(ASSOCIATED(bigSide%MortarSide)) STOP 'ERROR: Mortar connection already associated!'
+        IF(ASSOCIATED(bigSide%MortarSide)) CALL abort(__STAMP__,'ERROR: Mortar connection already associated!')
         ALLOCATE(bigSide%MortarSide(2))
         bigSide%MortarSide(1)%sp=>smallSide1
         bigSide%MortarSide(2)%sp=>smallSide2
@@ -800,7 +800,7 @@ DO iSide=1,nNonConformingSides
   aSide%MortarType=1
   aSide%nMortars=4
   SideDone(iSide)=.TRUE.
-  IF(ASSOCIATED(aSide%MortarSide)) STOP 'ERROR: Mortar connection already associated!'
+  IF(ASSOCIATED(aSide%MortarSide)) CALL abort(__STAMP__,'ERROR: Mortar connection already associated!')
   ALLOCATE(aSide%MortarSide(4))
   DO iNode=1,4
     ! for type 1, small mortars are sorted on a cartesian grid (first xi, then eta)
@@ -869,7 +869,7 @@ DO WHILE(ASSOCIATED(Elem))
     ELSE
       ! dummy side is mortar slave, update connection of mortar master
       bigSide=>dummySide%connection
-      IF(ASSOCIATED(dummySide,bigSide)) STOP 'ERROR: Periodic mortar slave has no connection to master!'
+      IF(ASSOCIATED(dummySide,bigSide)) CALL abort(__STAMP__,'ERROR: Periodic mortar slave has no connection to master!')
       DO iSide=1,bigSide%nMortars
         IF(ASSOCIATED(bigSide%MortarSide(iSide)%sp,dummySide))THEN
           bigSide%MortarSide(iSide)%sp=>aSide
@@ -968,7 +968,7 @@ DO jSide=1,aSide%nMortars
     END DO
     IF(commonNode) EXIT
   END DO
-  IF(.NOT.commonNode) STOP 'ERROR: no common node of big and small mortar sides found'
+  IF(.NOT.commonNode) CALL abort(__STAMP__,'ERROR: no common node of big and small mortar sides found')
   DO iNode=1,aSide%nNodes
     bSide%orientedNode(masterNode)%np=>bSide%Node(slaveNode)%np
     masterNode=prev1(masterNode,aSide%nNodes)

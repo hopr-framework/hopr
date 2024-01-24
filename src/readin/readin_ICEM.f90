@@ -141,7 +141,7 @@ DO WHILE ( read_stat == 0 )
   END IF
   IF(MOD(iCounter-1,N).EQ.0.AND.dummyline.NE.'Edge')THEN
     WRITE(UNIT_stdOut,*)TRIM(filename),' in line',iCounter,' is not conform to boundaryOrder or corrupted'
-    STOP
+    CALL abort(__STAMP__,'not conform to boundaryOrder or corrupted')
   ENDIF
 END DO
 
@@ -159,13 +159,13 @@ DO iEdge=1,nCurves                     !read curves into EdgeIndex and EdgeNodes
   read(helpstring,*,IOSTAT=read_stat)EdgeIndex(iEdge,1:2)
   IF (read_stat.NE.0.OR.dummyline(1:17).NE.'Edge definition (') THEN
     WRITE(UNIT_stdOut,*)TRIM(filename),' in line',N*(iEdge-1)+1,'does not have the right format'
-    STOP
+    CALL abort(__STAMP__,'invalid format')
   END IF
   DO ii=1,N-1
     READ(105,*,IOSTAT=read_stat) EdgeNodes(iEdge,ii,1:3)
     IF (read_stat.ne.0) THEN
       WRITE(UNIT_stdOut,*)TRIM(filename),' does not have the right format'
-      STOP
+      CALL abort(__STAMP__,'invalid format')
     END IF
   END DO
   IF (EdgeIndex(iEdge,1).GT.EdgeIndex(iEdge,2)) THEN         !reverse nodes and indices if not oriented
