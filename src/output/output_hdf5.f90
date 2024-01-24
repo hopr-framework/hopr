@@ -185,8 +185,7 @@ DO WHILE(ASSOCIATED(Elem))
         aEdge%FirstLocalEdge%ind=-99999
       END IF
       !!! COUNT connections here and save them to aEdge%FirstLocalEdge%tmp
-      IF(aEdge%FirstLocalEdge%tmp.LE.0) CALL abort(__STAMP__, &
-      'Something is wrong with edge multiplicity')
+      IF(aEdge%FirstLocalEdge%tmp.LE.0) CALL abort(__STAMP__,'Something is wrong with edge multiplicity')
       nFEMEdgeConnections=nFEMEdgeConnections+(aEdge%FirstLocalEdge%tmp-1)
     END DO !iLocEdge
     nVertices=nVertices+Elem%nNodes
@@ -199,8 +198,7 @@ DO WHILE(ASSOCIATED(Elem))
         aNode%FirstVertex%ind=-5555
       END IF
       !!! COUNT connections here and save them to aEdge%FirstLocalEdge%tmp
-      IF(aNode%FirstVertex%tmp.LE.0) CALL abort(__STAMP__, &
-      'Something is wrong with vertex multiplicity')
+      IF(aNode%FirstVertex%tmp.LE.0) CALL abort(__STAMP__,'Something is wrong with vertex multiplicity')
       nFEMVertexConnections=nFEMVertexConnections+(aNode%FirstVertex%tmp-1)
     END DO !iLocVert
   END IF !FEMCONNECT
@@ -281,8 +279,7 @@ DO WHILE(ASSOCIATED(Elem))
         aEdge%FirstLocalEdge%ind=FEMEdgeID
         nextLedge=>aEdge%FirstLocalEdge%next_connected
         DO WHILE(ASSOCIATED(nextlEdge))
-          IF(nextLedge%tmp.NE.-1) CALL abort(__STAMP__, &
-                                             'Something wrong with nextLedge not being set')
+          IF(nextLedge%tmp.NE.-1) CALL abort(__STAMP__,'Something wrong with nextLedge not being set')
           nextLedge%ind=FEMEdgeID
           nextLedge=>nextLedge%next_connected
         END DO
@@ -297,8 +294,7 @@ DO WHILE(ASSOCIATED(Elem))
         aNode%FirstVertex%ind=FEMVertexID
         next_vert=>aNode%FirstVertex%next_connected
         DO WHILE(ASSOCIATED(next_vert))
-          IF(next_vert%tmp.NE.-1) CALL abort(__STAMP__, &
-                                             'Something wrong with next_vert not being set')
+          IF(next_vert%tmp.NE.-1) CALL abort(__STAMP__,'Something wrong with next_vert not being set')
           next_vert%ind=FEMVertexID
           next_vert=>next_vert%next_connected
         END DO
@@ -308,19 +304,13 @@ DO WHILE(ASSOCIATED(Elem))
   Elem=>Elem%nextElem
 END DO !Elem
 
-IF(NodeID.NE.nNodeIDs) CALL abort(__STAMP__,&
-                     'Sanity check: max(nodeID <> nNodeIDs!')
-IF(SideID.NE.nSideIDs) CALL abort(__STAMP__,&
-                     'Sanity check: max(sideID <> nSideIDs!')
-IF(ElemID.NE.nElems) CALL abort(__STAMP__,&
-                     'Sanity check: max(elemID <> nElems!')
+IF(NodeID.NE.nNodeIDs) CALL abort(__STAMP__,'Sanity check: max(nodeID <> nNodeIDs!')
+IF(SideID.NE.nSideIDs) CALL abort(__STAMP__,'Sanity check: max(sideID <> nSideIDs!')
+IF(ElemID.NE.nElems) CALL abort(__STAMP__,'Sanity check: max(elemID <> nElems!')
 IF(generateFEMconnectivity)THEN
-  IF(EdgeID.NE.nEdgeIDs) CALL abort(__STAMP__,&
-                     'Sanity check: max(edgeID <> nEdgeIDs!')
-  IF(FEMEdgeID.NE.nFEMEdgeIDs) CALL abort(__STAMP__,&
-                     'Sanity check: max(femedgeID <> nFEMEdgeIDs!')
-  IF(FEMVertexID.NE.nFEMVertexIDs) CALL abort(__STAMP__,&
-                     'Sanity check: max(femvertexID <> nFEMVertexIDs!')
+  IF(EdgeID.NE.nEdgeIDs) CALL abort(__STAMP__,'Sanity check: max(edgeID <> nEdgeIDs!')
+  IF(FEMEdgeID.NE.nFEMEdgeIDs) CALL abort(__STAMP__,'Sanity check: max(femedgeID <> nFEMEdgeIDs!')
+  IF(FEMVertexID.NE.nFEMVertexIDs) CALL abort(__STAMP__,'Sanity check: max(femvertexID <> nFEMVertexIDs!')
 END IF !FEMconnect
 
 !set Side Flip
@@ -351,8 +341,7 @@ DO WHILE(ASSOCIATED(Elem))
       END DO
       IF(.NOT.found) CALL abort(__STAMP__,'Flip not found')
       Side%flip=iNode
-      IF(.NOT.ASSOCIATED(Side%connection)) CALL ABORT(__STAMP__, &
-        'Side connection should be associated for non-oreinted side')
+      IF(.NOT.ASSOCIATED(Side%connection)) CALL ABORT(__STAMP__,'Side connection should be associated for non-oreinted side')
       IF (Side%connection%MortarType.LE.0) Side%connection%flip=iNode !flip is the same for the connection
     END IF
     Side=>Side%nextElemSide
@@ -606,8 +595,7 @@ DO WHILE(ASSOCIATED(Elem))
     END IF
 
     IF (Side%MortarType.GT.0) THEN ! Mortar master side (only implemented for Quad-sides!!!)
-      IF(ASSOCIATED(Side%Connection)) CALL abort(__STAMP__,&
-                                                 'Mortar master with connection is not allowed')
+      IF(ASSOCIATED(Side%Connection)) CALL abort(__STAMP__,'Mortar master with connection is not allowed')
       IF(Side%flip.NE.0) CALL abort(__STAMP__,'Problem with flip on mortar')
       SideInfo(SIDE_nbElemID,iSide)= -Side%MortarType
       SideInfo(SIDE_nbLocSide_flip,iSide)=0
@@ -643,8 +631,7 @@ DO WHILE(ASSOCIATED(Elem))
   Elem=>Elem%nextElem
 END DO
 
-IF(iSide.NE.nSides) CALL abort(__STAMP__,&
-                     'Sanity check: nSides not equal to total number of sides!')
+IF(iSide.NE.nSides) CALL abort(__STAMP__,'Sanity check: nSides not equal to total number of sides!')
 
 IF(generateFEMconnectivity)THEN
   ALLOCATE(FEMElemInfo(FEMElemInfoSize,1:nElems))
@@ -694,8 +681,7 @@ IF(generateFEMconnectivity)THEN
       END DO !
       EdgeInfo(EDGE_lastIndEdgeConnect,iEdge)=jEdge
       IF((EdgeInfo(EDGE_lastIndEdgeConnect,iEdge)-EdgeInfo(EDGE_offsetIndEdgeConnect,iEdge)).NE. (aEdge%FirstLocalEdge%tmp-1)) THEN
-        CALL abort(__STAMP__, &
-                   "wrong number of edge connections in firstEdge%tmp")
+        CALL abort(__STAMP__,"wrong number of edge connections in firstEdge%tmp")
       END IF
     END DO !iLoc
     Elem=>Elem%nextElem
@@ -728,8 +714,7 @@ IF(generateFEMconnectivity)THEN
       END DO !
       VertexInfo(VERTEX_lastIndVertexConnect,iVert)=jVert
       IF((VertexInfo(VERTEX_lastIndVertexConnect,iVert)-VertexInfo(VERTEX_offsetIndVertexConnect,iVert)).NE. (aNode%FirstVertex%tmp-1)) THEN
-        CALL abort(__STAMP__, &
-                   "wrong number of vertex connections in firstvertex%tmp")
+        CALL abort(__STAMP__,"wrong number of vertex connections in firstvertex%tmp")
       END IF
     END DO !iLoc
     Elem=>Elem%nextElem
@@ -761,8 +746,7 @@ ELSE ! CurvedNodes
   END DO
 END IF
 
-IF(iNode.NE.nNodes) CALL abort(__STAMP__,&
-                     'Sanity check: nNodes not equal to total number of nodes!')
+IF(iNode.NE.nNodes) CALL abort(__STAMP__,'Sanity check: nNodes not equal to total number of nodes!')
 
 END SUBROUTINE getMeshinfo
 

@@ -153,8 +153,7 @@ REAL                      :: deltaSafe(3)                    ! ?
 INTEGER,ALLOCATABLE       :: dist(:)                         ! ?
 INTEGER                   :: iNode,l,i,j,k                   ! ?
 !===================================================================================================================================
-IF(ASSOCIATED(searchMesh)) CALL abort(__STAMP__,&
-                                     'Warning: search mesh already allocated.')
+IF(ASSOCIATED(searchMesh)) CALL abort(__STAMP__,'Warning: search mesh already allocated.')
 ALLOCATE(searchMesh)
 searchMesh%actualInd   = -1
 searchMesh%idx_ur      = -1
@@ -276,8 +275,7 @@ IF(PRESENT(idx)) THEN
 ELSEIF(PRESENT(coords)) THEN
   CALL getIdx(searchmesh,coords,searchMesh%actualInd)  ! Calculate indices from coordinates
 ELSE
-  CALL abort(__STAMP__, &
-    'error calling getFirstToObject')
+  CALL abort(__STAMP__,'error calling getFirstToObject')
 END IF
 maxn=searchMesh%n  ! Number of points in search area
 IF(Reduced) maxn=searchMesh%nRed  ! Use reduced number of points
@@ -432,8 +430,7 @@ TYPE(tToObject),POINTER   :: ToObject   ! ?
 INTEGER                   :: idx(3)   ! ?
 !===================================================================================================================================
 CALL getIdx(searchmesh,Node%x,idx)  ! Calculate search mesh indices of node
-IF(.NOT.idxok(searchMesh,idx)) CALL abort(__STAMP__, &
-                                          'search Mesh error')
+IF(.NOT.idxok(searchMesh,idx)) CALL abort(__STAMP__,'search Mesh error')
 CALL getNewToObject(ToObject)  ! Create new search mesh object
 ToObject%Node=>Node
 IF(PRESENT(Elem))ToObject%elem=>Elem

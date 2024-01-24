@@ -674,8 +674,7 @@ DO iZone=1,nZones
             CALL GetNewHexahedron(CornerNode)
           END IF
         CASE DEFAULT
-          CALL abort(__STAMP__,&
-            'The specified element type is not known. Valid types: 104,105,106,108',CartMesh%ElemType)
+          CALL abort(__STAMP__,'The specified element type is not known. Valid types: 104,105,106,108',CartMesh%ElemType)
         END SELECT
       END DO !n
     END DO !m

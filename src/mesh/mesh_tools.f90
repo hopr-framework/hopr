@@ -538,8 +538,7 @@ DO WHILE(ASSOCIATED(Elem))
         IF(ASSOCIATED(Side%curvedNode(iNode)%np))THEN
           xNode(iNode,:)=Side%curvedNode(iNode)%np%x
         ELSE
-          CALL abort(__STAMP__, &
-           'Curved node array has not the right size.',999,999.) ! check required due to intel compiler error (02)
+          CALL abort(__STAMP__,'Curved node array has not the right size.',999,999.) ! check required due to intel compiler error (02)
         END IF
       END DO
       SELECT CASE(Side%nNodes)
@@ -676,8 +675,7 @@ DO WHILE(ASSOCIATED(Elem))
         IF(ASSOCIATED(Elem%curvedNode(iNode)%np))THEN
           xNode(iNode,:)=Elem%curvedNode(iNode)%np%x
         ELSE
-          CALL abort(__STAMP__, &
-           'Curved node array has not the right size.',999,999.) ! check required due to intel compiler error (02)
+          CALL abort(__STAMP__,'Curved node array has not the right size.',999,999.) ! check required due to intel compiler error (02)
         END IF
       END DO
       x  = MATMUL(Vdm_Visu_Hexa,xNode(1:nNodes,:))
@@ -998,8 +996,7 @@ END DO !while Elem associated
 IF(waterTight.GT.0) THEN
   WRITE(UNIT_stdOut,*)'  ERROR: ', waterTight,' Mortar sides of ',nMortars, &
                     ' are not watertight, MaxError= ',MaxNsurfErr
-  CALL abort(__STAMP__, &
-         'ERROR: mortars not watertight !!!',waterTight,maxNsurfErr)
+  CALL abort(__STAMP__,'ERROR: mortars not watertight !!!',waterTight,maxNsurfErr)
 ELSE
   WRITE(UNIT_stdOut,*)' ==> all mortars are watertight ;)'
 END IF

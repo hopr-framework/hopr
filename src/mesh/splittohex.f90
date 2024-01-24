@@ -76,8 +76,7 @@ INTEGER                       :: maxInd,ii  ! ?
 CALL Timer(.TRUE.)
 WRITE(UNIT_stdOut,'(132("~"))')
 WRITE(UNIT_stdOut,'(A,I8,A)')' SPLIT EACH HEXA INTO nFineHexa^3=' ,nFine**3,' HEXA ...'
-IF(useCurveds) CALL abort(__STAMP__, &
-          'SplitAllHex cannot be used with curved elements up to now!')
+IF(useCurveds) CALL abort(__STAMP__,'SplitAllHex cannot be used with curved elements up to now!')
 
 !check first if all elements are hexa
 Elem=>firstElem      !get maxInd of nodes
@@ -131,8 +130,7 @@ REAL                          :: xBary(3)
 CALL Timer(.TRUE.)
 WRITE(UNIT_stdOut,'(132("~"))')
 WRITE(UNIT_stdOut,'(A,I8,A)')' SPLIT HEXA BY SPLITBOXES ...'
-IF(useCurveds) CALL abort(__STAMP__, &
-          'SplitAllHex cannot be used with curved elements up to now!')
+IF(useCurveds) CALL abort(__STAMP__,'SplitAllHex cannot be used with curved elements up to now!')
 
 !check first if all elements are hexa
 Elem=>firstElem      !get maxInd of nodes
@@ -198,8 +196,7 @@ CALL Timer(.TRUE.)
 WRITE(UNIT_stdOut,'(132("~"))')
 WRITE(UNIT_stdOut,'(A)')' SPLIT ELEMENTS...'
 maxInd=0
-IF(useCurveds) CALL abort(__STAMP__, &
-          'SplitToHex cannot be used with curved elements up to now!')
+IF(useCurveds) CALL abort(__STAMP__,'SplitToHex cannot be used with curved elements up to now!')
 
 Elem=>firstElem      !get maxInd of nodes
 DO WHILE(ASSOCIATED(Elem))
@@ -216,8 +213,7 @@ DO WHILE(ASSOCIATED(Elem))
     counter(1)=counter(1)+1
     CALL SplitTetraToHexa(Elem,maxInd)
   CASE(5) !Pyra
-    CALL abort(__STAMP__, &
-          'pyramidal element found, cannot be splitted to hexa!')
+    CALL abort(__STAMP__,'pyramidal element found, cannot be splitted to hexa!')
   CASE(6) !linear bilinear prism
     counter(2)=counter(2)+1
     CALL SplitPentaToHexa(Elem,2,maxInd)

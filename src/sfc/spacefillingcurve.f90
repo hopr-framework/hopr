@@ -105,8 +105,7 @@ IF(nElems.GT.1)THEN
     lower=MINVAL(ElemBary)
     upper=MAXVAL(ElemBary)
   CASE DEFAULT
-    CALL abort(__STAMP__, &
-      'wrong bounding box type (only 1,2) ')
+    CALL abort(__STAMP__,'wrong bounding box type (only 1,2) ')
   END SELECT
   DO i=1,3
     IF(ALMOSTEQUAL(lower(i),upper(i)))THEN
@@ -165,8 +164,7 @@ CASE('hilbertZ')
   ind = evalhilbert(disc(1:2),box%nbits,2)
   ind = ind+ disc(3)*box%intfact2
 CASE DEFAULT
-  CALL abort(__STAMP__, &
-        'sfc_type does not exist (only hilbert,morton,mortonZ,hilbertZ)')
+  CALL abort(__STAMP__,'sfc_type does not exist (only hilbert,morton,mortonZ,hilbertZ)')
 
 END SELECT
 END FUNCTION COORD2INT

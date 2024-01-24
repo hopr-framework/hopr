@@ -411,8 +411,7 @@ CASE(4)
   hexMapGMSH(3,3,3)=  6
 
 CASE DEFAULT
-  CALL abort(__STAMP__,&
-             'Elements of specified or higher order are not implemented yet. Order: ',bOrd)
+  CALL abort(__STAMP__,'Elements of specified or higher order are not implemented yet. Order: ',bOrd)
 END SELECT
 END SUBROUTINE getGMSHVolumeMapping
 

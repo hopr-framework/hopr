@@ -152,8 +152,7 @@ IF(stat.NE.0)              TRYREAD=.FALSE.
 IF(TRIM(Key).NE.TRIM(tmp)) TRYREAD=.FALSE.
 
 IF(.NOT.TRYREAD.AND.abortLoc)&
-  CALL abort(__STAMP__,&
-             'Keyword '//TRIM(Key)//' not found in file.')
+  CALL abort(__STAMP__,'Keyword '//TRIM(Key)//' not found in file.')
 END FUNCTION TRYREAD
 
 

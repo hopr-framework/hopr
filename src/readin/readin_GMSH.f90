@@ -617,13 +617,11 @@ INTEGER                    :: i
 IF (bOrd .EQ.0) THEN
   bOrd = GMSH_TYPES(4,gmshElemType)+1
   IF ((bOrd .NE. N+1).AND.useCurveds.AND..NOT.rebuildCurveds) & 
-    CALL abort(__STAMP__,&
-    'Mesh boundary order not equal to boundary order from ini file! Mesh order: ',N+1)
+    CALL abort(__STAMP__,'Mesh boundary order not equal to boundary order from ini file! Mesh order: ',N+1)
   CALL getGMSHVolumeMapping()
 ELSE
   IF (bOrd.NE.GMSH_TYPES(4,gmshElemType)+1) &
-    CALL abort(__STAMP__,&
-    'All elements in the mesh are required to have the same boundary order!')
+    CALL abort(__STAMP__,'All elements in the mesh are required to have the same boundary order!')
 END IF
 
 ! Advance number of 3D elements

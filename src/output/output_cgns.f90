@@ -83,8 +83,7 @@ CHARACTER(LEN=32)  :: VarNames32(nVal)                   ! CGNS uses only 32 cha
 #endif /*defined PP_USE_CGNS*/
 !===================================================================================================================================
 #ifndef PP_USE_CGNS
-CALL ABORT(__STAMP__, &
-          'WriteDataToCGNS needs compilation with USE_CGNS flag!')
+CALL ABORT(__STAMP__,'WriteDataToCGNS needs compilation with USE_CGNS flag!')
 #else
 WRITE(UNIT_stdOut,'(A)',ADVANCE='NO')"   WRITE DATA TO CGNS FILE... "//TRIM(FileString)
 one=1
@@ -223,8 +222,7 @@ CALL cg_close_f(CGNSFile,iErr)
 WRITE(Unit_StdOut,'(A)') ErrorMessage
 WRITE(Unit_StdOut,'(A)') 'CGNS Error Output: '
 WRITE(Unit_StdOut,'(A)') CGNSmessage
-CALL abort(__STAMP__, &
-          'CGNS error!')
+CALL abort(__STAMP__,'CGNS error!')
 END SUBROUTINE my_cg_error_exit
 #endif /*defined PP_USE_CGNS*/
 

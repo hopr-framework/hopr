@@ -432,8 +432,7 @@ END DO; END DO !j
 sVdm_Leg=INV(Vdm_Leg)
 !check (Vdm_Leg)^(-1)*Vdm_Leg := I
 dummy=ABS(SUM(ABS(MATMUL(sVdm_Leg,Vdm_Leg)))/(N_In+1.)-1.)
-IF(dummy.GT.10.*PP_RealTolerance) CALL abort(__STAMP__,&
-                                         'problems in MODAL<->NODAL Vandermonde ',999,dummy)
+IF(dummy.GT.10.*PP_RealTolerance) CALL abort(__STAMP__,'problems in MODAL<->NODAL Vandermonde ',999,dummy)
 END SUBROUTINE buildLegendreVdm
 
 

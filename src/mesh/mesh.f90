@@ -74,8 +74,7 @@ CHARACTER(LEN=255)             :: DefStr  ! ?
 WRITE(UNIT_StdOut,'(132("-"))')
 WRITE(UNIT_stdOut,'(A)') ' INIT MESH...'
 IF(.NOT.OutputInitDone)THEN
-  CALL abort(__STAMP__,  &
-             'ERROR: InitOutput has to be called before InitMesh!')
+  CALL abort(__STAMP__,'ERROR: InitOutput has to be called before InitMesh!')
 END IF
 
 ! Curved
@@ -231,8 +230,7 @@ IF(useCurveds) THEN
         ExactNormals = GETINTARRAY('exactNormals',tmpInt*2) !(Curvedindex,exactnormaltype,...)
         ! >0 if an analytical normal can be used (see curved.f90,exactNormals)
       CASE DEFAULT
-        CALL abort(__STAMP__,&
-          'No normal type specified.')
+        CALL abort(__STAMP__,'No normal type specified.')
       END SELECT
     CASE(3) ! refined surface elements (only ANSA readin)
       SplitElemFile = GETSTR('SplitElemFile')
@@ -244,8 +242,7 @@ IF(useCurveds) THEN
     CASE(4) ! ICEM spectral elements
       SpecElemFile = GETSTR('specelemfile')
     CASE DEFAULT
-      CALL abort(__STAMP__,&
-        'Specified curving method does not exist. =1: NormalVectors, =3: SplitElemFile, =4: SpecElemFile')
+      CALL abort(__STAMP__,'Specified curving method does not exist. =1: NormalVectors, =3: SplitElemFile, =4: SpecElemFile')
     END SELECT
 
     ! Volume curving by radial basis functions
@@ -289,8 +286,7 @@ BoundaryOrder=N+1
 ! Boundaries
 nUserDefinedBoundaries=CNTSTR('BoundaryName','0')
 IF(nUserDefinedBoundaries.NE.CNTSTR('BoundaryType','0'))&
-  CALL abort(__STAMP__,&
-             'The number of boundary names and boundary types has to be identical.')
+  CALL abort(__STAMP__,'The number of boundary names and boundary types has to be identical.')
 IF(nUserDefinedBoundaries .GT. 0)THEN
   ALLOCATE(BoundaryName(nUserDefinedBoundaries))
   ALLOCATE(BoundaryType(nUserDefinedBoundaries,4))
@@ -575,8 +571,7 @@ SELECT CASE (MeshMode)
     meshIsAlreadyCurved=.TRUE.
     CALL fill25DMesh()
   CASE DEFAULT
-    CALL abort(__STAMP__, &
-      'Not known how to construct mesh')
+    CALL abort(__STAMP__,'Not known how to construct mesh')
 END SELECT
 
 ! apply meshscale after readin
@@ -691,8 +686,7 @@ IF(useCurveds)THEN
       CASE(4)
         CALL ReadCGNSSurfaceMesh(FirstSplitElem,SplitElemFile)
       CASE DEFAULT
-        CALL abort(__STAMP__, &
-             'Splitted meshes can only be read in star cd format or cgns!')
+        CALL abort(__STAMP__,'Splitted meshes can only be read in star cd format or cgns!')
       END SELECT
       CALL Connect2DMesh(FirstSplitElem)
       IF(doScale.AND..NOT.postScale) CALL ApplyMeshScale(FirstSplitElem)
@@ -731,8 +725,7 @@ DO iElem=1,nMeshElems
   IF(mortarFound) EXIT !do loop
 END DO !iElem
 
-IF(mortarFound.AND.generateFEMconnectivity) CALL abort(__STAMP__, &
-                                 "generate FEM connectivity not yet implemented for mortar meshes!")
+IF(mortarFound.AND.generateFEMconnectivity) CALL abort(__STAMP__,"generate FEM connectivity not yet implemented for mortar meshes!")
 
 IF(doExactSurfProjection) CALL ProjectToExactSurfaces()
 ! get element types

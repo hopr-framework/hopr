@@ -474,8 +474,7 @@ DO
   DO iNode=1,Side%nNodes
     IF(ElemSideMapping(Elem%nNodes,iSide,iNode).EQ.0) then
       WRITE(*,*)Elem%nNodes,iSide,iNode,Side%nNodes
-      CALL abort(__STAMP__, &
-        'Error in ElemSideMapping in CreateSides')
+      CALL abort(__STAMP__,'Error in ElemSideMapping in CreateSides')
     END IF
     Side%Node(iNode)%np=>Elem%Node(ElemSideMapping(Elem%nNodes,iSide,iNode))%np
     IF(buildSides) Side%Node(iNode)%np%refCount=Side%Node(iNode)%np%refCount+1
@@ -878,8 +877,7 @@ DO WHILE(ASSOCIATED(aElem))
             END IF
             aEdge=>aEdge%nextEdge
           END DO
-          IF(.NOT.edgeFound) CALL abort(__STAMP__, &
-                                         'problem in finding periodic side aEdge')
+          IF(.NOT.edgeFound) CALL abort(__STAMP__,'problem in finding periodic side aEdge')
 
           !now for the periodic side (bSide,edge from anode->bnode)
           IF(bSide%edgeOrientation(iEdge))THEN
@@ -902,8 +900,7 @@ DO WHILE(ASSOCIATED(aElem))
             END IF
             bEdge=>bEdge%nextEdge
           END DO
-          IF(.NOT.edgeFound) CALL abort(__STAMP__, &
-                                          'problem in finding periodic side bEdge')
+          IF(.NOT.edgeFound) CALL abort(__STAMP__,'problem in finding periodic side bEdge')
 
           !set firstLocalEdge to the same global edge for all periodic edges found
           IF(.NOT.ASSOCIATED(bEdge%FirstLocalEdge))THEN
@@ -1009,8 +1006,7 @@ DO WHILE(ASSOCIATED(aElem))
       aEdge%FirstLocalEdge%tmp=aEdge%FirstLocalEdge%tmp+1 !count edge multiplicity in firstLocalEdge%tmp
       lEdge%orientation=(SUM((bNode%x-aNode%x)*(lEdge%edge%Node(2)%np%x-lEdge%edge%Node(1)%np%x)).GT.0.)
     ELSE
-      CALL abort(__STAMP__, &
-                  'something is wrong cannot find edge in element')
+      CALL abort(__STAMP__,'something is wrong cannot find edge in element')
     END IF
   END DO !iEdge=1,aElem%nEdges
 
@@ -1026,8 +1022,7 @@ DO WHILE(ASSOCIATED(aElem))
       vert%node=>aNode
     ELSE
       IF((LOC(aNode%FirstVertex%node).EQ.LOC(aNode)).AND.(aNode%FirstVertex%localVertexID.EQ.-1))THEN !periodic vertex found, but not yet claimed by the attached elemnent
-        IF(aNode%firstVertex%elem%ind.NE.aElem%ind) CALL abort(__STAMP__, &
-                                                               "problem in firstvertex element association")
+        IF(aNode%firstVertex%elem%ind.NE.aElem%ind) CALL abort(__STAMP__,"problem in firstvertex element association")
         aElem%Vertex(iNode)%vp=>aNode%FirstVertex
         vert=>aElem%Vertex(iNode)%vp
         vert%localVertexID=iNode

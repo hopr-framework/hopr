@@ -101,8 +101,7 @@ INTEGER                    :: ZoneType  ! ?
 #endif /*defined PP_USE_CGNS*/
 !===================================================================================================================================
 #ifndef PP_USE_CGNS
-CALL ABORT(__STAMP__, &
-          'ReadCGNSmesh needs compilation with USE_CGNS flag!')
+CALL ABORT(__STAMP__,'ReadCGNSmesh needs compilation with USE_CGNS flag!')
 #else
 WRITE(UNIT_stdOut,'(132("~"))')
 CALL Timer(.TRUE.)
@@ -1139,8 +1138,7 @@ INTEGER(CGSIZE_T),ALLOCATABLE:: connect_offsets(:)
 #endif /*defined PP_USE_CGNS*/
 !===================================================================================================================================
 #ifndef PP_USE_CGNS
-CALL ABORT(__STAMP__, &
-          'ReadCGNSsurfaceMesh needs compilation with USE_CGNS flag!')
+CALL ABORT(__STAMP__,'ReadCGNSsurfaceMesh needs compilation with USE_CGNS flag!')
 #else
 WRITE(UNIT_stdOut,*)'Read CGNS Surface File: ',TRIM(FileName)
 ! Open CGNS file
@@ -1268,8 +1266,7 @@ DO iZone=1,nCGNSZones
         iElem=iElem+1
         IF(iElem.GT.nElems)THEN
           CALL closeFile(CGNSFile)
-          CALL abort(__STAMP__,&
-                         'Something wrrrrong with surf element numbers in CGNS File zone :',INT(iZone))
+          CALL abort(__STAMP__,'Something wrrrrong with surf element numbers in CGNS File zone :',INT(iZone))
         END IF
 
         ElemConnect(1            ,iElem)=LocType
@@ -1419,8 +1416,7 @@ ELSE
       CGNSbase=i
       IF( (cd .NE. cellDim) .OR. (pd .NE. physDim))THEN
         CALL closeFile(CGNSFile)
-        CALL abort(__STAMP__,&
-           'Wrong dimensionalities in database ' // TRIM(basename) // ' in file:'//TRIM(filename),INT(cellDim),REAL(physDim))
+        CALL abort(__STAMP__,'Wrong dimensionalities in database ' // TRIM(basename) // ' in file:'//TRIM(filename),INT(cellDim),REAL(physDim))
       END IF
     END IF
   END DO
@@ -1430,8 +1426,7 @@ END IF
 IF (CGNSBase .EQ. -999) THEN ! not found
   IF(mode .EQ. MODE_READ)THEN
      CALL closeFile(CGNSFile)
-     CALL abort(__STAMP__,&
-                'Cannot find base '//TRIM(basename)//' in cgns file: '//TRIM(filename))
+     CALL abort(__STAMP__,'Cannot find base '//TRIM(basename)//' in cgns file: '//TRIM(filename))
   END IF
 
   IF((mode .EQ. MODE_MODIFY) .OR. (mode.EQ.MODE_WRITE)) THEN ! create base anyway

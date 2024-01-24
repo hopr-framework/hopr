@@ -179,8 +179,7 @@ DO i=1, nFaces
     faceConnectivity(1,nFaces+1+k)=k   !actual Face ID  
     READ(150,*) faceConnectivity(2:j,nFaces+1+k) !Neighbor Face IDs of actual Face  
   ELSEIF (k .EQ. 0) THEN
-    CALL abort(__STAMP__, &
-         'ERROR: CAD-face connectivity invalid',999,999.)
+    CALL abort(__STAMP__,'ERROR: CAD-face connectivity invalid',999,999.)
   ELSE
     faceConnectivity(1,k)=k    
     READ(150,*) faceConnectivity(2:j,k)    
@@ -188,8 +187,7 @@ DO i=1, nFaces
 END DO
 DO i=1,nFaces !all entries have to be filled
   IF (faceConnectivity(1,i) .EQ. 0) THEN
-    CALL abort(__STAMP__, &
-         'ERROR: CAD-face connectivity invalid',999,999.)
+    CALL abort(__STAMP__,'ERROR: CAD-face connectivity invalid',999,999.)
   END IF
 END DO
 
@@ -282,8 +280,7 @@ DO i=1, nTotalNodes
 END DO !nTotalNodes
 CLOSE(150)
 IF (countAssignedNodes .NE. searchMeshNodes) THEN
-  CALL abort(__STAMP__, &
-           'ERROR: not all normals are assigned to local nodes in searchmesh',countAssignedNodes,REAL(searchMeshNodes))
+  CALL abort(__STAMP__,'ERROR: not all normals are assigned to local nodes in searchmesh',countAssignedNodes,REAL(searchMeshNodes))
 END IF
 CALL deleteDuplicateNormals
 CALL checkNormals
@@ -1330,8 +1327,7 @@ CASE(2) !cylinder, origin x=0.,y=0.
   normal(2)=xpos(2)
   normal(3)=0
 CASE DEFAULT
-  CALL abort(__STAMP__,  &
-             'Exact normal function with specified index does not exist. Index:',exactIndex,999.)
+  CALL abort(__STAMP__,'Exact normal function with specified index does not exist. Index:',exactIndex,999.)
 END SELECT
 normal(:)=normal(:)/SQRT(SUM(normal(:)*normal(:)))
 END SUBROUTINE exactNormalFunction
@@ -1500,8 +1496,7 @@ CASE(11) !naca0012 profile,zero TE thickness,c=1,
     WRITE(UNIT_stdOut,'(A,3E21.11)')'    new position',xnew
   END IF
 CASE DEFAULT
-  CALL abort(__STAMP__,  &
-             'Exact surface function with specified index does not exist. Index:',exactFunction,999.)
+  CALL abort(__STAMP__,'Exact surface function with specified index does not exist. Index:',exactFunction,999.)
 END SELECT
 END SUBROUTINE exactSurfaceFunction
 
@@ -2473,8 +2468,7 @@ outer:      DO j=1,bOrd-1
          DO i=1,aSide%nNodes
            ERRWRITE(*,'(A,I3,3E21.10)')'side corner node',i,aSide%OrientedNode(i)%np%x
          END DO
-         CALL abort(__STAMP__, &
-              'No associated side found for boundary order=',N+1)
+         CALL abort(__STAMP__,'No associated side found for boundary order=',N+1)
       ELSE
         !convert to curvedNode pointers
         IF(aSide%nNodes.EQ.3) THEN
