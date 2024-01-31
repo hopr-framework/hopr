@@ -75,6 +75,8 @@ jobs:
         cp ../docs/Meshformat/pics/HOPR_logo.png AppDir/usr/share/icons/hopr.png
         curl -L -O https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
         chmod +x linuxdeploy-x86_64.AppImage
+        mkdir -p AppDir/usr/share/icons/hicolor/64x64/apps/
+        ln -sf ../../../hopr.png AppDir/usr/share/icons/hicolor/64x64/apps/
         tree AppDir
         ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage --desktop-file=../hopr.desktop
 
@@ -116,7 +118,7 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: hopr-binary-v1.2.0
+        name: hopr-binary-v1.2.1
         path: artifacts
 
     - name: Upload release asset
