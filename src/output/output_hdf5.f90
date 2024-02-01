@@ -439,17 +439,17 @@ WRITE(*,'(A40)') &
         '    #elements  .......... of type:      '
 WRITE(*,'(A40)')   &
         '    ------------------------------------'
-ElemTypeName(1:11)= (/' straight-edge Tetrahedra ', &
-                      '        curved Tetrahedra ', &
-                      '  planar-faced Prisms     ', &
-                      ' straight-edge Prisms     ', &
-                      '        curved Prisms     ', &
-                      '  planar-faced Pyramids   ', &
-                      ' straight-edge Pyramids   ', &
-                      '        curved Pyramids   ', &
-                      '  planar-faced Hexahedra  ', &
-                      ' straight-edge Hexahedra  ', &
-                      '        curved Hexahedra  '/)
+ElemTypeName(1:11)= (/' straight-edge Tetrahedra ', & !104
+                      '        curved Tetrahedra ', & !204
+                      '  planar-faced Pyramids   ', & !105
+                      ' straight-edge Pyramids   ', & !115
+                      '        curved Pyramids   ', & !205
+                      '  planar-faced Prisms     ', & !106
+                      ' straight-edge Prisms     ', & !116
+                      '        curved Prisms     ', & !206
+                      '  planar-faced Hexahedra  ', & !108
+                      ' straight-edge Hexahedra  ', & !118
+                      '        curved Hexahedra  '/)  !208
 DO i=1,11
 IF(ElemCounter(2,i).GT.0) &
   WRITE(*,'(A4,I9,A26)')'    ',Elemcounter(2, i),ElemTypeName(i)

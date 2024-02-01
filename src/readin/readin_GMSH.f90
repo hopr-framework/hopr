@@ -9,6 +9,7 @@
 ! /____//   /____//  /______________//  /____//           /____//   |_____/)    ,X`      XXX`
 ! )____)    )____)   )______________)   )____)            )____)    )_____)   ,xX`     .XX`
 !                                                                           xxX`      XXx
+! Copyright (C) 2023  Florian Hindenlang <hindenlang@gmail.com>
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
@@ -633,8 +634,15 @@ elem%ep%nNodes = GETNNODES(GMSH_TYPES(2,gmshElemType),bOrd)
 ALLOCATE(Elem%ep%Node(elem%ep%nNodes))
 
 DO i=1,elem%ep%nNodes
+  NULLIFY(elem%ep%node(i)%np)
   SELECT CASE(elem%ep%nNodes)
-  CASE(4)
+CASE(3)
+    IF(MeshDim.EQ.2) THEN
+      elem%ep%node(i)%np => Nodes(nodeInds(i))%NP
+    ELSE 
+      CALL abort(__STAMP__,'Unknown element type, 3D element with 3 nodes...!')
+    END IF
+CASE(4)
     IF(MeshDim.EQ.2) THEN
       elem%ep%node(i)%np => Nodes(nodeInds(quadMapCGNSToGMSH(i)))%np
     ELSE
@@ -646,7 +654,7 @@ DO i=1,elem%ep%nNodes
     elem%ep%node(i)%np => Nodes(nodeInds(PriMapCGNSToGMSH(i)))%np
   CASE(8)
     elem%ep%node(i)%np => Nodes(nodeInds(HexMapCGNSToGMSH(i)))%np
-  CASE DEFAULT
+    CASE DEFAULT
     CALL abort(__STAMP__,'Unknown element type!')
   END SELECT
   elem%ep%node(i)%np%refCount = elem%ep%node(i)%np%refCount+1

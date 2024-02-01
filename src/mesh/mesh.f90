@@ -9,7 +9,7 @@
 ! /____//   /____//  /______________//  /____//           /____//   |_____/)    ,X`      XXX`
 ! )____)    )____)   )______________)   )____)            )____)    )_____)   ,xX`     .XX`
 !                                                                           xxX`      XXx
-! Copyright (C) 2017  Florian Hindenlang <hindenlang@gmail.com>
+! Copyright (C) 2023  Florian Hindenlang <hindenlang@gmail.com>
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
@@ -832,6 +832,9 @@ WRITE(UNIT_stdOut,'(A)')'Fill 2.5D mesh...'
 ! curved ones
 Elem => FirstElem
 DO WHILE(ASSOCIATED(Elem))
+  IF(.NOT.((Elem%nNodes.EQ.8).OR.(Elem%nNodes.EQ.6)))THEN
+    CALL abort(__STAMP__,'ERROR: Fill 2.5 D mesh, found non-prismatic (prism/hexa) element!')
+  END IF
   IF(Elem%nCurvedNodes.EQ.0)THEN
     nNodes=Elem%nNodes/2  ! Only Hexahedrons or prisms in 2.5D case -> 8/6 nodes
     DO iNode=nNodes+1,Elem%nNodes ! nodes 1 to Elem%nNodes/2 on lower z-layer, other nodes on upper z-layer
