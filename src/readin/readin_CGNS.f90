@@ -733,7 +733,7 @@ IF(meshdim.EQ.3) THEN
 ELSEIF(meshdim.EQ.2) THEN
   ALLOCATE(nodeCoords(3,1:irmax(1),1:irmax(2),1))
 ELSE
-  STOP 'Incompatible meshDimension'
+  CALL abort(__STAMP__,'Incompatible meshDimension')
 END IF
 
 ! Read Coordinates
@@ -1174,7 +1174,7 @@ DO iZone=1,nCGNSZones
   CALL cg_zone_type_f(CGNSFile, CGNSBase, iZone, ZoneType, iError)
   IF (iError .NE. CG_OK) CALL cg_error_exit_f()
   IF (ZoneType.EQ.Structured)THEN
-    STOP 'no structured readin for surface data'
+    CALL abort(__STAMP__,'no structured readin for surface data')
   END IF
   coordNameCGNS(1) = 'CoordinateX'
   coordNameCGNS(2) = 'CoordinateY'
