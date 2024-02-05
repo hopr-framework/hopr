@@ -984,9 +984,7 @@ DO WHILE(ASSOCIATED(aElem))
         lEdge%edge=>aEdge
         aEdge%FirstLocalEdge=>lEdge
       ELSE
-        IF((LOC(aEdge%firstLocalEdge%edge).EQ.LOC(aEdge)).AND.(aEdge%FirstLocalEdge%localEdgeID.EQ.-1)) THEN !existing periodic firstlocalEdge, but not yet claimed by the attached element!
-          IF(aEdge%firstLocalEdge%elem%ind.NE.aElem%ind) CALL abort(__STAMP__, &
-                                   "problem in firstlocaledge element association")
+        IF((aEdge%firstLocalEdge%elem%ind.EQ.aElem%ind).AND.(aEdge%FirstLocalEdge%localEdgeID.EQ.-1)) THEN !existing periodic firstlocalEdge, but not yet claimed by the attached same element!
           aElem%localEdge(iEdge)%ledp=>aEdge%FirstlocalEdge
           lEdge=>aElem%LocalEdge(iEdge)%ledp
           lEdge%localEdgeID=iEdge
@@ -1021,8 +1019,7 @@ DO WHILE(ASSOCIATED(aElem))
       aNode%FirstVertex=>vert
       vert%node=>aNode
     ELSE
-      IF((LOC(aNode%FirstVertex%node).EQ.LOC(aNode)).AND.(aNode%FirstVertex%localVertexID.EQ.-1))THEN !periodic vertex found, but not yet claimed by the attached elemnent
-        IF(aNode%firstVertex%elem%ind.NE.aElem%ind) CALL abort(__STAMP__,"problem in firstvertex element association")
+      IF((aNode%firstVertex%elem%ind.EQ.aElem%ind).AND.(aNode%FirstVertex%localVertexID.EQ.-1))THEN !periodic vertex found, but not yet claimed by the attached same elemnent
         aElem%Vertex(iNode)%vp=>aNode%FirstVertex
         vert=>aElem%Vertex(iNode)%vp
         vert%localVertexID=iNode
