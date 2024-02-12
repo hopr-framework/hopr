@@ -9,6 +9,8 @@
 ! /____//   /____//  /______________//  /____//           /____//   |_____/)    ,X`      XXX`
 ! )____)    )____)   )______________)   )____)            )____)    )_____)   ,xX`     .XX`
 !                                                                           xxX`      XXx
+! Copyright (C) 2024  Stephen Copplestone <copplestone@boltzplatz.eu>
+! Copyright (C) 2024  Patrick Kopper <kopper@iag.uni-stuttgart.de>
 ! Copyright (C) 2023  Florian Hindenlang <hindenlang@gmail.com>
 ! Copyright (C) 2023  Tobias Ott <tobias.ott@proton.me>
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
