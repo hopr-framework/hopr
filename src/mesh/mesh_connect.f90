@@ -126,11 +126,9 @@ DO WHILE(ASSOCIATED(Elem))
       ELSEIF (Side%BC%BCType .EQ. 1) THEN
         nPeriodicSides=nPeriodicSides+1
         IF (Side%BC%BCalphaInd.EQ.0) &
-          CALL abort(__STAMP__, &
-            TRIM(conn)//': No displacement vector vv assigned to periodic BC')
+          CALL abort(__STAMP__,TRIM(conn)//': No displacement vector vv assigned to periodic BC')
         IF (abs(Side%BC%BCalphaInd).GT.nVV)   &
-          CALL abort(__STAMP__, &
-            TRIM(conn)//':No defined displacement vector vv assigned to periodic BC')
+          CALL abort(__STAMP__,TRIM(conn)//':No defined displacement vector vv assigned to periodic BC')
       END IF
     END IF
     Side=>Side%nextElemSide
@@ -208,8 +206,7 @@ DO WHILE(ASSOCIATED(Elem))
     Side%tmp=0
     Side%tmp2=0
     IF(Side%LocSide .LE. 0) &
-      CALL abort(__STAMP__, &
-        'Mesh '//TRIM(conn)//': Side%LocSide not set!')
+      CALL abort(__STAMP__,'Mesh '//TRIM(conn)//': Side%LocSide not set!')
     IF (ASSOCIATED(Side%BC)) THEN
       IF(Side%BC%BCType .EQ. 1) THEN
         nPeriodic(1)=nPeriodic(1)+1
@@ -255,8 +252,7 @@ IF(nInner(2)+nPeriodic(2) .GT. 0) THEN
   WRITE(*,*) 'Inner sides: ',nInner(2),' of ',nInner(1),' sides missing.'
   WRITE(*,*) 'Periodic sides ',nPeriodic(2),' of ',nPeriodic(1),' sides missing.'
   IF(nPeriodic(2).GT.0) CALL BCVisu()
-  CALL abort(__STAMP__, &
-    TRIM(conn)//': Sides with missing connection found.')
+  CALL abort(__STAMP__,TRIM(conn)//': Sides with missing connection found.')
 END IF
 
 WRITE(UNIT_stdOut,'(A,F0.3,A)')'Mesh '//TRIM(conn)//' completed with success.  '
@@ -409,16 +405,14 @@ DO iSide=1,nInnerSides-1
       DO iNode=1,nSide%nNodes
         IF(ASSOCIATED(Side%Node(1)%np,nSide%Node(iNode)%np)) fNode=iNode
       END DO
-      IF(fNode.EQ.0)CALL abort(__STAMP__, & 
-                    'Problem with OrientedNode !')
+      IF(fNode.EQ.0)CALL abort(__STAMP__,'Problem with OrientedNode !')
     ELSEIF(Side%tmp2.LT.0) THEN !only connect from periodic slave side to master side (->nSide has a dummy connection side)
       ! for adjustorientednodes by pointer association (no tolerance gedoens!) 
       fNode=0
       DO iNode=1,Side%nNodes
         IF(ASSOCIATED(Side%Node(1)%np,nSide%connection%Node(iNode)%np)) fNode=iNode
       END DO
-      IF(fNode.EQ.0)CALL abort(__STAMP__, & 
-                    'Problem with OrientedNode on periodic side!')
+      IF(fNode.EQ.0)CALL abort(__STAMP__,'Problem with OrientedNode on periodic side!')
       !now delete dummy Side
       DO iNode=1,nSide%nNodes
         NULLIFY(nSide%connection%Node(iNode)%np)
@@ -431,8 +425,7 @@ DO iSide=1,nInnerSides-1
       DO iNode=1,nSide%nNodes
         IF(ASSOCIATED(nSide%Node(1)%np,Side%connection%Node(iNode)%np)) fNode=iNode
       END DO
-      IF(fNode.EQ.0)CALL abort(__STAMP__, & 
-                    'Problem with OrientedNode on periodic side (master)!')
+      IF(fNode.EQ.0)CALL abort(__STAMP__,'Problem with OrientedNode on periodic side (master)!')
       !now delete dummy Side
       DO iNode=1,Side%nNodes
         NULLIFY(Side%connection%Node(iNode)%np)
@@ -723,11 +716,11 @@ DO iSide=1,nNonConformingSides-2
             smallSide2=>tmpSide
           END IF
         ELSE
-          STOP 'ERROR: Mortar type could not be identified!'
+          CALL abort(__STAMP__,'ERROR: Mortar type could not be identified!')
         END IF
 
         bigSide%nMortars=2
-        IF(ASSOCIATED(bigSide%MortarSide)) STOP 'ERROR: Mortar connection already associated!'
+        IF(ASSOCIATED(bigSide%MortarSide)) CALL abort(__STAMP__,'ERROR: Mortar connection already associated!')
         ALLOCATE(bigSide%MortarSide(2))
         bigSide%MortarSide(1)%sp=>smallSide1
         bigSide%MortarSide(2)%sp=>smallSide2
@@ -800,7 +793,7 @@ DO iSide=1,nNonConformingSides
   aSide%MortarType=1
   aSide%nMortars=4
   SideDone(iSide)=.TRUE.
-  IF(ASSOCIATED(aSide%MortarSide)) STOP 'ERROR: Mortar connection already associated!'
+  IF(ASSOCIATED(aSide%MortarSide)) CALL abort(__STAMP__,'ERROR: Mortar connection already associated!')
   ALLOCATE(aSide%MortarSide(4))
   DO iNode=1,4
     ! for type 1, small mortars are sorted on a cartesian grid (first xi, then eta)
@@ -869,7 +862,7 @@ DO WHILE(ASSOCIATED(Elem))
     ELSE
       ! dummy side is mortar slave, update connection of mortar master
       bigSide=>dummySide%connection
-      IF(ASSOCIATED(dummySide,bigSide)) STOP 'ERROR: Periodic mortar slave has no connection to master!'
+      IF(ASSOCIATED(dummySide,bigSide)) CALL abort(__STAMP__,'ERROR: Periodic mortar slave has no connection to master!')
       DO iSide=1,bigSide%nMortars
         IF(ASSOCIATED(bigSide%MortarSide(iSide)%sp,dummySide))THEN
           bigSide%MortarSide(iSide)%sp=>aSide
@@ -968,7 +961,7 @@ DO jSide=1,aSide%nMortars
     END DO
     IF(commonNode) EXIT
   END DO
-  IF(.NOT.commonNode) STOP 'ERROR: no common node of big and small mortar sides found'
+  IF(.NOT.commonNode) CALL abort(__STAMP__,'ERROR: no common node of big and small mortar sides found')
   DO iNode=1,aSide%nNodes
     bSide%orientedNode(masterNode)%np=>bSide%Node(slaveNode)%np
     masterNode=prev1(masterNode,aSide%nNodes)

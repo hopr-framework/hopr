@@ -9,10 +9,14 @@
 ! /____//   /____//  /______________//  /____//           /____//   |_____/)    ,X`      XXX`
 ! )____)    )____)   )______________)   )____)            )____)    )_____)   ,xX`     .XX`
 !                                                                           xxX`      XXx
+! Copyright (C) 2024  Stephen Copplestone <copplestone@boltzplatz.eu>
+! Copyright (C) 2024  Patrick Kopper <kopper@iag.uni-stuttgart.de>
+! Copyright (C) 2023  Florian Hindenlang <hindenlang@gmail.com>
+! Copyright (C) 2023  Tobias Ott <tobias.ott@proton.me>
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -31,7 +35,7 @@ USE MOD_Mesh_Vars,ONLY:tEdge
 IMPLICIT NONE
 PRIVATE
 !-----------------------------------------------------------------------------------------------------------------------------------
-! GLOBAL VARIABLES 
+! GLOBAL VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 
 INTERFACE ElemGeometry
@@ -60,6 +64,10 @@ END INTERFACE
 
 INTERFACE BuildEdges
   MODULE PROCEDURE BuildEdges
+END INTERFACE
+
+INTERFACE BuildFEMconnectivity
+  MODULE PROCEDURE BuildFEMconnectivity
 END INTERFACE
 
 INTERFACE FlushMesh
@@ -97,6 +105,7 @@ PUBLIC::CreateSides
 !PUBLIC::AdjustOrientedNodes
 PUBLIC::GetBoundaryIndex
 PUBLIC::BuildEdges
+PUBLIC::buildFEMconnectivity
 PUBLIC::FlushMesh
 PUBLIC::assignBC
 PUBLIC::isOriented
@@ -124,7 +133,7 @@ TYPE(tElem),POINTER,INTENT(INOUT) :: Elem
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 REAL,INTENT(OUT),OPTIONAL      :: TrafoOpt(3,3)    ! see below
-REAL,INTENT(OUT),OPTIONAL      :: TrafoInvOpt(3,3)   ! ? 
+REAL,INTENT(OUT),OPTIONAL      :: TrafoInvOpt(3,3)   ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES
 TYPE(tSide),POINTER :: Side  ! ?
@@ -248,7 +257,7 @@ REAL,INTENT(IN)     :: M(3,3)  ! ?
 ! OUTPUT VARIABLES
 REAL,INTENT(OUT)    :: MInv(3,3),detM  ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 !===================================================================================================================================
 detM =   M(1,1)*M(2,2)*M(3,3)  &
        - M(1,1)*M(2,3)*M(3,2)  &
@@ -283,9 +292,9 @@ SUBROUTINE FindElemTypes()
 ! 5               = bilinear quadrangle
 ! 6/7             = triangle/quadrangle with curved sides
 ! 104/105/106/108 = tetra/pyramid/prism/hexaeder  with linear sides
-!     115/116/118 = pyramid/prism/hexaeder        with bilinear sides   
+!     115/116/118 = pyramid/prism/hexaeder        with bilinear sides
 ! 204/205/206/208 = tetra/pyramid/prism/hexaeder with curved sides
-! >1000           = polygon or polyeder 
+! >1000           = polygon or polyeder
 !===================================================================================================================================
 ! MODULES
 USE MOD_Mesh_Vars,ONLY:tElem,tSide,FirstElem
@@ -296,7 +305,7 @@ IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tElem),POINTER :: Elem     ! %nNodes,%Trafo,%node,  is used. %type is set
 TYPE(tSide),POINTER :: Side     ! %curvedNode are checked, %iscurved is set =true if curved
 LOGICAL             :: elemCurved,sideCurved  ! ?
@@ -316,10 +325,10 @@ DO WHILE(ASSOCIATED(Elem))
   CASE DEFAULT
     Elem%Type=1000+Elem%nNodes
   END SELECT
-  
+
   elemCurved=.FALSE.
   IF(ASSOCIATED(Elem%CurvedNode)) elemCurved=.TRUE.
-  
+
   sideCurved=.FALSE.
   Side=>Elem%firstSide
   DO WHILE(ASSOCIATED(Side))
@@ -329,13 +338,13 @@ DO WHILE(ASSOCIATED(Elem))
     END IF
     Side=>Side%nextElemSide
   END DO
-  
+
   !IF(sideCurved.AND.(.NOT.elemCurved)) CALL Abort(__STAMP__,&
   !  'Sanity check: Element with uncurved volume but curved sides found. ElemInd:',Elem%Ind)
   !
   !IF(.NOT.sideCurved.AND.elemCurved)&
   !  WRITE(*,*) 'WARNING: Element is curved without any side beeing curved. ElemInd:',Elem%ind
-  
+
   IF ((Elem%Type .EQ. 104) .AND. (sideCurved)) Elem%Type=204
   IF ((Elem%Type .EQ. 105) .AND. (sideCurved)) Elem%Type=205
   IF ((Elem%Type .EQ. 106) .AND. (sideCurved)) Elem%Type=206
@@ -382,7 +391,7 @@ TYPE(tNode),POINTER,INTENT(IN)            :: node8   ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 !===================================================================================================================================
   CALL GetNewElem(elem)
   Elem%zone=zone
@@ -414,11 +423,11 @@ IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT VARIABLES
 TYPE(tElem),POINTER,INTENT(INOUT) :: Elem        ! pointer to Element
-LOGICAL,INTENT(IN)                :: buildSides  ! determines if Sides should also be build 
+LOGICAL,INTENT(IN)                :: buildSides  ! determines if Sides should also be build
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tSide),POINTER :: Side  ! ?
 TYPE(tNodePtr)      :: TempNodeArray(Elem%nNodes)  ! ?
 INTEGER             :: iSide,iNode  ! ?
@@ -450,7 +459,8 @@ IF((Elem%nNodes.LT.4) .OR. (Elem%nNodes.GT.8)) THEN
   CALL abort(__STAMP__, 'Unknown 3D Elem%nNodes in CreateSides')
 ENDIF
 
-iSide=1
+iSide =  1
+Side  => Elem%firstSide
 DO
   IF(iSide .EQ. 1) THEN
     IF(buildSides) CALL getNewSide(Elem%firstSide,nNodesElemSideMapping(Elem%nNodes,iSide))   !sidenNodesmapping(iSide))
@@ -466,8 +476,7 @@ DO
   DO iNode=1,Side%nNodes
     IF(ElemSideMapping(Elem%nNodes,iSide,iNode).EQ.0) then
       WRITE(*,*)Elem%nNodes,iSide,iNode,Side%nNodes
-      CALL abort(__STAMP__, &
-        'Error in ElemSideMapping in CreateSides')
+      CALL abort(__STAMP__,'Error in ElemSideMapping in CreateSides')
     END IF
     Side%Node(iNode)%np=>Elem%Node(ElemSideMapping(Elem%nNodes,iSide,iNode))%np
     IF(buildSides) Side%Node(iNode)%np%refCount=Side%Node(iNode)%np%refCount+1
@@ -504,7 +513,7 @@ END SUBROUTINE CreateSides
 !!----------------------------------------------------------------------------------------------------------------------------------
 !! OUTPUT VARIABLES
 !!----------------------------------------------------------------------------------------------------------------------------------
-!! LOCAL VARIABLES 
+!! LOCAL VARIABLES
 !TYPE(tSide),POINTER :: nSide   ! ?
 !INTEGER             :: iNode,fNode,deriv(2)  ! ?
 !REAL                :: VV_loc(3)  ! ?
@@ -606,9 +615,9 @@ END FUNCTION GetBoundaryIndex
 SUBROUTINE buildEdges()
 !===================================================================================================================================
 ! Create Edge datastructure, each edge is unique, and has a pointer from each side and from the node with the lower index.
-! on the node, a list beginning with node%firstEdge is build up. On the Element sides, a edge pointer array Edge(1:nNodes) is 
-! filled, together with their orientation inside the side. Very important: OrientedNodes are used!!!! 
-! If the edge is oriented, it goes from orientedNode(i)-> orientedNode(i+1), and 
+! on the node, a list beginning with node%firstEdge is build up. On the Element sides, a edge pointer array Edge(1:nNodes) is
+! filled, together with their orientation inside the side. Very important: OrientedNodes are used!!!!
+! If the edge is oriented, it goes from orientedNode(i)-> orientedNode(i+1), and
 ! If the edge is not  oriented, it goes from orientedNode(i+1)-> orientedNode(i)
 !===================================================================================================================================
 ! MODULES
@@ -626,15 +635,19 @@ TYPE(tElem),POINTER          :: aElem  ! ?
 TYPE(tSide),POINTER          :: aSide,bSide   ! ?
 TYPE(tEdge),POINTER          :: aEdge,bEdge  ! ?
 TYPE(tEdgePtr)               :: smallEdges(4)  ! ?
-TYPE(tNode),POINTER          :: aNode,bNode  ! ?
+TYPE(tNode),POINTER          :: aNode,bNode ! ?
 INTEGER                      :: iSide,jSide,iEdge,jEdge,kEdge,iNode,iPlus,nSides,EdgeInd,nNodes  ! ?
 INTEGER                      :: indA(2),indB(2,4),indTmp(2)
 INTEGER                      :: edgeCount  ! ?
 LOGICAL                      :: edgeFound  ! ?
+INTEGER                      :: nSides_from_nNodes(4:8)=(/4,5,5,-1, 6/)
 !===================================================================================================================================
+
 CALL Timer(.TRUE.)
 WRITE(UNIT_stdOut,'(132("~"))')
 WRITE(UNIT_stdOut,'(A)')'BUILD EDGES ...'
+
+
 
 ! count unique corner nodes
 aElem=>firstElem
@@ -657,16 +670,7 @@ END DO !! ELEMS!!
 EdgeInd=0
 aElem=>firstElem
 DO WHILE(ASSOCIATED(aElem))
-  SELECT CASE(aElem%nNodes)
-  CASE(8)
-    nSides=6
-  CASE(6)
-    nSides=5
-  CASE(5)
-    nSides=5
-  CASE(4)
-    nSides=4
-  END SELECT
+  nSides=nSides_from_nNodes(aElem%nNodes)
   aSide=>aElem%firstSide
   DO iSide=1,nSides    !!SIDES!!***********
     DO iEdge=1,aSide%nNodes     !!EDGES!! nNodes=nEdges**************
@@ -680,13 +684,13 @@ DO WHILE(ASSOCIATED(aElem))
         aNode=>aSide%OrientedNode(iEdge)%np
         bNode=>aSide%OrientedNode(iPlus)%np
         aSide%edgeOrientation(iEdge)=.TRUE.
-      ELSE 
+      ELSE
         WRITE(*,*) 'Problem with node%ind in buildEdges'
         WRITE(*,*) 'node IDs',aSide%OrientedNode(iEdge)%np%ind,aSide%OrientedNode(iPlus)%np%ind
         WRITE(*,*) 'node1%x',aSide%OrientedNode(iEdge)%np%x
         WRITE(*,*) 'node2%x',aSide%OrientedNode(iPlus)%np%x
-        
-        STOP
+
+        CALL abort(__STAMP__,'Problem with node%ind in buildEdges')
       END IF
 
       edgeFound=.FALSE.
@@ -702,10 +706,10 @@ DO WHILE(ASSOCIATED(aElem))
         CALL getNewEdge(aEdge,aNode,bNode)
         EdgeInd=EdgeInd+1
         IF (ASSOCIATED(aNode%firstEdge)) THEN
-          aEdge%nextEdge=>aNode%firstEdge 
+          aEdge%nextEdge=>aNode%firstEdge
         END IF
         aNode%firstEdge=>aEdge
-      END IF 
+      END IF
       !WRITE(*,*)'DEBUG a',aNode%ind,'b',bNode%ind,edgeFound,aEdge%ind
       aSide%Edge(iEdge)%edp=>aEdge
     END DO !!EDGES!!***************
@@ -717,16 +721,7 @@ END DO !! ELEMS!!
 ! in case of nonconforming meshes, build nonconforming edge connectivity
 aElem=>firstElem
 DO WHILE(ASSOCIATED(aElem))
-  SELECT CASE(aElem%nNodes)
-  CASE(8)
-    nSides=6
-  CASE(6)
-    nSides=5
-  CASE(5)
-    nSides=5
-  CASE(4)
-    nSides=4
-  END SELECT
+  nSides=nSides_from_nNodes(aElem%nNodes)
   aSide=>aElem%firstSide
   DO iSide=1,nSides
     IF(aSide%nMortars.LE.0)THEN  ! only check big mortar sides
@@ -771,9 +766,7 @@ DO WHILE(ASSOCIATED(aElem))
       END DO
 
       IF(edgeCount.EQ.3) CYCLE
-      IF(edgeCount.NE.4) THEN
-        STOP 'Mismatch of neighbour edge count of non-conforming edges.'
-      END IF
+      IF(edgeCount.NE.4) CALL abort(__STAMP__,'Mismatch of neighbour edge count of non-conforming edges.')
 
       ! now select the 2 edges of the found 4 edges, sharing a common node
       DO jEdge=1,3
@@ -800,9 +793,257 @@ DO WHILE(ASSOCIATED(aElem))
   END DO !!SIDES!!**************
   aElem=>aElem%nextElem
 END DO !! ELEMS!!
-
 CALL timer(.FALSE.)
 END SUBROUTINE buildEdges
+
+SUBROUTINE buildFEMconnectivity()
+!===================================================================================================================================
+! Fill the FEM edge and Vertex connectivity as a pointer datastructure:
+! We already have unique pointers for geometric "nodes" and geometric "edges" (buildEdges needed before calling this routine!)
+! If periodic BCs are present, its important that a "FEM vertex" and a "FEM edge"=`LocalEdge` are unique in a topological sense,
+! which is different to the geometrical uniqueness. 
+! For example, a 1 element fully periodic domain has 8 unique nodes, but only one FEM vertex, 
+! and it has 12 unique edges geometrically, but only 3 FEM edges (3 x (4 geometric edges)). 
+!
+! FEM  connectivity means that each geometric entity (vertex/edge) of an element needs to have a list of all elements 
+! which are connected via that entity. There is only one geometric entity  that "owns" this list (=master edge/vertex),
+! which is then accessed via the `FirstLocalEdge`/`FirstVertex` pointer (not associated for "slave" entities).
+! In this list, there is then a `nextEdge`/`nextVertex` pointer, 
+! and the number of connections is counted in the `FirstLocalEdge%tmp`/`FirstVertex%tmp`.
+! First we loop through all element sides which have a periodic neighbor, where we use
+! the `orientedNodes` to access the neighbors edges and vertices, and add their connection to the pointer list.
+! Then we loop through all sides again to fill the remaining edge and vertex connectivity into the pointer list.
+! The pointer datastructure will be translated into the hdf5 meshfile data in "WriteMeshToHDF5" routine. 
+!===================================================================================================================================
+! MODULES
+  USE MOD_Mesh_Vars,ONLY:tElem,tSide,tEdge,tNode,tEdgePtr,tLocalEdge,tVertex
+  USE MOD_Mesh_Vars,ONLY:firstElem,CGNSElemEdgeToNode
+  USE MOD_Mesh_Vars,ONLY:getNewLocalEdge,getNewVertex
+  IMPLICIT NONE
+!-----------------------------------------------------------------------------------------------------------------------------------
+! INPUT VARIABLES
+!-----------------------------------------------------------------------------------------------------------------------------------
+! OUTPUT VARIABLES
+!-----------------------------------------------------------------------------------------------------------------------------------
+! LOCAL VARIABLES
+  TYPE(tElem),POINTER          :: aElem  ! ?
+  TYPE(tSide),POINTER          :: aSide,bSide   ! ?
+  TYPE(tEdge),POINTER          :: aEdge,bEdge  ! ?
+  TYPE(tLocalEdge),POINTER     :: lEdge,nextlEdge  ! ?
+  TYPE(tNode),POINTER          :: aNode,bNode ! ?
+  TYPE(tVertex),POINTER        :: vert,next_vert
+  INTEGER                      :: i,iSide,iEdge,iNode,iPlus,nSides
+  INTEGER                      :: indA(2),indTmp(2)
+  LOGICAL                      :: edgeFound  ! ?
+  INTEGER                      :: nSides_from_nNodes(4:8)=(/4,5,5,-1, 6/)
+  INTEGER                      :: nEdges_from_nNodes(4:8)=(/6,8,9,-1,12/)
+!===================================================================================================================================
+CALL Timer(.TRUE.)
+WRITE(UNIT_stdOut,'(132("~"))')
+WRITE(UNIT_stdOut,'(A)')'BUILD FEM connectivity of edges and vertices...'
+
+! set first local edge / first Vertex for all periodic edges before, such that they all point to one single geometrical edge / vertex
+aElem=>firstElem
+DO WHILE(ASSOCIATED(aElem))
+  nSides=nSides_from_nNodes(aElem%nNodes)
+  aSide=>aElem%firstSide
+  DO iSide=1,nSides
+    IF(ASSOCIATED(aSide%BC))THEN !
+      IF(aSide%BC%BCType.EQ.1)THEN !ONLY FOR periodic BC!!
+        !find periodic  edge connection (edge exists two times!)
+        bSide=>aside%connection
+        !find from aside and bside the common edge => aEdge and bEdge
+        ! NOTE THAT "iEdge"=iOrientedNode
+        DO iEdge=1,aSide%nNodes
+          iPlus=iEdge+1
+          IF(iEdge.EQ.aSide%nNodes) iPlus=1
+
+          ! aSide + edge from aNode->bNode
+          IF(aSide%edgeOrientation(iEdge))THEN
+            aNode=>aSide%OrientedNode(iEdge)%np
+            bNode=>aSide%OrientedNode(iPlus)%np
+          ELSE
+            aNode=>aSide%OrientedNode(iPlus)%np
+            bNode=>aSide%OrientedNode(iEdge)%np
+          END IF
+          indA(1)=aNode%ind
+          indA(2)=bNode%ind
+          edgeFound=.FALSE.
+          aEdge=>aNode%firstEdge  ! edge list of edges that have the aNode as their first index
+          DO WHILE (ASSOCIATED(aEdge))
+            indTmp(1)=aEdge%Node(1)%np%ind
+            indTmp(2)=aEdge%Node(2)%np%ind
+            IF((ANY(indA(1).EQ.indTmp)).AND.(ANY(indA(2).EQ.indTmp)))THEN
+              edgeFound=.TRUE.
+              EXIT
+            END IF
+            aEdge=>aEdge%nextEdge
+          END DO
+          IF(.NOT.edgeFound) CALL abort(__STAMP__,'problem in finding periodic side aEdge')
+
+          !now for the periodic side (bSide,edge from anode->bnode)
+          IF(bSide%edgeOrientation(iEdge))THEN
+            aNode=>bSide%OrientedNode(iEdge)%np
+            bNode=>bSide%OrientedNode(iPlus)%np
+          ELSE
+            aNode=>bSide%OrientedNode(iPlus)%np
+            bNode=>bSide%OrientedNode(iEdge)%np
+          END IF
+          indA(1)=aNode%ind
+          indA(2)=bNode%ind
+          edgeFound=.FALSE.
+          bEdge=>aNode%firstEdge
+          DO WHILE (ASSOCIATED(bEdge))
+            indTmp(1)=bEdge%Node(1)%np%ind
+            indTmp(2)=bEdge%Node(2)%np%ind
+            IF((ANY(indA(1).EQ.indTmp)).AND.(ANY(indA(2).EQ.indTmp)))THEN
+              edgeFound=.TRUE.
+              EXIT
+            END IF
+            bEdge=>bEdge%nextEdge
+          END DO
+          IF(.NOT.edgeFound) CALL abort(__STAMP__,'problem in finding periodic side bEdge')
+
+          !set firstLocalEdge to the same global edge for all periodic edges found
+          IF(.NOT.ASSOCIATED(bEdge%FirstLocalEdge))THEN
+            IF(.NOT.ASSOCIATED(aEdge%FirstLocalEdge))THEN
+              CALL getNewLocalEdge(aEdge%FirstLocalEdge,Elem_in=aElem,Edge_in=aEdge)
+              aEdge%FirstLocalEdge%localEdgeID=-1  ! MARK PERIODIC FIRSTLOCALEDGE!
+            END IF! aedge%firstlocalEdge not associated
+            bEdge%FirstLocalEdge=>aEdge%FirstLocalEdge
+          ELSE
+            IF(.NOT.ASSOCIATED(aEdge%FirstLocalEdge))THEN
+              aEdge%FirstLocalEdge=>bEdge%FirstLocalEdge
+            ELSE
+              !both are already associated, but they are periodic, be sure that they are synchronized (re-pointer!)
+              IF(LOC(bEdge%FirstLocalEdge).NE.LOC(aEdge%FirstLocalEdge))THEN
+                bEdge%FirstLocalEdge=>aEdge%FirstLocalEdge
+              END IF
+            END IF !aedge
+          END IF !bedge%firstlocalEdge not associated
+          !set firstVertex to the same global node for all periodic vertices found
+          aNode=>aSide%OrientedNode(iEdge)%np  ! node of aEdge
+          bNode=>bSide%OrientedNode(iEdge)%np  !corresponding periodic node of bEdge
+          IF(.NOT.ASSOCIATED(bNode%FirstVertex))THEN
+            IF(.NOT.ASSOCIATED(aNode%FirstVertex))THEN
+              CALL getNewVertex(aNode%FirstVertex,Elem_in=aElem,Node_in=aNode)
+              aNode%FirstVertex%localVertexID=-1  ! MARK PERIODIC FIRSTVERTEX!
+            END IF! anode%firstVertex not associated
+            bNode%FirstVertex=>aNode%FirstVertex
+          ELSE
+            IF(.NOT.ASSOCIATED(aNode%FirstVertex))THEN
+              aNode%FirstVertex=>bNode%FirstVertex
+            ELSE
+              !both are already associated, but they are periodic, be sure that they are synchronized (re-pointer!)
+              IF(LOC(bNode%FirstVertex).NE.LOC(aNode%FirstVertex))THEN
+                bNode%FirstVertex=>aNode%FirstVertex
+              END IF
+            END IF !anode%firstvertex not associated
+          END IF !bnode%firstVertex not associated
+        END DO !iEdge=1,bSide%nnodes
+      END IF ! BC periodic
+    END IF !   BC side
+    aSide=>aSide%nextElemSide
+  END DO !iSides
+  aElem=>aElem%nextElem
+END DO !ELEMS
+
+! Build all elem to localEdge / Vertex pointer arrays, where each connection found is appended to the list of FirstLocalEdge->next_connection / FirstVertex -> next_connection
+aElem=>firstElem
+DO WHILE(ASSOCIATED(aElem))
+  aElem%nEdges=nEdges_from_nNodes(aElem%nNodes)
+  ALLOCATE(aElem%localEdge(aElem%nEdges))
+  !fill element edges
+  DO iEdge=1,aElem%nEdges
+    aNode=>aElem%Node(CGNSElemEdgeToNode(aElem%nNodes,iEdge,1))%np
+    bNode=>aElem%Node(CGNSElemEdgeToNode(aElem%nNodes,iEdge,2))%np
+    !find edge from aNode->bNode (same orientation) / from bNode->aNode (opposite orientation)
+
+    edgeFound=.FALSE.
+    indA(1)=aNode%ind
+    indA(2)=bNode%ind
+    DO i=1,2  ! loop anode, bnode
+      IF(i.EQ.1)THEN
+        aEdge=>aNode%firstEdge
+      ELSE
+        aEdge=>bNode%firstEdge
+      END IF
+      DO WHILE (ASSOCIATED(aEdge))
+        indtmp(1)=aEdge%Node(1)%np%ind
+        indtmp(2)=aEdge%Node(2)%np%ind
+        IF((ANY(indA(1).EQ.indTmp)).AND.(ANY(indA(2).EQ.indTmp)))THEN
+          edgeFound=.TRUE.
+          EXIT
+        END IF
+        aEdge=>aEdge%nextEdge
+      END DO
+      IF(edgeFound) EXIT
+    END DO !i=1,2
+    IF (edgeFound) THEN
+      IF(.NOT.ASSOCIATED(aEdge%firstLocalEdge))THEN
+        CALL getNewLocalEdge(aElem%LocalEdge(iEdge)%ledp,Elem_in=aElem,localEdgeID_in=iEdge)
+        lEdge=>aElem%LocalEdge(iEdge)%ledp
+        lEdge%edge=>aEdge
+        aEdge%FirstLocalEdge=>lEdge
+      ELSE
+        IF((aEdge%firstLocalEdge%elem%ind.EQ.aElem%ind).AND.(aEdge%FirstLocalEdge%localEdgeID.EQ.-1)) THEN !existing periodic firstlocalEdge, but not yet claimed by the attached same element!
+          aElem%localEdge(iEdge)%ledp=>aEdge%FirstlocalEdge
+          lEdge=>aElem%LocalEdge(iEdge)%ledp
+          lEdge%localEdgeID=iEdge
+        ELSE
+          CALL getNewLocalEdge(aElem%LocalEdge(iEdge)%ledp,Elem_in=aElem,localEdgeID_in=iEdge)
+          lEdge=>aElem%LocalEdge(iEdge)%ledp
+
+          lEdge%tmp=-1  !mark as slave edge
+          lEdge%edge=>aEdge%FirstLocalEdge%edge
+          nextLedge=>aEdge%FirstLocalEdge
+          DO WHILE(ASSOCIATED(nextlEdge%next_connected))
+            nextlEdge=>nextlEdge%next_connected
+          END DO
+          nextlEdge%next_connected=>lEdge !append to edge connectivity list
+        END IF
+      END IF !aedge%firstlocaledge associated
+      aEdge%FirstLocalEdge%tmp=aEdge%FirstLocalEdge%tmp+1 !count edge multiplicity in firstLocalEdge%tmp
+      lEdge%orientation=(SUM((bNode%x-aNode%x)*(lEdge%edge%Node(2)%np%x-lEdge%edge%Node(1)%np%x)).GT.0.)
+    ELSE
+      CALL abort(__STAMP__,'something is wrong cannot find edge in element')
+    END IF
+  END DO !iEdge=1,aElem%nEdges
+
+  ALLOCATE(aElem%Vertex(aElem%nNodes))
+  ! fill element vertex
+  DO iNode=1,aElem%nNodes
+    aNode=>aElem%Node(iNode)%np
+
+    IF(.NOT.ASSOCIATED(aNode%firstVertex))THEN
+      CALL GetNewVertex(aElem%Vertex(iNode)%vp,Elem_in=aElem,localVertexID_in=iNode)
+      vert=>aElem%Vertex(iNode)%vp
+      aNode%FirstVertex=>vert
+      vert%node=>aNode
+    ELSE
+      IF((aNode%firstVertex%elem%ind.EQ.aElem%ind).AND.(aNode%FirstVertex%localVertexID.EQ.-1))THEN !periodic vertex found, but not yet claimed by the attached same elemnent
+        aElem%Vertex(iNode)%vp=>aNode%FirstVertex
+        vert=>aElem%Vertex(iNode)%vp
+        vert%localVertexID=iNode
+      ELSE
+        CALL GetNewVertex(aElem%Vertex(iNode)%vp,Elem_in=aElem,localVertexID_in=iNode)
+        vert=>aElem%Vertex(iNode)%vp
+        vert%node=>aNode%FirstVertex%node
+        vert%tmp=-1  ! mark as slave vertex
+        next_vert=>aNode%FirstVertex
+        DO WHILE(ASSOCIATED(next_vert%next_connected))
+          next_vert=>next_vert%next_connected
+        END DO
+        next_vert%next_connected=>vert  !append to vertex connectivity list
+      END IF
+    END IF
+    aNode%FirstVertex%tmp=aNode%FirstVertex%tmp+1  !vertex multiplicity counted on FirstVertex%tmp (master vertex)
+  END DO !iNode
+  aElem=>aElem%nextElem
+END DO !! ELEMS!!
+
+CALL timer(.FALSE.)
+END SUBROUTINE buildFEMconnectivity
 
 
 SUBROUTINE FlushMesh()
@@ -819,8 +1060,8 @@ IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
-TYPE(tElem),POINTER :: Elem 
+! LOCAL VARIABLES
+TYPE(tElem),POINTER :: Elem
 !===================================================================================================================================
 DO WHILE(ASSOCIATED(FirstElem))
    Elem=>FirstElem
@@ -843,7 +1084,7 @@ TYPE(tBC),POINTER,INTENT(IN) :: BCorig ! Original boundary condition
 ! OUTPUT VARIABLES
 TYPE(tBC),POINTER,INTENT(OUT) :: BCcopy ! Copy of boundary condition "BCorig"
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 !===================================================================================================================================
 IF (ASSOCIATED(BCorig)) THEN
   IF (.NOT. ASSOCIATED(BCcopy)) THEN
@@ -867,12 +1108,12 @@ USE MOD_Mesh_Vars,ONLY:tSide
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT VARIABLES
-TYPE(tSide),POINTER,INTENT(IN) :: Side         ! ? 
+TYPE(tSide),POINTER,INTENT(IN) :: Side         ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
-LOGICAL             :: isOriented   ! ? 
+LOGICAL             :: isOriented   ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 !===================================================================================================================================
 isOriented=.FALSE.
 IF ((ASSOCIATED(Side%Node(1)%np, Side%orientedNode(1)%np)) .AND. &
@@ -891,12 +1132,12 @@ USE MOD_Mesh_Vars,ONLY:tSide
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT VARIABLES
-TYPE(tSide),POINTER,INTENT(IN) :: Side         ! ? 
+TYPE(tSide),POINTER,INTENT(IN) :: Side         ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
-INTEGER                        :: getFlip   ! ? 
+INTEGER                        :: getFlip   ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 INTEGER                        :: i
 !===================================================================================================================================
 getFlip=-1
@@ -905,7 +1146,7 @@ IF(isOriented(Side))THEN !oriented side
 ELSE !not oriented
   DO i=1,Side%nNodes
     IF(ASSOCIATED(Side%Node(i)%np,Side%OrientedNode(1)%np))THEN
-      getFlip=i 
+      getFlip=i
       EXIT
     END IF
   END DO
@@ -913,33 +1154,33 @@ END IF
 END FUNCTION getFlip
 
 
-SUBROUTINE Pack1D(Ngeo,edge,data_out) 
+SUBROUTINE Pack1D(Ngeo,edge,data_out)
 !===================================================================================================================================
 ! description
 !===================================================================================================================================
-! MODULES  
+! MODULES
 USE MOD_Mesh_Vars,ONLY:tEdge
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
-! INPUT / OUTPUT VARIABLES 
+! INPUT / OUTPUT VARIABLES
 INTEGER,INTENT(IN)             :: Ngeo
 TYPE(tEdge),POINTER,INTENT(IN) :: edge
 REAL,INTENT(OUT)               :: data_out(3,0:Ngeo)
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES
-INTEGER           :: iNgeo 
+INTEGER           :: iNgeo
 !===================================================================================================================================
 IF(NGeo.GT.1)THEN
   DO iNgeo=0,Ngeo
     data_out(:,iNgeo) = edge%curvedNode(iNgeo+1)%np%x
-  END DO 
-ELSE 
+  END DO
+ELSE
   data_out(:,0) = edge%Node(1)%np%x
   data_out(:,1) = edge%Node(2)%np%x
 END IF
 END SUBROUTINE Pack1D
 
-SUBROUTINE Pack2D(Ngeo,side,data_out) 
+SUBROUTINE Pack2D(Ngeo,side,data_out)
 !===================================================================================================================================
 ! description
 !===================================================================================================================================
@@ -948,21 +1189,21 @@ USE MOD_Mesh_Vars,ONLY:tSide
 USE MOD_Basis_Vars ,ONLY:QuadMapInv
 IMPLICIT NONE
 !----------------------------------------------------------------------------------------------------------------------------------!
-! INPUT / OUTPUT VARIABLES 
+! INPUT / OUTPUT VARIABLES
 INTEGER,INTENT(IN)  :: Ngeo
 TYPE(tSide),POINTER,INTENT(IN) :: side
 REAL,INTENT(OUT)    :: data_out(3,0:Ngeo,0:Ngeo)
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES
-INTEGER           :: iNgeo,jNgeo,i1D 
+INTEGER           :: iNgeo,jNgeo,i1D
 !===================================================================================================================================
 IF(Ngeo.GT.1)THEN
   DO jNgeo=0,Ngeo
     DO iNgeo=0,Ngeo
       i1D = QuadMapInv(iNgeo,jNgeo)
       data_out(:,iNgeo,jNgeo) = side%curvedNode(i1D)%NP%x
-    END DO 
-  END DO 
+    END DO
+  END DO
 ELSE
   data_out(:,0,0) = side%OrientedNode(1)%NP%x
   data_out(:,1,0) = side%OrientedNode(2)%NP%x
@@ -971,7 +1212,7 @@ ELSE
 END IF
 END SUBROUTINE Pack2D
 
-SUBROUTINE Pack3D(Ngeo,elem,data_out) 
+SUBROUTINE Pack3D(Ngeo,elem,data_out)
 !===================================================================================================================================
 ! description
 !===================================================================================================================================
@@ -980,13 +1221,13 @@ USE MOD_Mesh_Vars,ONLY:tElem
 USE MOD_Basis_Vars ,ONLY:HexaMapInv
 IMPLICIT NONE
 !----------------------------------------------------------------------------------------------------------------------------------!
-! INPUT / OUTPUT VARIABLES 
+! INPUT / OUTPUT VARIABLES
 INTEGER,INTENT(IN)  :: Ngeo
 TYPE(tElem),POINTER,INTENT(IN) :: elem
 REAL,INTENT(OUT)    :: data_out(3,0:Ngeo,0:Ngeo,0:Ngeo)
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES
-INTEGER           :: iNgeo,jNgeo,kNgeo,i1D 
+INTEGER           :: iNgeo,jNgeo,kNgeo,i1D
 !===================================================================================================================================
 IF(Ngeo.GT.1)THEN
   DO kNgeo=0,Ngeo
@@ -994,9 +1235,9 @@ IF(Ngeo.GT.1)THEN
       DO iNgeo=0,Ngeo
         i1D = HexaMapInv(iNgeo,jNgeo,kNgeo)
         data_out(:,iNgeo,jNgeo,kNgeo) = elem%curvedNode(i1D)%NP%x
-      END DO 
-    END DO 
-  END DO 
+      END DO
+    END DO
+  END DO
 ELSE
   data_out(:,0,0,0) = elem%Node(1)%NP%x
   data_out(:,1,0,0) = elem%Node(2)%NP%x
@@ -1009,7 +1250,7 @@ ELSE
 END IF
 END SUBROUTINE Pack3D
 
-SUBROUTINE Unpack1D(Ngeo,data_in,edge) 
+SUBROUTINE Unpack1D(Ngeo,data_in,edge)
 !===================================================================================================================================
 ! description
 !===================================================================================================================================
@@ -1017,25 +1258,25 @@ SUBROUTINE Unpack1D(Ngeo,data_in,edge)
 USE MOD_Mesh_Vars,ONLY:tEdge
 IMPLICIT NONE
 !----------------------------------------------------------------------------------------------------------------------------------!
-! INPUT / OUTPUT VARIABLES 
+! INPUT / OUTPUT VARIABLES
 INTEGER,INTENT(IN)  :: Ngeo
 REAL,INTENT(IN)     :: data_in(3,0:Ngeo)
 TYPE(tEdge),POINTER,INTENT(IN) :: edge
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES
-INTEGER           :: iNgeo 
+INTEGER           :: iNgeo
 !===================================================================================================================================
 IF(NGeo.GT.1)THEN
   DO iNgeo=0,Ngeo
     edge%curvedNode(iNgeo+1)%NP%x = data_in(:,iNgeo)
-  END DO 
+  END DO
 ELSE
   edge%Node(1)%NP%x = data_in(:,0)
   edge%Node(2)%NP%x = data_in(:,1)
 END IF
 END SUBROUTINE Unpack1D
 
-SUBROUTINE Unpack2D(Ngeo,data_in,side) 
+SUBROUTINE Unpack2D(Ngeo,data_in,side)
 !===================================================================================================================================
 ! description
 !===================================================================================================================================
@@ -1044,7 +1285,7 @@ USE MOD_Mesh_Vars,ONLY:tSide
 USE MOD_Basis_Vars ,ONLY:QuadMapInv
 IMPLICIT NONE
 !----------------------------------------------------------------------------------------------------------------------------------!
-! INPUT / OUTPUT VARIABLES 
+! INPUT / OUTPUT VARIABLES
 INTEGER,INTENT(IN)  :: Ngeo
 REAL,INTENT(IN)     :: data_in(3,0:Ngeo,0:Ngeo)
 TYPE(tSide),POINTER,INTENT(IN) :: side
@@ -1057,8 +1298,8 @@ IF(NGeo.GT.1)THEN
     DO iNgeo=0,Ngeo
       i1D = QuadMapInv(iNgeo,jNgeo)
       side%curvedNode(i1D)%NP%x = data_in(:,iNgeo,jNgeo)
-    END DO 
-  END DO 
+    END DO
+  END DO
 ELSE
   side%OrientedNode(1)%NP%x = data_in(:,0,0)
   side%OrientedNode(2)%NP%x = data_in(:,1,0)
@@ -1067,7 +1308,7 @@ ELSE
 END IF
 END SUBROUTINE Unpack2D
 
-SUBROUTINE Unpack3D(Ngeo,data_in,elem) 
+SUBROUTINE Unpack3D(Ngeo,data_in,elem)
 !===================================================================================================================================
 ! description
 !===================================================================================================================================
@@ -1076,7 +1317,7 @@ USE MOD_Mesh_Vars,ONLY:tElem
 USE MOD_Basis_Vars ,ONLY:HexaMapInv
 IMPLICIT NONE
 !----------------------------------------------------------------------------------------------------------------------------------!
-! INPUT / OUTPUT VARIABLES 
+! INPUT / OUTPUT VARIABLES
 INTEGER,INTENT(IN)  :: Ngeo
 REAL,INTENT(IN)     :: data_in(3,0:Ngeo,0:Ngeo,0:Ngeo)
 TYPE(tElem),POINTER,INTENT(IN) :: elem
@@ -1090,9 +1331,9 @@ IF(NGeo.GT.1)THEN
       DO iNgeo=0,Ngeo
         i1D = HexaMapInv(iNgeo,jNgeo,kNgeo)
         elem%curvedNode(i1D)%NP%x = data_in(:,iNgeo,jNgeo,kNgeo)
-      END DO 
-    END DO 
-  END DO 
+      END DO
+    END DO
+  END DO
 ELSE
   elem%Node(1)%NP%x = data_in(:,0,0,0)
   elem%Node(2)%NP%x = data_in(:,1,0,0)

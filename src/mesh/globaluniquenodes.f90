@@ -12,7 +12,7 @@
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -31,7 +31,7 @@ USE MOD_Globals
 IMPLICIT NONE
 PRIVATE
 !-----------------------------------------------------------------------------------------------------------------------------------
-! GLOBAL VARIABLES 
+! GLOBAL VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! Private Part ---------------------------------------------------------------------------------------------------------------------
 ! Public Part ----------------------------------------------------------------------------------------------------------------------
@@ -55,7 +55,7 @@ USE MOD_Mesh_Vars, ONLY:SpaceQuandt
 USE MOD_Mesh_Tools,ONLY:SetTempMarker
 USE MOD_Mesh_Tolerances,ONLY:COMPAREPOINT
 USE MOD_SpaceFillingCurve,ONLY:EVAL_MORTON,EVAL_MORTON_ARR
-USE MOD_SortingTools,ONLY: Qsort1DoubleInt1Pint  
+USE MOD_SortingTools,ONLY: Qsort1DoubleInt1Pint
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -64,7 +64,7 @@ LOGICAL,OPTIONAL,INTENT(IN) :: withOrientedOpt
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tElem),POINTER         :: Elem  ! ?
 TYPE(tSide),POINTER         :: Side  ! ?
 TYPE(tEdge),POINTER         :: Edge  ! ?
@@ -95,14 +95,14 @@ sLog2=1./LOG(2.)
 withOriented=.FALSE.
 IF(PRESENT(withOrientedOpt)) withOriented=withOrientedOpt
 
-! First step: set node marker=0 
+! First step: set node marker=0
 Elem=>FirstElem
 DO WHILE(ASSOCIATED(Elem))
   CALL SetTempMarker(Elem,0,(/T,T,T,T,T,T,withOriented,T/))
   Elem=>Elem%nextElem
 END DO
 
-! Second step: set unique node marker and count 
+! Second step: set unique node marker and count
 NodeID=0
 Elem=>FirstElem
 DO WHILE(ASSOCIATED(Elem))
@@ -206,7 +206,7 @@ DO iNode=1,nTotalNodes
 END DO !iNode
 box_min=box_min-PP_MeshTolerance
 box_max=box_max+PP_MeshTolerance
-box_nbits = (bit_size(maxIJK)-1) / 3 
+box_nbits = (bit_size(maxIJK)-1) / 3
 maxIJK = 2**box_nbits-1               ![0,2**box_nBits-1]
 box_sdx = REAL(maxIJK)/(box_max-box_min)
 
@@ -288,8 +288,8 @@ nDeletedNodes=0
 
 tol=SpaceQuandt*PP_MeshTolerance
  ! Size of tolerance gives a box_di for bisection (could be computed for each node seperately !!!)
-!box_di  =MAX(0,box_nBits-FLOOR(LOG((box_max-box_min)/tol)*sLog2)) ! tol=2^x L=2^n => x=n-LOG(L/tol)/LOG(2) 
-box_di  =MAX(0,CEILING(LOG(tol*box_sdx)*sLog2)) 
+!box_di  =MAX(0,box_nBits-FLOOR(LOG((box_max-box_min)/tol)*sLog2)) ! tol=2^x L=2^n => x=n-LOG(L/tol)/LOG(2)
+box_di  =MAX(0,CEILING(LOG(tol*box_sdx)*sLog2))
 box_di=2**box_di
 WRITE(*,*)'   size of tolerance box:',box_di
 s_offset=box_di**3-1   !offset inside one box of size box_di, from the lower sfc index to to highest
@@ -315,20 +315,20 @@ DO iNode=1,nTotalNodes
   CALL FindBoxes(NodesIJK(:,iNode),box_di,box_nBits,maxIJK,s_minmax,smin,smax,nRanges)
   !next higher neighbor on SFC
   lastNode=nextNode
-  DO nextNode=lastNode+1,nTotalNodes 
+  DO nextNode=lastNode+1,nTotalNodes
     IF(Nodes(nextNode)%np%tmp.EQ.0) EXIT ! not yet treated
   END DO
   nextNode=MIN(nextNode,nTotalNodes)
-  IF(SFCID(nextNode).GT.smax) CYCLE 
-  
+  IF(SFCID(nextNode).GT.smax) CYCLE
+
   DO i=1,nRanges
      IF(s_minmax(i,1).EQ.-1)CYCLE
-     IF(SFCID(iNode).GT.s_minmax(i,2)) CYCLE 
-     IF(SFCID(nextNode).GT.s_minmax(i,2)) CYCLE 
+     IF(SFCID(iNode).GT.s_minmax(i,2)) CYCLE
+     IF(SFCID(nextNode).GT.s_minmax(i,2)) CYCLE
      NodeID=INVMAP(s_minmax(i,1),nTotalNodes-(iNode-1),SFCID(iNode:nTotalNodes))
      IF(NodeID.EQ.-1) CYCLE !nothing found inside the box
      NodeID=MAX(nextNode,NodeID+iNode)
-     DO jNode=NodeID,nTotalNodes 
+     DO jNode=NodeID,nTotalNodes
        IF(SFCID(jNode).GT.s_minmax(i,2)) EXIT ! check if  > s_max
        IF(Nodes(jNode)%np%tmp.GT.0) CYCLE ! was already treated
 
@@ -402,13 +402,13 @@ SUBROUTINE FindBoxes(IntCoord,box_di,box_nBits,maxIJK,s_minmax,smin,smax,nRanges
 !===================================================================================================================================
 ! finds the ranges of the spacefilling curve which correspond to a maximum of 8 boxes with a box size of 2*box_id,
 ! box_di (from node merging tolerance) defines the smallest box size. We now look at two levels below the octree  (4x4x4 box size)
-! where node lies inside. We need a tolerance of one box  to find all possible nodes(makes 3x3x3 boxes), 
-! but due to the octree, we always choose a 4x4x4 region, allowing a maximum of only 8 search boxes of size 2x2x2. 
+! where node lies inside. We need a tolerance of one box  to find all possible nodes(makes 3x3x3 boxes),
+! but due to the octree, we always choose a 4x4x4 region, allowing a maximum of only 8 search boxes of size 2x2x2.
 ! Due to the nature of the morton spacefilling curve, some boxes have  contiguous ranges and are merged. There are three cases:
 ! 1 box of 4x4x4 is used if the node is inside
-!                    
-! z       x0                  x1                 x2                  x3        
-! ^  ___ ___ ___ ___    ___ ___ ___ ___     ___ ___ ___ ___    ___ ___ ___ ___ 
+!
+! z       x0                  x1                 x2                  x3
+! ^  ___ ___ ___ ___    ___ ___ ___ ___     ___ ___ ___ ___    ___ ___ ___ ___
 ! | |   |   |   |   |  |   |   |   |   |   |   |   |   |   |  |   |   |   |   |
 ! | |___|___|___|___|  |___|___|___|___|   |___|___|___|___|  |___|___|___|___|
 ! | |   |   |   |   |  |   | . | . |   |   |   | . | . |   |  |   |   |   |   |
@@ -418,10 +418,10 @@ SUBROUTINE FindBoxes(IntCoord,box_di,box_nBits,maxIJK,s_minmax,smin,smax,nRanges
 ! | |   |   |   |   |  |   |   |   |   |   |   |   |   |   |  |   |   |   |   |
 ! | |___|___|___|___|  |___|___|___|___|   |___|___|___|___|  |___|___|___|___|
 ! *----------------------> y
-! 2 boxes of 2x4x4,  if nodes are inside yz and +/-x 
-!                    
-! z       x0                  x1                 x2                  x3        
-! ^  ___ ___ ___ ___    ___ ___ ___ ___     ___ ___ ___ ___    ___ ___ ___ ___ 
+! 2 boxes of 2x4x4,  if nodes are inside yz and +/-x
+!
+! z       x0                  x1                 x2                  x3
+! ^  ___ ___ ___ ___    ___ ___ ___ ___     ___ ___ ___ ___    ___ ___ ___ ___
 ! | |   |   |   |   |  |   |   |   |   |   |   |   |   |   |  |   |   |   |   |
 ! | |___|___|___|___|  |___|___|___|___|   |___|___|___|___|  |___|___|___|___|
 ! | |   | . | . |   |  |   |   |   |   |   |   |   |   |   |  |   | . | . |   |
@@ -432,9 +432,9 @@ SUBROUTINE FindBoxes(IntCoord,box_di,box_nBits,maxIJK,s_minmax,smin,smax,nRanges
 ! | |___|___|___|___|  |___|___|___|___|   |___|___|___|___|  |___|___|___|___|
 ! *----------------------> y
 ! 4 boxes of 2x2x4, if nodes are inside z and +/-x +/- y
-!                    
-! z       x0                  x1                 x2                  x3        
-! ^  ___ ___ ___ ___    ___ ___ ___ ___     ___ ___ ___ ___    ___ ___ ___ ___ 
+!
+! z       x0                  x1                 x2                  x3
+! ^  ___ ___ ___ ___    ___ ___ ___ ___     ___ ___ ___ ___    ___ ___ ___ ___
 ! | |   |   |   |   |  |   |   |   |   |   |   |   |   |   |  |   |   |   |   |
 ! | |___|___|___|___|  |___|___|___|___|   |___|___|___|___|  |___|___|___|___|
 ! | | . |   |   | . |  |   |   |   |   |   |   |   |   |   |  | . |   |   | . |
@@ -463,9 +463,9 @@ INTEGER(KIND=8),INTENT(IN)  :: maxIJK      ! maximum domain size in integer coun
 INTEGER(KIND=8),INTENT(OUT) :: s_minmax(8,2)  ! sfc index ranges of the 27 boxes
 INTEGER(KIND=8),INTENT(OUT) :: smin            ! minimum of s_minmax(:,1)
 INTEGER(KIND=8),INTENT(OUT) :: smax            ! maximum of s_minmax(:,2)
-INTEGER,INTENT(OUT)         :: nRanges          ! number of ranges 
+INTEGER,INTENT(OUT)         :: nRanges          ! number of ranges
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 INTEGER          :: i,j,k,l  ! ?
 INTEGER          :: Ranges(3),start(3)  ! ?
 LOGICAL          :: xi0(3),xi1(3)  ! ?
@@ -476,8 +476,8 @@ box_di2=box_di+box_di
 box_di4=box_di2+box_di2
 
 IJK_min(:)=box_di4*(IntCoord(:)/(box_di4))
-xi0(:)=(MOD(IntCoord(:)/box_di2,2).NE.0)
-xi1(:)=(MOD(IntCoord(:)/box_di,2).NE.0)
+xi0(:)=(MOD(IntCoord(:)/box_di2,INT(2,KIND=8)).NE.0)
+xi1(:)=(MOD(IntCoord(:)/box_di ,INT(2,KIND=8)).NE.0)
 
 Ranges=2
 start=0
@@ -489,7 +489,7 @@ IF(xi0(3).NEQV.xi1(3)) THEN
   Ranges(3)=1
   IF(xi0(2).NEQV.xi1(2)) THEN
     Ranges(2)=1
-    IF(xi0(1).NEQV.xi1(1))THEN 
+    IF(xi0(1).NEQV.xi1(1))THEN
       Ranges(1)=1
     END IF
   END IF
@@ -521,7 +521,7 @@ END SUBROUTINE FindBoxes
 
 SUBROUTINE SetCountNodeID(NodeID_in,NodeID)
 !===================================================================================================================================
-! insert a new node id 
+! insert a new node id
 !===================================================================================================================================
 ! MODULES
 ! IMPLICIT VARIABLE HANDLING
@@ -532,7 +532,7 @@ IMPLICIT NONE
 ! OUTPUT VARIABLES
 INTEGER,INTENT(INOUT) :: NodeID_in,NodeID  ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 !===================================================================================================================================
 IF(NodeID_in.EQ.0)THEN
   NodeID=NodeID+1
@@ -543,7 +543,7 @@ END SUBROUTINE SetCountNodeID
 FUNCTION INVMAP(ID,nIDs,ArrID)
 !===================================================================================================================================
 ! find the inverse Mapping of sfc index in a sorted list (a sorted array of unique NodeIDs), using bisection
-! if Index is not in the range, -1 will be returned, gives back the first entry in the sorted list  which is <= ID 
+! if Index is not in the range, -1 will be returned, gives back the first entry in the sorted list  which is <= ID
 !===================================================================================================================================
 ! MODULES
 ! IMPLICIT VARIABLE HANDLING
@@ -555,7 +555,7 @@ INTEGER, INTENT(IN)         :: nIDs          ! size of ArrID
 INTEGER(KIND=8), INTENT(IN) :: ArrID(nIDs)   ! 1D array of IDs, SORTED!!
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
-INTEGER                     :: INVMAP         ! position in arrID, where arrID(INVMAP)  <= ID 
+INTEGER                     :: INVMAP         ! position in arrID, where arrID(INVMAP)  <= ID
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES
 INTEGER                     :: i,low,up,mid  ! ?
@@ -577,13 +577,13 @@ up=nIDs
 maxSteps=INT(LOG(REAL(nIDs))*1.442695040888964)+1
 DO i=1,maxSteps
   mid=(up-low)/2+low
-  IF(ArrID(mid).GE.ID )THEN !seek in lower half 
+  IF(ArrID(mid).GE.ID )THEN !seek in lower half
     up=mid
   ELSE
     low=mid
   END IF
 END DO
 INVMAP=low
-END FUNCTION INVMAP 
+END FUNCTION INVMAP
 
 END MODULE MOD_GlobalUniqueNodes

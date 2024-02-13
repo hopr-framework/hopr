@@ -9,7 +9,7 @@
 ! /____//   /____//  /______________//  /____//           /____//   |_____/)    ,X`      XXX`
 ! )____)    )____)   )______________)   )____)            )____)    )_____)   ,xX`     .XX`
 !                                                                           xxX`      XXx
-! Copyright (C) 2017  Florian Hindenlang <hindenlang@gmail.com>
+! Copyright (C) 2023  Florian Hindenlang <hindenlang@gmail.com>
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
@@ -29,7 +29,7 @@ MODULE MOD_ReadInTools
 !===================================================================================================================================
 ! MODULES
 USE MOD_Globals
-USE ISO_VARYING_STRING
+USE MOD_ISO_VARYING_STRING
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 PRIVATE
@@ -45,6 +45,7 @@ PUBLIC::GETREALARRAY
 PUBLIC::IgnoredStrings
 PUBLIC::FillStrings
 PUBLIC::STRICMP
+PUBLIC::FinalizeStrings
 
 !===================================================================================================================================
 
@@ -108,6 +109,10 @@ INTERFACE DeleteString
   MODULE PROCEDURE DeleteString
 END INTERFACE
 
+INTERFACE FinalizeStrings
+  MODULE PROCEDURE FinalizeStrings
+END INTERFACE
+
 TYPE tString
   TYPE(Varying_String)::Str
   TYPE(tString),POINTER::NextStr,PrevStr
@@ -147,8 +152,7 @@ IF(stat.NE.0)              TRYREAD=.FALSE.
 IF(TRIM(Key).NE.TRIM(tmp)) TRYREAD=.FALSE.
 
 IF(.NOT.TRYREAD.AND.abortLoc)&
-  CALL abort(__STAMP__,&
-             'Keyword '//TRIM(Key)//' not found in file.')
+  CALL abort(__STAMP__,'Keyword '//TRIM(Key)//' not found in file.')
 END FUNCTION TRYREAD
 
 
@@ -227,8 +231,7 @@ IF (CntStr.EQ.0) THEN
     CntStr=IntProposal
   ELSE
     SWRITE(UNIT_StdOut,*) 'Inifile missing necessary keyword item : ',TRIM(TmpKey)
-    CALL abort(__STAMP__, &
-         'Code stopped during inifile parsing!')
+    CALL abort(__STAMP__,'Code stopped during inifile parsing!')
   END IF
 END IF
 END FUNCTION CNTSTR
@@ -464,7 +467,7 @@ SUBROUTINE IgnoredStrings()
 ! Prints out remaining strings in list after read-in is complete
 !===================================================================================================================================
 ! MODULES
-USE ISO_VARYING_STRING
+USE MOD_ISO_VARYING_STRING
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -493,7 +496,7 @@ SUBROUTINE FillStrings(IniFile)
 ! with "firstString"
 !===================================================================================================================================
 ! MODULES
-USE ISO_VARYING_STRING
+USE MOD_ISO_VARYING_STRING
 USE,INTRINSIC :: ISO_FORTRAN_ENV,ONLY:IOSTAT_END
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
@@ -509,6 +512,7 @@ CHARACTER(LEN=:),ALLOCATABLE           :: HelpStr
 CHARACTER(LEN=300)                     :: File  ! ?
 TYPE(Varying_String)                   :: aStr,bStr,Separator  ! ?
 INTEGER                                :: EOF  ! ?
+LOGICAL                                :: newString
 !===================================================================================================================================
 ! Check if we have read in ini file already
 IF (ReadInDone) RETURN
@@ -529,45 +533,49 @@ OPEN(UNIT   = 103,        &
 EOF=0
 
 NULLIFY(Str1,Str2)
+newString = .FALSE.
 DO WHILE(EOF.NE.IOSTAT_END)
   IF(.NOT.ASSOCIATED(Str1)) CALL GetNewString(Str1)
-    ! Read line from file
-    CALL Get(103,aStr,iostat=EOF)
-    IF (EOF.NE.IOSTAT_END) THEN
-      ! Remove comments with "!"
-      CALL Split(aStr,Str1%Str,"!")
-      ! Remove comments with "#"
-      CALL Split(Str1%Str,bStr,"#")
-      Str1%Str=bStr
-      ! Remove "%" sign from old ini files, i.e. mesh% disc% etc.
-      CALL Split(Str1%Str,bStr,"%",Separator,Back=.false.)
-      ! If we have a newtype ini file, take the other part
-      IF(LEN(CHAR(Separator)).EQ.0) Str1%Str=bStr
-      ! Remove blanks
-      Str1%Str=Replace(Str1%Str," ","",Every=.true.)
-      ! Remove tabulator
-      Str1%Str=Replace(Str1%Str,CHAR(9),"",Every=.true.)
-      ! Replace brackets
-      Str1%Str=Replace(Str1%Str,"(/"," ",Every=.true.)
-      Str1%Str=Replace(Str1%Str,"/)"," ",Every=.true.)
-      ! Replace commas
-      Str1%Str=Replace(Str1%Str,","," ",Every=.true.)
-      ! Lower case
-      HelpStr = CHAR(Str1%Str)              ! define HelpStr to set size of deferred-shape array
-      CALL LowCase(CHAR(Str1%Str),HelpStr)  ! overwrite HelpStr without modifying size
-      ! If we have a remainder (no comment only)
-      IF(LEN_TRIM(HelpStr).GT.2) THEN
-        Str1%Str=Var_Str(HelpStr)
-        IF(.NOT.ASSOCIATED(Str2)) THEN
-          FirstString=>Str1
-        ELSE
-          Str2%NextStr=>Str1
-          Str1%PrevStr=>Str2
-        END IF
-        Str2=>Str1
-        CALL GetNewString(Str1)
+
+  ! Read line from file
+  CALL Get(103,aStr,iostat=EOF)
+  IF (EOF.NE.IOSTAT_END) THEN
+    IF (newString) CALL GetNewString(Str1)
+    newString = .FALSE.
+    ! Remove comments with "!"
+    CALL Split(aStr,Str1%Str,"!")
+    ! Remove comments with "#"
+    CALL Split(Str1%Str,bStr,"#")
+    Str1%Str=bStr
+    ! Remove "%" sign from old ini files, i.e. mesh% disc% etc.
+    CALL Split(Str1%Str,bStr,"%",Separator,Back=.false.)
+    ! If we have a newtype ini file, take the other part
+    IF(LEN(CHAR(Separator)).EQ.0) Str1%Str=bStr
+    ! Remove blanks
+    Str1%Str=Replace(Str1%Str," ","",Every=.true.)
+    ! Remove tabulator
+    Str1%Str=Replace(Str1%Str,CHAR(9),"",Every=.true.)
+    ! Replace brackets
+    Str1%Str=Replace(Str1%Str,"(/"," ",Every=.true.)
+    Str1%Str=Replace(Str1%Str,"/)"," ",Every=.true.)
+    ! Replace commas
+    Str1%Str=Replace(Str1%Str,","," ",Every=.true.)
+    ! Lower case
+    HelpStr = CHAR(Str1%Str)              ! define HelpStr to set size of deferred-shape array
+    CALL LowCase(CHAR(Str1%Str),HelpStr)  ! overwrite HelpStr without modifying size
+    ! If we have a remainder (no comment only)
+    IF(LEN_TRIM(HelpStr).GT.2) THEN
+      Str1%Str=Var_Str(HelpStr)
+      IF(.NOT.ASSOCIATED(Str2)) THEN
+        FirstString=>Str1
+      ELSE
+        Str2%NextStr=>Str1
+        Str1%PrevStr=>Str2
       END IF
+      Str2=>Str1
+      newString = .TRUE.
     END IF
+  END IF
 END DO
 CLOSE(103)
 
@@ -597,7 +605,7 @@ SUBROUTINE UserDefinedVars()
 ! Get the user defined variables
 !===================================================================================================================================
 ! MODULES
-USE iso_varying_string
+USE MOD_ISO_VARYING_STRING
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -623,8 +631,7 @@ DO i=1,nDefVars
     IF (INDEX(TRIM(CHAR(DefVar(1,i))),TRIM(CHAR(DefVar(1,j)))).NE.0) THEN
       SWRITE(UNIT_StdOut,*) '!! WARNING !! Problem with DEFVAR ', TRIM(CHAR(DefVar(1,i)))
       SWRITE(UNIT_StdOut,*) '  a part of this variable name was already used in DEFVAR ' ,TRIM(CHAR(DefVar(1,j)))
-      CALL abort(__STAMP__, &
-         'DEFVAR: do not reuse same strings for variable names! Code stopped during inifile parsing!')
+      CALL abort(__STAMP__,'DEFVAR: do not reuse same strings for variable names! Code stopped during inifile parsing!')
     END IF
   END DO
   Str1=>FirstString
@@ -655,7 +662,7 @@ SUBROUTINE GetDefVar(DefVar)
 ! Get the user defined variables
 !===================================================================================================================================
 ! MODULES
-USE iso_varying_string
+USE MOD_ISO_VARYING_STRING
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -699,8 +706,7 @@ DefVarIsRealarray=(CHAR(vStr1).EQ.'(real')
 
 IF(.NOT.((DefVarIsInt).OR.(DefVarIsIntArray).OR.(DefVarIsReal).OR.(defVarIsRealarray) ))THEN
   SWRITE(UNIT_StdOut,*) 'DEFVAR not correctly defined: ',TRIM(HelpStr)
-    CALL abort(__STAMP__, &
-         'Code stopped during inifile parsing!')
+    CALL abort(__STAMP__,'Code stopped during inifile parsing!')
 END IF
 
 IF(DefVarIsIntArray.OR.DefVarIsRealArray)THEN
@@ -823,8 +829,7 @@ DO WHILE(.NOT.Found)
   IF (.NOT.ASSOCIATED(Str1)) THEN
     IF (.NOT.PRESENT(Proposal)) THEN
       SWRITE(UNIT_StdOut,*) 'Inifile missing necessary keyword item : ',TRIM(TmpKey)
-      CALL abort(__STAMP__, &
-           'Code stopped during inifile parsing!')
+      CALL abort(__STAMP__,'Code stopped during inifile parsing!')
     ELSE ! Return default value
 !      CALL LowCase(TRIM(Proposal),Str)
       Str=TRIM(Proposal)
@@ -909,7 +914,7 @@ SUBROUTINE getPImultiplies(helpstr)
 ! it with the value of pi=3.1415... etc. and oes a multiplication.
 !===================================================================================================================================
 ! MODULES
-USE iso_varying_string
+USE MOD_ISO_VARYING_STRING
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -964,5 +969,19 @@ DO WHILE(.NOT. finished)
 END DO
 helpstr=trim(char(dstr))
 END SUBROUTINE getPImultiplies
+
+
+!===================================================================================================================================
+!> Clear parameters list 'prms'.
+!===================================================================================================================================
+SUBROUTINE FinalizeStrings()
+IMPLICIT NONE
+! LOCAL VARIABLES
+!===================================================================================================================================
+
+SDEALLOCATE(FirstString)
+FirstString => null()
+
+END SUBROUTINE FinalizeStrings
 
 END MODULE MOD_ReadInTools

@@ -72,7 +72,7 @@ REAL                   :: xTriLinear(3,BoundaryOrder**3),xBiLinear(3,BoundaryOrd
 REAL                   :: xCornerVol(1:3,8),xCornerSurf(1:3,4)
 REAL                   :: dist,x(3),xTmp(3),rbfvalue
 INTEGER                :: iBP
-REAL                   :: xMin,xMax,yMin,yMax,xBary(3)
+REAL                   :: xMin,xMax,yMin,yMax
 !===================================================================================================================================
 
 WRITE(UNIT_StdOut,'(132("-"))')
@@ -571,6 +571,7 @@ CASE(13)
 CASE(14)
   EvaluateRBF = EXP(-(xi**2.))
 CASE DEFAULT
+  EvaluateRBF = 0. ! Silence compiler warning
   CALL Abort(__STAMP__,'RBF Type is unknown')
 END SELECT
 

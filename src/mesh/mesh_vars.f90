@@ -9,11 +9,12 @@
 ! /____//   /____//  /______________//  /____//           /____//   |_____/)    ,X`      XXX`
 ! )____)    )____)   )______________)   )____)            )____)    )_____)   ,xX`     .XX`
 !                                                                           xxX`      XXx
-! Copyright (C) 2017  Florian Hindenlang <hindenlang@gmail.com>
+! Copyright (C) 2017-2023  Florian Hindenlang <hindenlang@gmail.com>
+! Copyright (C) 2023  Tobias Ott <tobias.ott@proton.me>
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -31,7 +32,7 @@ MODULE MOD_Mesh_Vars
 IMPLICIT NONE
 PUBLIC
 !-----------------------------------------------------------------------------------------------------------------------------------
-! GLOBAL VARIABLES 
+! GLOBAL VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! User Defined Types ---------------------------------------------------------------------------------------------------------------
 
@@ -48,25 +49,37 @@ TYPE tEdgePtr
   TYPE(tEdge),POINTER                 ::       EDP                    ! edge pointer
 END TYPE tEdgePtr
 
+
+TYPE tLocalEdgePtr
+  TYPE(tLocalEdge),POINTER            ::       LEDP                    ! local edge pointer
+END TYPE tLocalEdgePtr
+
 TYPE tNodePtr
   TYPE(tNode),POINTER                 ::       NP                     ! node pointer
 END TYPE tNodePtr
+
+TYPE tVertexPtr
+  TYPE(tVertex),POINTER                 ::       VP                     ! vertex pointer
+END TYPE tVertexPtr
 
 ! Actual derived types ------------------------------------------------------------------------------------------------------------
 TYPE tElem ! provides data structure for local element
   ! Derived data types -----------------------------------------------!
   TYPE(tSide), POINTER                ::       firstSide              ! pointer to element's first side
   TYPE(tNodePtr),POINTER              ::       node(:)                ! pointer to element's nodes used for restart and meshing
-  TYPE(tNodePtr),POINTER              ::       curvedNode(:)          ! ? 
+  TYPE(tNodePtr),POINTER              ::       curvedNode(:)          ! ?
+  TYPE(tLocalEdgePtr),POINTER         ::       localEdge(:)            ! allocated with number of edges in the element, CGNS ordering
+  TYPE(tVertexPtr),POINTER            ::       Vertex(:)              ! allocated with number of vertices in the element, CGNS ordering
   TYPE(tElem),POINTER                 ::       nextElem               ! pointer to next     element in order to continue a loop
-  TYPE(tElem),POINTER                 ::       prevElem               ! pointer to previous element in order to continue a loop   
+  TYPE(tElem),POINTER                 ::       prevElem               ! pointer to previous element in order to continue a loop
   TYPE(tElem),POINTER                 ::       tree                   ! pointer to tree if MortarMesh=1
   REAL                                ::       DetT                   ! element mapping depandant on the element type
   ! INTEGER ----------------------------------------------------------!
-  INTEGER                             ::       TYPE                   ! element type, for memory efficiency (involved tolerance) 
+  INTEGER                             ::       TYPE                   ! element type, for memory efficiency (involved tolerance)
   !                                                                   ! triangle/quadrangle etc.. is set in findElemType
   INTEGER                             ::       zone                   ! zone for zonal concept is given indirectly in the inifile
   INTEGER                             ::       nNodes                 ! total number of nodes for one Elem
+  INTEGER                             ::       nEdges                 ! total number of edges for one Elem
   INTEGER                             ::       nCurvedNodes           ! Used for writing curveds to hdf5 mesh format
   INTEGER                             ::       ind                    ! unique Element index for each element on all processors
   INTEGER                             ::       tmp
@@ -78,17 +91,17 @@ TYPE tSide ! provides data structure for local side
   ! Derived data types -----------------------------------------------!
   TYPE(tBC),POINTER                   ::       BC                     ! pointer to boundary condition information
   TYPE(tNodePtr),POINTER              ::       node(:)                ! node pointer
-  TYPE(tNodePtr),POINTER              ::       curvedNode(:)          ! ? 
+  TYPE(tNodePtr),POINTER              ::       curvedNode(:)          ! ?
   TYPE(tNodePtr),POINTER              ::       orientednode(:)        ! node pointer to oriented node used mainly in curved
   TYPE(tEdgePtr),POINTER              ::       Edge(:)                ! Edge pointer
-  TYPE(tElem),POINTER                 ::       elem                   ! Local element pointer 
+  TYPE(tElem),POINTER                 ::       elem                   ! Local element pointer
   TYPE(tSide),POINTER                 ::       connection             ! pointer to connected side
   TYPE(tSide),POINTER                 ::       nextElemSide           ! pointer to next element's side
   TYPE(tSidePtr),POINTER              ::       MortarSide(:)          ! array of side pointers to slave mortar sides
   ! INTEGER ----------------------------------------------------------!
   INTEGER                             ::       nNodes                 ! total number of nodes on that side
   INTEGER                             ::       nCurvedNodes           ! Used for writing curveds to hdf5 mesh format
-  INTEGER                             ::       LocSide                ! CGNS ordering of element sides 
+  INTEGER                             ::       LocSide                ! CGNS ordering of element sides
   !                                                                   ! for blended sides
   INTEGER                             ::       curveIndex             ! IF curveIndex .NE. 0 we also have a numbered curved side
   INTEGER                             ::       ind                    ! index for grouping together curved sides
@@ -104,55 +117,66 @@ TYPE tSide ! provides data structure for local side
   LOGICAL                             ::       isCurved               ! true if side is curved
 END TYPE tSide
 
-TYPE tEdge ! provides data structure for local edge
+TYPE tEdge ! provides data structure for global edges
   TYPE(tNodePtr)                      ::       Node(2)                ! pointer to node always 2
   TYPE(tNodePtr),POINTER              ::       CurvedNode(:)          ! pointer to interpolation nodes of curved sides
-  TYPE(tEdge),POINTER                 ::       nextEdge               ! only used to assign edges 
+  TYPE(tEdge),POINTER                 ::       nextEdge               ! only used to assign edges
   TYPE(tEdgePtr),POINTER              ::       MortarEdge(:)          ! array of edge pointers to slave mortar edges
   TYPE(tEdge),POINTER                 ::       parentEdge             ! parentEdge in case of non-conforming meshes
+  TYPE(tLocalEdge),POINTER            ::       FirstLocalEdge         ! pointer to local edge of first connected element
+  INTEGER                             ::       ind                    ! used for global edge index (geometrical)
 END TYPE tEdge
+
+
+TYPE tLocalEdge ! provides data structure for local element edges, needed for edge connectivity
+  TYPE(tEdge),POINTER                 ::       Edge             ! pointer back to geometrically unique edge
+  TYPE(tLocalEdge),POINTER            ::       next_connected      !  pointer
+  TYPE(tElem),POINTER                 ::       elem                   ! pointer to element connected to that edge
+  INTEGER                             ::       localEdgeID            !local edge id in connected element (CGNS standard)
+  LOGICAL                             ::       orientation            ! orientation from local to global edge (True: same, False: opposite)
+  INTEGER                             ::       ind                    ! used for global FEMedge index (topological, so with periodic BCs)
+  INTEGER                             ::       tmp                    ! used as counter for the list of edge connections
+END TYPE tLocalEdge
 
 TYPE tNode ! provides data structure for local node
   TYPE(tNormal),POINTER               ::       firstNormal            ! pointer to first normal of node
   TYPE(tEdge),POINTER                 ::       firstEdge              ! pointer to first normal of node
   REAL                                ::       x(3)                   ! node coordinates
-  INTEGER                             ::       ind                    ! node counter
+  INTEGER                             ::       ind                    ! used for global node index (geometrical)
   INTEGER                             ::       tmp    ! ?
-  INTEGER                             ::       refCount               ! In general nodes are used by more than 
+  INTEGER                             ::       refCount               ! In general nodes are used by more than
   !                                                                   ! one side / element -> Node%refCount > 1
   !                                                                   ! Node%refCount = 0 means that node is not used any more
+  TYPE(tVertex),POINTER               ::       FirstVertex            ! pointer to the beginning of the vertex connection list
 END TYPE tNode
+
+
+TYPE tVertex ! provides data structure for local element "vertices", needed for vertex connectivity
+  TYPE(tNode),POINTER                 ::       node                   ! pointer back to geometrically unique node
+  TYPE(tVertex),POINTER               ::       next_connected         !  pointer to next connected vertex
+  TYPE(tElem),POINTER                 ::       elem                   ! pointer to element connected to that vertex
+  INTEGER                             ::       localVertexID          ! local vertex id in connected element (CGNS standard)
+  INTEGER                             ::       ind                    ! used for global FEMVertex index (topological, so with periodic BCs)
+  INTEGER                             ::       tmp                    ! used as counter for the list of vertex connections
+END TYPE tVertex
+
 
 TYPE tNormal
   REAL                                ::       normal(3)              ! Normals(nDim) normals vector of a node
   INTEGER,ALLOCATABLE                 ::       FaceID(:)              ! FaceID(maxFaceIDs) normal vector from CAD geometry
-  TYPE(tNormal),POINTER               ::       prevNormal             ! Pointer to previous normal vector 
-  TYPE(tNormal),POINTER               ::       nextNormal             ! Pointer to next normal vector 
-END TYPE 
+  TYPE(tNormal),POINTER               ::       prevNormal             ! Pointer to previous normal vector
+  TYPE(tNormal),POINTER               ::       nextNormal             ! Pointer to next normal vector
+END TYPE
 
 TYPE tNormalPtr
-  TYPE(tNormal),POINTER               ::       np                     ! first Normal in list 
-END TYPE 
+  TYPE(tNormal),POINTER               ::       np                     ! first Normal in list
+END TYPE
 
-! Used for connect 3d
-TYPE tsuperNode ! provides data structure for nodes that are shared by "aSide" and "bSide". 
-  !             ! For each shared node a new SuperNode is created and put in a list of
-  !             ! SuperNodes that starts with "firstSuperNode".
-  TYPE(tNode),POINTER                 ::       meshNode               ! pointer to node
-  TYPE(tNode),POINTER                 ::       periodicNode           ! pointer to periodic node
-  TYPE(tsuperNode),POINTER            ::       nextSuperNode          ! pointer to next SuperNode
-  REAL                                ::       aCoeff(2)              ! Position of node on edge of aSide
-  REAL                                ::       bCoeff(2)              ! Position of node on edge of bSide
-  INTEGER                             ::       aEdge(2)               ! Node number of first/last edge on aSide
-  INTEGER                             ::       bEdge(2)               ! Node number of first/last edge on bSide
-  LOGICAL                             ::       periodic               ! Default: not periodic but ste to .TRUE. 
-  !                                                                   ! for periodic boundary sides
-END TYPE tsuperNode
 
 TYPE tBC  ! container for boundary condition information
   INTEGER                             ::       BCtype                 !  CGNS boundary types which are mapped by the code
   !                                                                   !  = Null
-  !                                                                   !  = BCExtrapolate          Used as periodic which 
+  !                                                                   !  = BCExtrapolate          Used as periodic which
   !                                                                   !                           doesent exist in CGNS (WHY??)
   !                                                                   !  = BCGeneral              General means exactfunction here
   !                                                                   !  = BCWallViscousHeatFlux  We have always adiabatic now
@@ -180,16 +204,16 @@ CHARACTER(LEN=255),ALLOCATABLE :: MeshFileName(:)        ! filename(nMeshfiles) 
 CHARACTER(LEN=255)             :: NormalVectFile         ! file with normals if using CAD-normals
 CHARACTER(LEN=255)             :: SplitElemFile          ! file with subdivided surface mesh for curving
 CHARACTER(LEN=255)             :: SpecElemFile           ! curved nodes file for CGNS(ICEM)
-LOGICAL                        :: ConformConnect         ! If mesh is knwon to be conform, this switch enhances connect speed 
+LOGICAL                        :: ConformConnect         ! If mesh is knwon to be conform, this switch enhances connect speed
 LOGICAL                        :: useBinary              ! read in special binary GAMBIT files
 LOGICAL                        :: BugFix_ANSA_CGNS       ! for ANSA unstructured CGNS Ansa Files, to set Boundary Condition
                                                          ! PointList always to an ElementList, default is false
 LOGICAL                        :: MeshInitDone=.FALSE.
-LOGICAL                        :: checkElemJacobians     ! check if Jacobians are positiv over curved Elements,default=.TRUE.! 
-INTEGER                        :: NegativeJacobians=0    ! counter for elements with scaledJac<jacobianTolerance 
-                                                         !after checkJacobians, this might be >0! 
+LOGICAL                        :: checkElemJacobians     ! check if Jacobians are positiv over curved Elements,default=.TRUE.!
+INTEGER                        :: NegativeJacobians=0    ! counter for elements with scaledJac<jacobianTolerance
+                                                         !after checkJacobians, this might be >0!
 REAL                           :: jacobianTolerance      ! smallest value of jacobian permitted (e.g. 1.e-16)
-
+LOGICAL                        :: generateFEMconnectivity! Flag for generating and writing the element edge and vertex connectivity, needed for a FEM solver
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! GEOMETRY
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -199,16 +223,17 @@ LOGICAL                        :: doScale                ! scaling factor gt rea
 LOGICAL                        :: preScale               ! apply scaling after readin or before output
 LOGICAL                        :: postScale              ! apply scaling after readin or before output
 REAL                           :: MeshScale              ! scaling factor applied to Node Coordinates during read in
-REAL                           :: SpaceQuandt            ! Characteristic length in the mesh. Used as tolerance 
+REAL                           :: SpaceQuandt            ! Characteristic length in the mesh. Used as tolerance
 REAL                           :: minDX                  ! smallest edge length
 REAL                           :: maxDX(3)               ! Used for search mesh
 INTEGER                        :: nMeshElems    =0       ! number of elements in the mesh
-INTEGER                        :: nInnerSides   =0       ! number of unique innner sides in the mesh 
-INTEGER                        :: nConformingSides=0     ! number of unique innner sides in the mesh 
+INTEGER                        :: nInnerSides   =0       ! number of unique innner sides in the mesh
+INTEGER                        :: nConformingSides=0     ! number of unique innner sides in the mesh
 INTEGER                        :: nBoundarySides=0       ! number of boundary sides in the mesh
 INTEGER                        :: NodeCount=0,SideCount=0,ElemCount=0  ! Counter for nodes,sides and elements.
 INTEGER                        :: nNodesElemSideMapping(8,6) ! mapping matrix for Elem side mappings following the CGNS standard
 INTEGER                        :: ElemSideMapping(8,6,4)     ! mapping matrix for Elem side mappings following the CGNS standard
+INTEGER                        :: CGNSElemEdgeToNode(4:8,12,2) ! mapping matrix for Elem Edges to element corners following the CGNS standard
 INTEGER                        :: TypeIndex(8)           ! typeIndex mapping of index for different element types
 !                                                        !  used for urElem administration
 INTEGER                        :: TypeIndex_surf(4)      ! typeIndex_surf(nNodes) determines the typeIndex of the Surface(nNodes)
@@ -228,20 +253,20 @@ REAL,ALLOCATABLE    :: TreeCoords(:,:,:,:,:) ! XYZ positions (equidistant,NGeoTr
 INTEGER             :: nTrees                ! local number of trees
 INTEGER             :: offsetTree            ! tree offset
 LOGICAL             :: doRebuildMortarGeometry ! for curved mortarmeshes ensure that small mortar geometry is identical
-REAL,ALLOCATABLE    :: M_0_1_T(:,:),M_0_2_T(:,:) 
+REAL,ALLOCATABLE    :: M_0_1_T(:,:),M_0_2_T(:,:)
                                              ! to big mortar geometry
 
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! CURVED
 !-----------------------------------------------------------------------------------------------------------------------------------
-REAL                           :: minNormalAngle         ! cos of min angle between normals, below which edges in geometry are no 
+REAL                           :: minNormalAngle         ! cos of min angle between normals, below which edges in geometry are no
                                                          ! longer resolved
 INTEGER                        :: curvingMethod          ! parameter to be specified in ini file to choose the method to be used to
                                                          ! generate curved meshes (set zero curved meshes, otherwise curved
-                                                         ! boundaries will be regenerated 
+                                                         ! boundaries will be regenerated
 INTEGER                        :: normalsType            ! source of normals vectors used for curving (1=reconstr, 2=CAD, 3=exact)
-INTEGER,ALLOCATABLE            :: ExactNormals(:)        ! for 3D spline patches, an analytical normal can be used 
-INTEGER                        :: N                      ! polynomial degree of boundary element discretization 
+INTEGER,ALLOCATABLE            :: ExactNormals(:)        ! for 3D spline patches, an analytical normal can be used
+INTEGER                        :: N                      ! polynomial degree of boundary element discretization
 INTEGER                        :: BoundaryOrder          ! N+1
 INTEGER                        :: NBlock                 ! for structured CGNS readin
 INTEGER                        :: nSkip                  ! for structured CGNS readin
@@ -269,24 +294,24 @@ INTEGER          :: nElems(3),BCIndex(6)  ! ?
 INTEGER          :: CurvedMeshType,WhichMapping   ! ?
 REAL             :: R_0,R_INF,DY,PHI   ! R_0...radius of cylinder, R_INF...radius of domain, DY...extension in - and + y dir
                                         ! PHI...angle of circle segment
-INTEGER          :: StretchType(3) ! Type of Strechting: 1 (default): dx(i)=dx(i-1)*fac, 2. DxMaxToDxMin-> fac 3. bell shaped 
+INTEGER          :: StretchType(3) ! Type of Strechting: 1 (default): dx(i)=dx(i-1)*fac, 2. DxMaxToDxMin-> fac 3. bell shaped
 REAL             :: fac(3),fac2(3)  ! ?
 REAL             :: DxMaxToDxMin(3)  ! ?
-REAL             :: X0(3)   ! MeshType=1: origin of the physical domain  
+REAL             :: X0(3)   ! MeshType=1: origin of the physical domain
 REAL             :: DX(3)   ! MeshType=1: dimensions of the physical domain
-REAL             :: XP(3,8) ! MeshType=2: 8 Corner Points 
+REAL             :: XP(3,8) ! MeshType=2: 8 Corner Points
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! BOUNDARY CONDITIONS
 !-----------------------------------------------------------------------------------------------------------------------------------
-REAL,POINTER                   :: VV(:,:)                ! vv(nDim,nVV) side connection vectors for periodic boundaries, the 
-                                                         ! BcalphaInd of one side is the positive vector index the other one is 
+REAL,POINTER                   :: VV(:,:)                ! vv(nDim,nVV) side connection vectors for periodic boundaries, the
+                                                         ! BcalphaInd of one side is the positive vector index the other one is
                                                          ! the negative vector index (INPUT)
 INTEGER                        :: nVV=0                  ! number of side connection vectors for periodic boundaries
 INTEGER                        :: nUserDefinedBoundaries=0 ! number of boundary conditions given in inifile
-INTEGER,ALLOCATABLE            :: BoundaryType(:,:)      ! 4 integer code for each bound. cond. (BCType,CurveInd,BCState,BCalpha) 
+INTEGER,ALLOCATABLE            :: BoundaryType(:,:)      ! 4 integer code for each bound. cond. (BCType,CurveInd,BCState,BCalpha)
 CHARACTER(LEN=255),ALLOCATABLE :: BoundaryName(:)        ! Name of boundary condition, size: nUserDefinedBoundaries
 !-----------------------------------------------------------------------------------------------------------------------------------
-! 2.5D MESH 
+! 2.5D MESH
 !-----------------------------------------------------------------------------------------------------------------------------------
 REAL                           :: zLength                ! 2.5D mesh: length in z-direction
 REAL                           :: dz                     ! MESH%zLength/MESH%nElemsZ
@@ -298,24 +323,24 @@ INTEGER                        :: upperZ_BC(4)           ! Boundary condition fo
 INTEGER                        :: lowerZ_BC_Ind          ! Boundary condition index for the z=0. boundary
 INTEGER                        :: upperZ_BC_Ind          ! Boundary condition index for the z=MESH%zLength boundary
 !-----------------------------------------------------------------------------------------------------------------------------------
-! zcorrection 
+! zcorrection
 !-----------------------------------------------------------------------------------------------------------------------------------
-LOGICAL                        :: doZcorrection 
-REAL                           :: zstart 
-LOGICAL                        :: zPeriodic 
+LOGICAL                        :: doZcorrection
+REAL                           :: zstart
+LOGICAL                        :: zPeriodic
 INTEGER,ALLOCATABLE            :: whichdirArr(:),orientArr(:)
 !-----------------------------------------------------------------------------------------------------------------------------------
-! Splitting of Elements 
+! Splitting of Elements
 !-----------------------------------------------------------------------------------------------------------------------------------
-LOGICAL                        :: AdaptedMesh=.FALSE.    ! set to true if using splitToHex, nFineHexa  
-LOGICAL                        :: SplitToHex             ! split all elements to hexas (works only for tetra,prism and hex) 
+LOGICAL                        :: AdaptedMesh=.FALSE.    ! set to true if using splitToHex, nFineHexa
+LOGICAL                        :: SplitToHex             ! split all elements to hexas (works only for tetra,prism and hex)
 INTEGER                        :: nFineHexa              ! split all hexa mesh. nFineHexa=2-> 8 Elems nFineHexa=3 -> 27 Elems...
 INTEGER                        :: nSplitBoxes
 REAL,ALLOCATABLE               :: SplitBoxes(:,:,:)      ! (1:3,1,i) xmin, (1:3,2,i) xmax, i split boxes
 !-----------------------------------------------------------------------------------------------------------------------------------
-! exact surface projection 
+! exact surface projection
 !-----------------------------------------------------------------------------------------------------------------------------------
-LOGICAL                        :: doExactSurfProjection 
+LOGICAL                        :: doExactSurfProjection
 INTEGER                        :: nExactSurfFuncs
 INTEGER,ALLOCATABLE            :: ExactSurfFunc(:)
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -323,18 +348,18 @@ LOGICAL                        :: OrientZ
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! Post deformation functions deform a domain (typically [-1,1]^3) to arbirary other domain
 !-----------------------------------------------------------------------------------------------------------------------------------
-INTEGER                        :: MeshPostDeform    ! Function index (off: 0) 
+INTEGER                        :: MeshPostDeform    ! Function index (off: 0)
 INTEGER                        :: PostConnect       ! only used when MeshPostDeform >0. =0: no reconnect after postdeform.
                                                     ! =1, reconnect after postdeform,
-                                                    ! =2, reconnect after postdeform& deleta periodic sides, 
+                                                    ! =2, reconnect after postdeform& deleta periodic sides,
                                                     ! =3: reconnect and redefine vv =postvv
 REAL,POINTER                   :: PostVV(:,:)       ! for postconnect=3, to overwrite vv vectors for periodic BCs before reconnect
                                                     ! parameter for postdeform:
 LOGICAL                        :: PostDeform_useGL  ! change from equidistant to GL points before postdeform (interp. more accurate)
-REAL                           :: PostDeform_R0  
-REAL                           :: PostDeform_Lz  
-REAL                           :: PostDeform_sq  
-REAL                           :: PostDeform_Rtorus  
+REAL                           :: PostDeform_R0
+REAL                           :: PostDeform_Lz
+REAL                           :: PostDeform_sq
+REAL                           :: PostDeform_Rtorus
 TYPE(tElemPtr),POINTER         :: Elems(:)
 ! INTERFACES -----------------------------------------------------------------------------------------------------------------------
 INTERFACE getNewElem
@@ -349,8 +374,17 @@ INTERFACE getNewEdge
   MODULE PROCEDURE getNewEdge
 END INTERFACE
 
+INTERFACE getNewLocalEdge
+  MODULE PROCEDURE getNewLocalEdge
+END INTERFACE
+
 INTERFACE getNewNode
   MODULE PROCEDURE getNewNode
+END INTERFACE
+
+
+INTERFACE getNewVertex
+  MODULE PROCEDURE getNewVertex
 END INTERFACE
 
 INTERFACE getNewQuad
@@ -359,10 +393,6 @@ END INTERFACE
 
 INTERFACE getNewBC
   MODULE PROCEDURE getNewBC
-END INTERFACE
-
-INTERFACE getNewSuperNode
-  MODULE PROCEDURE getNewSuperNode
 END INTERFACE
 
 INTERFACE copyBC
@@ -397,10 +427,6 @@ INTERFACE deleteBC
   MODULE PROCEDURE deleteBC
 END INTERFACE
 
-INTERFACE deleteSuperNodes
-  MODULE PROCEDURE deleteSuperNodes
-END INTERFACE
-
 !===================================================================================================================================
 
 CONTAINS
@@ -418,13 +444,14 @@ IMPLICIT NONE
 ! OUTPUT VARIABLES
 TYPE(tElem),POINTER,INTENT(OUT) :: Elem  ! New element
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 !===================================================================================================================================
 ALLOCATE(Elem)
 NULLIFY(Elem%Node,&
         Elem%prevElem,Elem%nextElem,Elem%firstSide)
 NULLIFY(Elem%CurvedNode)
 NULLIFY(Elem%tree)
+NULLIFY(Elem%localEdge)
 Elem%nCurvedNodes  = 0
 Elem%ind           = 0
 Elem%detT          = 0.
@@ -447,7 +474,7 @@ INTEGER,INTENT(IN)             :: nNodes ! Number of nodes of side "Side"
 ! OUTPUT VARIABLES
 TYPE(tSide),POINTER,INTENT(OUT) :: Side   ! New side
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 INTEGER             :: iNode   ! ?
 !===================================================================================================================================
 ALLOCATE(Side)
@@ -492,7 +519,7 @@ TYPE(tNode),POINTER,INTENT(IN) ::  Node2 ! Node pointers
 ! OUTPUT VARIABLES
 TYPE(tEdge),POINTER,INTENT(INOUT) :: Edge         ! New edge
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 !===================================================================================================================================
 ALLOCATE(Edge)
 Edge%Node(1)%np=>Node1
@@ -501,7 +528,88 @@ NULLIFY(Edge%nextEdge)
 NULLIFY(Edge%curvedNode)
 NULLIFY(Edge%MortarEdge)
 NULLIFY(Edge%parentEdge)
+NULLIFY(Edge%FirstLocalEdge)
+Edge%ind=0
 END SUBROUTINE getNewEdge
+
+
+SUBROUTINE getNewLocalEdge(lEdge,localEdgeID_in,Elem_in,edge_in)
+  !===================================================================================================================================
+  ! Create "Edge" with nodes "Node1" and "Node2"
+  !===================================================================================================================================
+  ! MODULES
+  ! IMPLICIT VARIABLE HANDLING
+  IMPLICIT NONE
+  !-----------------------------------------------------------------------------------------------------------------------------------
+  ! INPUT VARIABLES
+  INTEGER,INTENT(IN),OPTIONAL             :: localEdgeID_in
+  TYPE(tElem),POINTER,INTENT(IN),OPTIONAL :: Elem_in
+  TYPE(tEdge),POINTER,INTENT(IN),OPTIONAL :: edge_in
+  !-----------------------------------------------------------------------------------------------------------------------------------
+  ! OUTPUT VARIABLES
+  TYPE(tLocalEdge),POINTER,INTENT(INOUT) :: lEdge         ! New edge
+  !-----------------------------------------------------------------------------------------------------------------------------------
+  ! LOCAL VARIABLES
+  !===================================================================================================================================
+  ALLOCATE(lEdge)
+  lEdge%ind=0
+  lEdge%tmp=0
+  NULLIFY(lEdge%next_connected)
+  IF(PRESENT(localEdgeID_in))THEN
+    lEdge%localEdgeID=localEdgeID_in
+  ELSE
+    lEdge%localEdgeID=0
+  END IF
+  IF(PRESENT(elem_in))THEN
+    lEdge%elem=>elem_in
+  ELSE
+    NULLIFY(lEdge%elem)
+  END IF
+  IF(PRESENT(edge_in))THEN
+    lEdge%edge=>edge_in
+  ELSE
+    NULLIFY(lEdge%edge)
+  END IF
+END SUBROUTINE getNewLocalEdge
+
+SUBROUTINE getNewVertex(vert,localVertexID_in,Elem_in,node_in)
+  !===================================================================================================================================
+  ! Create "Edge" with nodes "Node1" and "Node2"
+  !===================================================================================================================================
+  ! MODULES
+  ! IMPLICIT VARIABLE HANDLING
+  IMPLICIT NONE
+  !-----------------------------------------------------------------------------------------------------------------------------------
+  ! INPUT VARIABLES
+  INTEGER,INTENT(IN),OPTIONAL             :: localVertexID_in
+  TYPE(tElem),POINTER,INTENT(IN),OPTIONAL :: Elem_in
+  TYPE(tNode),POINTER,INTENT(IN),OPTIONAL :: node_in
+  !-----------------------------------------------------------------------------------------------------------------------------------
+  ! OUTPUT VARIABLES
+  TYPE(tVertex),POINTER,INTENT(INOUT) :: vert         ! New edge
+  !-----------------------------------------------------------------------------------------------------------------------------------
+  ! LOCAL VARIABLES
+  !===================================================================================================================================
+  ALLOCATE(vert)
+  vert%ind=0
+  vert%tmp=0
+  NULLIFY(vert%next_connected)
+  IF(PRESENT(localVertexID_in))THEN
+    vert%localVertexID=localVertexID_in
+  ELSE
+    vert%localVertexID=0
+  END IF
+  IF(PRESENT(elem_in))THEN
+    vert%elem=>elem_in
+  ELSE
+    NULLIFY(vert%elem)
+  END IF
+  IF(PRESENT(node_in))THEN
+    vert%node=>node_in
+  ELSE
+    NULLIFY(vert%node)
+  END IF
+END SUBROUTINE getNewVertex
 
 
 SUBROUTINE getNewNode(Node,refCount,ind)
@@ -519,7 +627,7 @@ INTEGER,OPTIONAL,INTENT(INOUT) :: ind      ! nodeind
 ! OUTPUT VARIABLES
 TYPE(tNode),POINTER,INTENT(INOUT) :: Node     ! New node
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 !===================================================================================================================================
 ALLOCATE(Node)
 Node%ind=0
@@ -532,6 +640,7 @@ IF(PRESENT(refCount)) Node%refCount=refCount
 NodeCount=NodeCount+1
 NULLIFY(Node%firstNormal)
 NULLIFY(Node%firstEdge)
+NULLIFY(Node%firstVertex)
 END SUBROUTINE getNewNode
 
 
@@ -551,7 +660,7 @@ TYPE(tNodePtr),INTENT(IN)                  :: CornerNode(4)
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES
-TYPE(tElem),POINTER             :: aElem 
+TYPE(tElem),POINTER             :: aElem
 INTEGER                         :: i
 !===================================================================================================================================
 CALL getNewElem(aElem)
@@ -585,7 +694,7 @@ IMPLICIT NONE
 ! OUTPUT VARIABLES
 TYPE(tBC),POINTER,INTENT(OUT) :: BC  ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 !===================================================================================================================================
 ALLOCATE(BC)
 BC%BCType     = 0
@@ -594,66 +703,6 @@ BC%BCalphaInd = 0
 BC%BCIndex    = 0
 END SUBROUTINE getNewBC
 
-
-SUBROUTINE getNewSuperNode(superNode,meshNode,aNode,bNode,aSide_nNodes,bSide_nNodes,aCoeff,bCoeff)
-!===================================================================================================================================
-! Allocate and initialize new SuperNode (used for connect 3d)
-!===================================================================================================================================
-! MODULES
-! IMPLICIT VARIABLE HANDLING
-IMPLICIT NONE
-!-----------------------------------------------------------------------------------------------------------------------------------
-! INPUT VARIABLES
-TYPE(tNode),POINTER,INTENT(IN)      :: meshNode     ! "Real" mesh node
-INTEGER,INTENT(IN)                  :: aNode        ! Node number on aSide
-INTEGER,INTENT(IN)                  :: bNode        ! Node number on bSide
-INTEGER,INTENT(IN)                  :: aSide_nNodes ! Number of nodes of aSide
-INTEGER,INTENT(IN)                  :: bSide_nNodes ! Number of nodes of bSide
-REAL,INTENT(IN)                     :: aCoeff       ! Position of node on edge of aSide
-REAL,INTENT(IN)                     :: bCoeff       ! Position of node on edge of bSide
-!-----------------------------------------------------------------------------------------------------------------------------------
-! OUTPUT VARIABLES
-TYPE(tsuperNode),POINTER,INTENT(OUT) :: superNode    ! New SuperNode
-!-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
-!===================================================================================================================================
-ALLOCATE(superNode)
-! Set mesh node
-superNode%meshNode=>meshNode
-NULLIFY(superNode%nextSuperNode,superNode%periodicNode)
-! Default: not periodic
-superNode%periodic=.FALSE.
-! aSide edge numbers
-superNode%aEdge(1)=aNode  ! First edge
-superNode%aCoeff(1)=aCoeff  ! Position on first edge
-! Set second edge - side vertices only
-IF((aNode.NE.0).AND.(aCoeff.EQ.0.))THEN
-  IF(aNode.EQ.1)THEN
-    superNode%aEdge(2)=aSide_nNodes
-  ELSE
-    superNode%aEdge(2)=aNode-1
-  END IF
-  superNode%bCoeff(2)=1.
-ELSE
-  superNode%aEdge(2)=0
-  superNode%aCoeff(2)=0.
-END IF
-! bSide edge numbers
-superNode%bEdge(1)=bNode  ! First edge
-superNode%bCoeff(1)=bCoeff  ! Position on first edge
-! Set second edge - side vertices only
-IF((bNode.NE.0).AND.(bCoeff.EQ.0.))THEN
-  IF(bNode.EQ.1)THEN
-    superNode%bEdge(2)=bSide_nNodes
-  ELSE
-    superNode%bEdge(2)=bNode-1
-  END IF
-  superNode%bCoeff(2)=1.
-ELSE
-  superNode%bEdge(2)=0
-  superNode%bCoeff(2)=0.
-END IF
-END SUBROUTINE getNewSuperNode
 
 
 SUBROUTINE copyBC(BCSide,Side)
@@ -670,14 +719,14 @@ TYPE(tSide),POINTER,INTENT(IN)            :: BCSide  ! ?
 ! OUTPUT VARIABLES
 TYPE(tSide),POINTER,INTENT(INOUT)            :: Side  ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 !===================================================================================================================================
-CALL getNewBC(Side%BC) 
-Side%BC%BCType     = BCSide%BC%BCType    
-Side%CurveIndex    = BCSide%CurveIndex   
-Side%BC%BCstate    = BCSide%BC%BCstate   
+CALL getNewBC(Side%BC)
+Side%BC%BCType     = BCSide%BC%BCType
+Side%CurveIndex    = BCSide%CurveIndex
+Side%BC%BCstate    = BCSide%BC%BCstate
 Side%BC%BCalphaInd = BCSide%BC%BCalphaInd
-Side%BC%BCIndex    = BCSide%BC%BCIndex   
+Side%BC%BCIndex    = BCSide%BC%BCIndex
 END SUBROUTINE copyBC
 
 ! DELETE OBJECTS -------------------------------------------------------------------------------------------------------------------
@@ -695,7 +744,7 @@ TYPE(tElem),POINTER,INTENT(INOUT)  :: Elem      ! Element that will be deleted
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tElem),POINTER  :: firstOut   ! ?
 TYPE(tSide),POINTER  :: Side   ! ?
 INTEGER              :: iNode   ! ?
@@ -723,7 +772,7 @@ END SUBROUTINE deleteElem
 
 SUBROUTINE DisconnectElem(firstElem,Elem)
 !===================================================================================================================================
-! Disconnects element "Elem" from mesh. 
+! Disconnects element "Elem" from mesh.
 !===================================================================================================================================
 ! MODULES
 ! IMPLICIT VARIABLE HANDLING
@@ -735,7 +784,7 @@ TYPE(tElem),POINTER,INTENT(INOUT) :: Elem      ! Element that will be Disconnect
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tElem),POINTER :: firstOut ! Local element pointer
 !===================================================================================================================================
 firstOut=>firstElem  ! Save first element
@@ -768,7 +817,7 @@ TYPE(tSide),POINTER,INTENT(INOUT) :: Side      ! Side that will be deleted
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tSide),POINTER :: firstOut   ! ?
 INTEGER             :: iNode,iSide  ! ?
 !===================================================================================================================================
@@ -820,7 +869,7 @@ TYPE(tSide),POINTER,INTENT(IN)    :: Side      ! Side that will be Disconnected
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tSide),POINTER :: aSide  ! ?
 !===================================================================================================================================
 IF(.NOT. ASSOCIATED(Side)) RETURN
@@ -853,7 +902,7 @@ TYPE(tEdge),POINTER,INTENT(INOUT) :: Edge   ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 INTEGER                           :: iEdge
 !===================================================================================================================================
 IF(ASSOCIATED(Edge%MortarEdge))THEN
@@ -865,6 +914,7 @@ IF(ASSOCIATED(Edge%MortarEdge))THEN
 END IF
 SDEALLOCATE(Edge%MortarEdge)
 SDEALLOCATE(Edge%parentEdge)
+SDEALLOCATE(Edge%FirstLocalEdge)
 SDEALLOCATE(Edge)
 END SUBROUTINE deleteEdge
 
@@ -882,12 +932,12 @@ TYPE(tNode),POINTER,INTENT(INOUT) :: Node   ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 !===================================================================================================================================
 IF(.NOT. ASSOCIATED(Node)) RETURN
 Node%refCount=Node%refCount-1   ! In general nodes are used by more than one side / element -> Node%refCount > 1
 IF(Node%refCount .LE. 0)THEN  ! Node%refCount = 0 means that node is not used any more
-!  DEALLOCATE(Node)
+  ! DEALLOCATE(Node)
   NULLIFY(Node)
   NodeCount=NodeCount-1
 END IF
@@ -906,36 +956,10 @@ TYPE(tBC),POINTER,INTENT(INOUT) :: BC   ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 !===================================================================================================================================
 DEALLOCATE(BC)
 NULLIFY(BC)
 END SUBROUTINE deleteBC
-
-
-SUBROUTINE deleteSuperNodes(firstSuperNode)
-!===================================================================================================================================
-! Deletes a list of SuperNodes
-!===================================================================================================================================
-! MODULES
-! IMPLICIT VARIABLE HANDLING
-IMPLICIT NONE
-!-----------------------------------------------------------------------------------------------------------------------------------
-! INPUT VARIABLES
-TYPE(tsuperNode),POINTER,INTENT(INOUT) :: firstSuperNode ! First super node in list
-!-----------------------------------------------------------------------------------------------------------------------------------
-! OUTPUT VARIABLES
-!-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
-TYPE(tsuperNode),POINTER :: superNode   ! ?
-!===================================================================================================================================
-superNode=>firstSuperNode
-DO WHILE(ASSOCIATED(superNode))
-  firstSuperNode=>superNode%nextSuperNode
-  NULLIFY(superNode%nextSuperNode,superNode%periodicNode,superNode%MeshNode)
-  DEALLOCATE(superNode)
-  superNode=>firstSuperNode
-END DO
-END SUBROUTINE deleteSuperNodes
 
 END MODULE MOD_Mesh_Vars

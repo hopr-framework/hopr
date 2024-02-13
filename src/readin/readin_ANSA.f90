@@ -151,8 +151,7 @@ DO
         EXIT
       END IF
     END DO
-    IF(.NOT.found) CALL abort(__STAMP__, &
-                      'UserDefinedBoundary condition missing: '//TRIM(cdummy3),nUserDefinedBoundaries,999.)
+    IF(.NOT.found) CALL abort(__STAMP__,'UserDefinedBoundary condition missing: '//TRIM(cdummy3),nUserDefinedBoundaries,999.)
   END IF
 END DO
 CLOSE(106) 
@@ -220,8 +219,7 @@ DO                            ! FaceID, Nodes, BCID, ?, ??
       EXIT
     END IF
   END DO
-  IF(.NOT.found) CALL abort(__STAMP__, &
-     'a boundary condition was used without corresponding UserDefinedBoundary',dummy2,999.)
+  IF(.NOT.found) CALL abort(__STAMP__,'a boundary condition was used without corresponding UserDefinedBoundary',dummy2,999.)
   DO iNode=1,4
     NodeBC(conn(iNode),iBC)=.true.
   END DO
@@ -311,8 +309,7 @@ DO iElem=1,nElems
   ALLOCATE(aElem%Node(nElNodes))
   DO iNode=1,nElNodes
     nodeInd=iDummyArray2(iElem,NodeMap(nElNodes-3,iNode))
-    IF(nodeInd.GT.nNodes) CALL abort(__STAMP__, &
-               'nodeInd>nNodes,node indizes not contiguous',nodeInd,REAL(nNodes))
+    IF(nodeInd.GT.nNodes) CALL abort(__STAMP__,'nodeInd>nNodes,node indizes not contiguous',nodeInd,REAL(nNodes))
     IF(.NOT.ASSOCIATED(Nodes(nodeInd)%np))THEN 
       CALL getNewNode(Nodes(nodeInd)%np)
     END IF
@@ -330,8 +327,7 @@ DO iElem=1,nElems
       EXIT
     END IF
   END DO
-  IF(aElem%zone.EQ.0) CALL abort(__STAMP__, &
-               'Zone Number not found in readStar',iDummyArray2(iElem,9),999.)
+  IF(aElem%zone.EQ.0) CALL abort(__STAMP__,'Zone Number not found in readStar',iDummyArray2(iElem,9),999.)
   ! boundary conditions 
   aSide=>aElem%firstSide
   DO WHILE(ASSOCIATED(aSide))
@@ -425,8 +421,7 @@ DO iElem=1,nElems
         EXIT
       END IF
     END DO !iBC 
-    IF(.NOT.found) CALL abort(__STAMP__, &
-       'a boundary condition was used without corresponding UserDefinedBoundary',iBCSide,999.)
+    IF(.NOT.found) CALL abort(__STAMP__,'a boundary condition was used without corresponding UserDefinedBoundary',iBCSide,999.)
     IF(found) THEN
       ALLOCATE(aSide%BC)
       i=MapBC(iBC) !iBC set from exit of upper do loop
@@ -482,14 +477,12 @@ OPEN(UNIT   = unit_in,                  &
      ACCESS = 'SEQUENTIAL',         &
      IOSTAT = os                    )
 IF(os.NE.0) THEN  ! File Error
-  CALL abort(__STAMP__, &
-       'ERROR: cannot open star file: '//trim(FileName),999,999.)
+  CALL abort(__STAMP__,'ERROR: cannot open star file: '//trim(FileName),999,999.)
 END IF
 !V4 or V3
 READ(unit_in,*)cdummy
 IF(INDEX(cdummy,'PROSTAR').NE.0)THEN !star V4
-  CALL abort(__STAMP__, &
-       'ERROR: star file of version V4, not implemented jet!',999,999.)
+  CALL abort(__STAMP__,'ERROR: star file of version V4, not implemented jet!',999,999.)
 ELSE  !star V3
   REWIND(unit_in)
 END IF
@@ -503,9 +496,10 @@ SUBROUTINE readStar_split(firstElem_in,FileName)
 ! at firstElem_in. 
 !===================================================================================================================================
 ! MODULES
-USE MOD_Mesh_Vars,ONLY:tElem,tSide,tSidePtr,tNodePtr
-USE MOD_Mesh_Vars,ONLY:ElemCount,SideCount
-USE MOD_Mesh_Vars,ONLY:getNewElem,getNewSide,getNewNode
+USE MOD_Globals   ,ONLY: abort
+USE MOD_Mesh_Vars ,ONLY: tElem,tSide,tSidePtr,tNodePtr
+USE MOD_Mesh_Vars ,ONLY: ElemCount,SideCount
+USE MOD_Mesh_Vars ,ONLY: getNewElem,getNewSide,getNewNode
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -556,9 +550,7 @@ nElems=0
 DO                    ! ElemID, 8 Nodes, PID, ???
   READ(105,*,iostat=os) dummy1, conn(:),dummy2,dummy3
   IF(os.NE.0) EXIT !end of file
-  IF(conn(5).NE.0) THEN
-  STOP 'not surface elements!'
-  END IF
+  IF(conn(5).NE.0) CALL abort(__STAMP__,'not surface elements!')
   nElems=nElems+1
 END DO
 CLOSE(105)
@@ -591,8 +583,7 @@ DO
   READ(105,*,iostat=os) dummy1, conn(:),dummy2,dummy3
   IF(os.NE.0) EXIT !end of file
   IF(conn(5).NE.0) THEN
-     CALL abort(__STAMP__, &
-       'ERROR: split element list contains volumes!'//TRIM(FileName)//'.cel',999,999.)
+     CALL abort(__STAMP__,'ERROR: split element list contains volumes!'//TRIM(FileName)//'.cel',999,999.)
   END IF      
   iElem=iElem+1
   !find out number of element nodes
@@ -623,8 +614,7 @@ DO iElem=1,nElems
   END DO
   DO iNode=1,nElNodes
     nodeInd=ElemConnect(iElem,iNode)
-    IF(nodeInd .GT. nNodes) CALL abort(__STAMP__, &
-       'ERROR: nodeInd>nNodes, node indizes are not contiguous!',nodeInd,REAL(nNodes)) 
+    IF(nodeInd .GT. nNodes) CALL abort(__STAMP__,'ERROR: nodeInd>nNodes, node indizes are not contiguous!',nodeInd,REAL(nNodes)) 
     IF(.NOT.ASSOCIATED(Nodes(nodeInd)%np))THEN 
       CALL getNewNode(Nodes(nodeInd)%np)
       Nodes(nodeInd)%np%ind=nodeInd

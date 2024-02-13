@@ -78,8 +78,7 @@ CHARACTER(LEN=4) :: tmpstr  ! ?
 WRITE(UNIT_StdOut,'(132("-"))')
 WRITE(UNIT_stdOut,'(A)') ' INIT BASIS...'
 IF(.NOT.MeshInitDone)THEN
-  CALL abort(__STAMP__,  &
-             'ERROR: InitMesh has to be called before InitBasis!',999,999.)
+  CALL abort(__STAMP__,'ERROR: InitMesh has to be called before InitBasis!',999,999.)
 END IF
 WRITE(tmpstr,'(I4)')N
 nVisu=GETINT('nVisu',tmpstr)
@@ -284,8 +283,7 @@ IF(PRESENT(wIP))THEN
     ! first order intergration !!!
     wIP=2./REAL(N_in+1)
   CASE DEFAULT
-    CALL Abort(__STAMP__,&
-      'NodeType "'//TRIM(NodeType_in)//'" in GetNodesAndWeights not found!')
+    CALL Abort(__STAMP__,'NodeType "'//TRIM(NodeType_in)//'" in GetNodesAndWeights not found!')
   END SELECT
 ELSE
   SELECT CASE(TRIM(NodeType_in))
@@ -306,8 +304,7 @@ ELSE
       xIP(i) = 1./REAL(N_in+1)+2.*REAL(i)/REAL(N_in+1) - 1.
     END DO
   CASE DEFAULT
-    CALL Abort(__STAMP__,&
-      'NodeType "'//TRIM(NodeType_in)//'" in GetNodesAndWeights not found!')
+    CALL Abort(__STAMP__,'NodeType "'//TRIM(NodeType_in)//'" in GetNodesAndWeights not found!')
   END SELECT
 END IF !present wIP
 IF(PRESENT(wIPBary)) CALL BarycentricWeights(N_in,xIP,wIPBary)

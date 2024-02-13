@@ -211,8 +211,7 @@ DO iFile=1,nMeshFiles
   DO iZone = 1, nZones
     iGlZone=iGlZone+1
     IF (iGlZone .GT. nZones) &
-      CALL abort(__STAMP__, &
-       'inconsistent numer of Zones in readGambit',999,999.)
+      CALL abort(__STAMP__,'inconsistent numer of Zones in readGambit',999,999.)
     IF(useBinary)THEN
       READ(104) dummy1
     ELSE
@@ -276,8 +275,7 @@ DO iFile=1,nMeshFiles
         EXIT
       END IF
     END DO
-    IF(.NOT.foundBC) CALL abort(__STAMP__, &
-                      'UserDefinedBoundary condition missing: '//TRIM(strBC),nUserDefinedBoundaries,999.)
+    IF(.NOT.foundBC) CALL abort(__STAMP__,'UserDefinedBoundary condition missing: '//TRIM(strBC),nUserDefinedBoundaries,999.)
     ALLOCATE(iDummyArray2(nBCElems,3))
     IF(useBinary)THEN
       READ(104)iDummyArray2

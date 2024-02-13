@@ -73,7 +73,6 @@ SUBROUTINE ReadCGNSmesh()
 USE MOD_Mesh_Vars,ONLY:nMeshFiles,MeshFileName
 USE MOD_Mesh_Vars,ONLY:MeshDim
 USE MOD_Mesh_Vars,ONLY:n2dNodes
-USE MOD_Mesh_Vars,ONLY:nZones
 USE MOD_Mesh_Vars,ONLY:FirstElem
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
@@ -102,8 +101,7 @@ INTEGER                    :: ZoneType  ! ?
 #endif /*defined PP_USE_CGNS*/
 !===================================================================================================================================
 #ifndef PP_USE_CGNS
-CALL ABORT(__STAMP__, &
-          'ReadCGNSmesh needs compilation with USE_CGNS flag!')
+CALL ABORT(__STAMP__,'ReadCGNSmesh needs compilation with USE_CGNS flag!')
 #else
 WRITE(UNIT_stdOut,'(132("~"))')
 CALL Timer(.TRUE.)
@@ -149,7 +147,7 @@ DO iFile=1,nMeshFiles
     CALL abortCGNS(__STAMP__,CGNSFile)
   IF((INT(CellDim) .NE. MeshDim))THEN! .OR. (PhysDim .NE. MeshDim))THEN
     WRITE(UNIT_stdOut,*)'ERROR-Invalid dimensions in CGNS file: CellDim=',CellDim,', PhysDim=',PhysDim,'(MeshDim=',MeshDim,')'
-    STOP
+    CALL abort(__STAMP__,'ERROR-Invalid dimensions in CGNS file')
   END IF
   ! Get number of zones in CGNSBase
   CALL CG_NZONES_F(CGNSfile,CGNSBase,nCGNSZones,iError)
@@ -165,7 +163,7 @@ DO iFile=1,nMeshFiles
     ELSEIF(ZoneType.EQ.Unstructured)THEN
       CALL ReadCGNSMeshUnstruct(FirstElem,CGNSFile,CGNSBase,iZone,nZonesGlob,nNodesGlob)
     ELSE
-      STOP 'Wrong zone type specifier, should be structured or unstructured.'
+      CALL abort(__STAMP__,'Wrong zone type specifier, should be structured or unstructured.')
     END IF
 
 
@@ -337,8 +335,8 @@ DO iSect=1,nSect ! Vol. and Face elems
 #endif /*(PP_CGNS_VERSION>=4000)*/
 
   ! Check if 2D element is not oriented in z+, check only first element#
+  orient2D=.TRUE. !
   IF(MeshDim .EQ. 2)THEN
-    orient2D=.TRUE. !
     IF(SectionElemType .EQ. MIXED) THEN
       locType=LocalConnect(1)
       iStart=2
@@ -503,6 +501,7 @@ DO iBC=1,nCGNSBC
     END IF
 
     ! I think we will finish the boundaries
+    SideIsBCSide=.FALSE.
     DO iElem=1,nElems
       Side=>Elems(iElem)%EP%firstSide
       DO WHILE(ASSOCIATED(Side))
@@ -734,7 +733,7 @@ IF(meshdim.EQ.3) THEN
 ELSEIF(meshdim.EQ.2) THEN
   ALLOCATE(nodeCoords(3,1:irmax(1),1:irmax(2),1))
 ELSE
-  STOP 'Incompatible meshDimension'
+  CALL abort(__STAMP__,'Incompatible meshDimension')
 END IF
 
 ! Read Coordinates
@@ -768,6 +767,7 @@ IF(nSkipZ.NE.1)THEN
     scalprod=SUM(dir(whichdir,:)*(/0.,0.,1./))
     IF(ABS(scalprod).GT.0.95) EXIT
   END DO
+  zFit = .FALSE.
   SELECT CASE(whichDir)
   CASE(1)
     stepk=nSkipZ
@@ -779,14 +779,14 @@ IF(nSkipZ.NE.1)THEN
     stepm=nSkipZ
     zFit=.NOT.(MOD((irmax(3)-1),stepm).NE.0)
   END SELECT
-  IF(.NOT.zfit)THEN
+  IF(.NOT.zFit)THEN
     IF(useCurveds)THEN
       WRITE(UNIT_StdOut,'(A)') 'WARNING: cannot read block, step=(order-1)*nSkipZ does not fit with block elem size.'
     ELSE
       WRITE(UNIT_StdOut,'(A)') 'WARNING: cannot read block, nSkipZ does not fit with block elem size.'
     END IF
     RETURN
-  END IF !zfit
+  END IF !zFit
 
   ! Now apply nSkip in z-dir
   ALLOCATE(NodeCoordsTmp(3,1:((irmax(1)-1)/stepk)+1,1:((irmax(2)-1)/stepl)+1,1:((irmax(3)-1)/stepm)+1))
@@ -1138,8 +1138,7 @@ INTEGER(CGSIZE_T),ALLOCATABLE:: connect_offsets(:)
 #endif /*defined PP_USE_CGNS*/
 !===================================================================================================================================
 #ifndef PP_USE_CGNS
-CALL ABORT(__STAMP__, &
-          'ReadCGNSsurfaceMesh needs compilation with USE_CGNS flag!')
+CALL ABORT(__STAMP__,'ReadCGNSsurfaceMesh needs compilation with USE_CGNS flag!')
 #else
 WRITE(UNIT_stdOut,*)'Read CGNS Surface File: ',TRIM(FileName)
 ! Open CGNS file
@@ -1175,7 +1174,7 @@ DO iZone=1,nCGNSZones
   CALL cg_zone_type_f(CGNSFile, CGNSBase, iZone, ZoneType, iError)
   IF (iError .NE. CG_OK) CALL cg_error_exit_f()
   IF (ZoneType.EQ.Structured)THEN
-    STOP 'no structured readin for surface data'
+    CALL abort(__STAMP__,'no structured readin for surface data')
   END IF
   coordNameCGNS(1) = 'CoordinateX'
   coordNameCGNS(2) = 'CoordinateY'
@@ -1267,8 +1266,7 @@ DO iZone=1,nCGNSZones
         iElem=iElem+1
         IF(iElem.GT.nElems)THEN
           CALL closeFile(CGNSFile)
-          CALL abort(__STAMP__,&
-                         'Something wrrrrong with surf element numbers in CGNS File zone :',INT(iZone))
+          CALL abort(__STAMP__,'Something wrrrrong with surf element numbers in CGNS File zone :',INT(iZone))
         END IF
 
         ElemConnect(1            ,iElem)=LocType
@@ -1418,8 +1416,7 @@ ELSE
       CGNSbase=i
       IF( (cd .NE. cellDim) .OR. (pd .NE. physDim))THEN
         CALL closeFile(CGNSFile)
-        CALL abort(__STAMP__,&
-           'Wrong dimensionalities in database ' // TRIM(basename) // ' in file:'//TRIM(filename),INT(cellDim),REAL(physDim))
+        CALL abort(__STAMP__,'Wrong dimensionalities in database ' // TRIM(basename) // ' in file:'//TRIM(filename),INT(cellDim),REAL(physDim))
       END IF
     END IF
   END DO
@@ -1429,8 +1426,7 @@ END IF
 IF (CGNSBase .EQ. -999) THEN ! not found
   IF(mode .EQ. MODE_READ)THEN
      CALL closeFile(CGNSFile)
-     CALL abort(__STAMP__,&
-                'Cannot find base '//TRIM(basename)//' in cgns file: '//TRIM(filename))
+     CALL abort(__STAMP__,'Cannot find base '//TRIM(basename)//' in cgns file: '//TRIM(filename))
   END IF
 
   IF((mode .EQ. MODE_MODIFY) .OR. (mode.EQ.MODE_WRITE)) THEN ! create base anyway

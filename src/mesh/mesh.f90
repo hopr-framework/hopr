@@ -9,7 +9,7 @@
 ! /____//   /____//  /______________//  /____//           /____//   |_____/)    ,X`      XXX`
 ! )____)    )____)   )______________)   )____)            )____)    )_____)   ,xX`     .XX`
 !                                                                           xxX`      XXx
-! Copyright (C) 2017  Florian Hindenlang <hindenlang@gmail.com>
+! Copyright (C) 2023  Florian Hindenlang <hindenlang@gmail.com>
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
@@ -74,8 +74,7 @@ CHARACTER(LEN=255)             :: DefStr  ! ?
 WRITE(UNIT_StdOut,'(132("-"))')
 WRITE(UNIT_stdOut,'(A)') ' INIT MESH...'
 IF(.NOT.OutputInitDone)THEN
-  CALL abort(__STAMP__,  &
-             'ERROR: InitOutput has to be called before InitMesh!')
+  CALL abort(__STAMP__,'ERROR: InitOutput has to be called before InitMesh!')
 END IF
 
 ! Curved
@@ -231,8 +230,7 @@ IF(useCurveds) THEN
         ExactNormals = GETINTARRAY('exactNormals',tmpInt*2) !(Curvedindex,exactnormaltype,...)
         ! >0 if an analytical normal can be used (see curved.f90,exactNormals)
       CASE DEFAULT
-        CALL abort(__STAMP__,&
-          'No normal type specified.')
+        CALL abort(__STAMP__,'No normal type specified.')
       END SELECT
     CASE(3) ! refined surface elements (only ANSA readin)
       SplitElemFile = GETSTR('SplitElemFile')
@@ -244,8 +242,7 @@ IF(useCurveds) THEN
     CASE(4) ! ICEM spectral elements
       SpecElemFile = GETSTR('specelemfile')
     CASE DEFAULT
-      CALL abort(__STAMP__,&
-        'Specified curving method does not exist. =1: NormalVectors, =3: SplitElemFile, =4: SpecElemFile')
+      CALL abort(__STAMP__,'Specified curving method does not exist. =1: NormalVectors, =3: SplitElemFile, =4: SpecElemFile')
     END SELECT
 
     ! Volume curving by radial basis functions
@@ -289,8 +286,7 @@ BoundaryOrder=N+1
 ! Boundaries
 nUserDefinedBoundaries=CNTSTR('BoundaryName','0')
 IF(nUserDefinedBoundaries.NE.CNTSTR('BoundaryType','0'))&
-  CALL abort(__STAMP__,&
-             'The number of boundary names and boundary types has to be identical.')
+  CALL abort(__STAMP__,'The number of boundary names and boundary types has to be identical.')
 IF(nUserDefinedBoundaries .GT. 0)THEN
   ALLOCATE(BoundaryName(nUserDefinedBoundaries))
   ALLOCATE(BoundaryType(nUserDefinedBoundaries,4))
@@ -381,7 +377,7 @@ IF(meshPostDeform.GT.0) THEN
   IF(postConnect.EQ.3)THEN
     IF(nVV.GT.0)THEN
       tmpInt=  CNTSTR('postVV','0')
-      IF(tmpInt.NE.nVV) STOP 'postVV must be specified for all previous vv!'
+      IF(tmpInt.NE.nVV) CALL abort(__STAMP__,'postVV must be specified for all previous vv!')
       ALLOCATE(postVV(3,nVV))
       DO i=1,nVV
         postVV(:,i)=GETREALARRAY('postvv',3)
@@ -393,6 +389,8 @@ END IF !PostDeform
 ! Connect
 ConformConnect=GETLOGICAL('ConformConnect','.TRUE.') ! Fast connect for conform mesh
 
+! build connect of edges and vertices:
+generateFEMconnectivity=GETLOGICAL('generateFEMconnectivity','.FALSE.') 
 ! Elem Check
 checkElemJacobians=GETLOGICAL('checkElemJacobians','.TRUE.')
 jacobianTolerance=GETREAL('jacobianTolerance','1.E-16')
@@ -437,6 +435,47 @@ ElemSideMapping(8,4,:) = (/3,4,8,7/)
 ElemSideMapping(8,5,:) = (/1,5,8,4/)
 ElemSideMapping(8,6,:) = (/5,6,7,8/)
 
+CGNSElemEdgeToNode=-1
+! tet ( 4 nodes)
+CGNSElemEdgeToNode(4, 1,1:2)=(/1,2/)
+CGNSElemEdgeToNode(4, 2,1:2)=(/2,3/)
+CGNSElemEdgeToNode(4, 3,1:2)=(/3,1/)
+CGNSElemEdgeToNode(4, 4,1:2)=(/1,4/)
+CGNSElemEdgeToNode(4, 5,1:2)=(/2,4/)
+CGNSElemEdgeToNode(4, 6,1:2)=(/3,4/)
+! pyra (5nodes)
+CGNSElemEdgeToNode(5, 1,1:2)=(/1,2/)
+CGNSElemEdgeToNode(5, 2,1:2)=(/2,3/)
+CGNSElemEdgeToNode(5, 3,1:2)=(/3,4/)
+CGNSElemEdgeToNode(5, 4,1:2)=(/4,1/)
+CGNSElemEdgeToNode(5, 5,1:2)=(/1,5/)
+CGNSElemEdgeToNode(5, 6,1:2)=(/2,5/)
+CGNSElemEdgeToNode(5, 7,1:2)=(/3,5/)
+CGNSElemEdgeToNode(5, 8,1:2)=(/4,5/)
+! prism (6nodes)
+CGNSElemEdgeToNode(6, 1,1:2)=(/1,2/)
+CGNSElemEdgeToNode(6, 2,1:2)=(/2,3/)
+CGNSElemEdgeToNode(6, 3,1:2)=(/3,1/)
+CGNSElemEdgeToNode(6, 4,1:2)=(/1,4/)
+CGNSElemEdgeToNode(6, 5,1:2)=(/2,5/)
+CGNSElemEdgeToNode(6, 6,1:2)=(/3,6/)
+CGNSElemEdgeToNode(6, 7,1:2)=(/4,5/)
+CGNSElemEdgeToNode(6, 8,1:2)=(/5,6/)
+CGNSElemEdgeToNode(6, 9,1:2)=(/6,4/)
+! hexa (8nodes)
+CGNSElemEdgeToNode(8, 1,1:2)=(/1,2/)
+CGNSElemEdgeToNode(8, 2,1:2)=(/2,3/)
+CGNSElemEdgeToNode(8, 3,1:2)=(/3,4/)
+CGNSElemEdgeToNode(8, 4,1:2)=(/4,1/)
+CGNSElemEdgeToNode(8, 5,1:2)=(/1,5/)
+CGNSElemEdgeToNode(8, 6,1:2)=(/2,6/)
+CGNSElemEdgeToNode(8, 7,1:2)=(/3,7/)
+CGNSElemEdgeToNode(8, 8,1:2)=(/4,8/)
+CGNSElemEdgeToNode(8, 9,1:2)=(/5,6/)
+CGNSElemEdgeToNode(8,10,1:2)=(/6,7/)
+CGNSElemEdgeToNode(8,11,1:2)=(/7,8/)
+CGNSElemEdgeToNode(8,12,1:2)=(/8,5/)
+
 MeshInitDone=.TRUE.
 WRITE(UNIT_stdOut,'(A)')' INIT MESH DONE!'
 WRITE(UNIT_StdOut,'(132("-"))')
@@ -459,13 +498,13 @@ USE MOD_Curved,           ONLY: buildCurvedElementsFromVolume,buildCurvedElement
 USE MOD_Curved,           ONLY: readNormals
 USE MOD_Curved,           ONLY: ProjectToExactSurfaces
 USE MOD_Curved,           ONLY: RebuildMortarGeometry
-USE MOD_Mesh_Basis,       ONLY: BuildEdges,ElemGeometry,FindElemTypes
+USE MOD_Mesh_Basis,       ONLY: BuildEdges,BuildFEMconnectivity,ElemGeometry,FindElemTypes
 USE MOD_Mesh_Connect,     ONLY: Connect
 USE MOD_Mesh_Connect,     ONLY: Connect2DMesh
 USE MOD_GlobalUniqueNodes,ONLY: GlobalUniqueNodes
 USE MOD_CartMesh,         ONLY: CartesianMesh
 USE MOD_CurvedCartMesh,   ONLY: CurvedCartesianMesh
-USE MOD_Mesh_Tools,       ONLY: CountSplines,Netvisu,BCvisu,chkspl_surf,chkspl_vol
+USE MOD_Mesh_Tools,       ONLY: CountSplines,Netvisu,BCvisu,chkspl_surf,chkspl_vol,FEMnetVisu
 USE MOD_Mesh_Tools,       ONLY: CheckMortarWaterTight
 USE MOD_Mesh_PostDeform,  ONLY: PostDeform
 USE MOD_Output_HDF5,      ONLY: WriteMeshToHDF5
@@ -532,8 +571,7 @@ SELECT CASE (MeshMode)
     meshIsAlreadyCurved=.TRUE.
     CALL fill25DMesh()
   CASE DEFAULT
-    CALL abort(__STAMP__, &
-      'Not known how to construct mesh')
+    CALL abort(__STAMP__,'Not known how to construct mesh')
 END SELECT
 
 ! apply meshscale after readin
@@ -605,6 +643,7 @@ IF(MeshMode .GT. 0)THEN
   IF(useCurveds.AND.Logging) CALL CountSplines()  ! In case of restart there can be splines
 END IF
 CALL buildEdges()
+IF(generateFEMconnectivity) CALL buildFEMconnectivity()
 
 ! check if sides to be curved exist
 curvedFound=.FALSE.
@@ -647,8 +686,7 @@ IF(useCurveds)THEN
       CASE(4)
         CALL ReadCGNSSurfaceMesh(FirstSplitElem,SplitElemFile)
       CASE DEFAULT
-        CALL abort(__STAMP__, &
-             'Splitted meshes can only be read in star cd format or cgns!')
+        CALL abort(__STAMP__,'Splitted meshes can only be read in star cd format or cgns!')
       END SELECT
       CALL Connect2DMesh(FirstSplitElem)
       IF(doScale.AND..NOT.postScale) CALL ApplyMeshScale(FirstSplitElem)
@@ -686,6 +724,8 @@ DO iElem=1,nMeshElems
   END DO
   IF(mortarFound) EXIT !do loop
 END DO !iElem
+
+IF(mortarFound.AND.generateFEMconnectivity) CALL abort(__STAMP__,"generate FEM connectivity not yet implemented for mortar meshes!")
 
 IF(doExactSurfProjection) CALL ProjectToExactSurfaces()
 ! get element types
@@ -753,6 +793,7 @@ IF(checkElemJacobians) CALL CheckJacobians()
 
 IF(useCurveds .AND. Logging) CALL CountSplines()   ! In case of restart there can be splines
 CALL WriteMeshToHDF5(TRIM(ProjectName)//'_mesh.h5')
+IF(DebugVisu.AND.generateFEMconnectivity)CALL FEMnetVisu()  ! visualize FEM faces/edges/vertices
 WRITE(UNIT_stdOut,'(132("~"))')
 CALL Timer(.FALSE.)
 END SUBROUTINE fillMesh
@@ -791,6 +832,9 @@ WRITE(UNIT_stdOut,'(A)')'Fill 2.5D mesh...'
 ! curved ones
 Elem => FirstElem
 DO WHILE(ASSOCIATED(Elem))
+  IF(.NOT.((Elem%nNodes.EQ.8).OR.(Elem%nNodes.EQ.6)))THEN
+    CALL abort(__STAMP__,'ERROR: Fill 2.5 D mesh, found non-prismatic (prism/hexa) element!')
+  END IF
   IF(Elem%nCurvedNodes.EQ.0)THEN
     nNodes=Elem%nNodes/2  ! Only Hexahedrons or prisms in 2.5D case -> 8/6 nodes
     DO iNode=nNodes+1,Elem%nNodes ! nodes 1 to Elem%nNodes/2 on lower z-layer, other nodes on upper z-layer

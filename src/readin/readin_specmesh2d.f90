@@ -135,7 +135,7 @@ DO iFile=1,nMeshFiles
        IOSTAT = os                    )
   IF ( os /= 0 )     THEN
      WRITE(UNIT_stdOut,*)  'Error opening file: ', TRIM(MeshFileName(iFile))
-     STOP
+     CALL abort(__STAMP__,'Error opening file')
   ELSE
     WRITE(UNIT_stdOut,*)  'Reading mesh from file: ',TRIM(MeshFileName(iFile))
   END IF
@@ -340,7 +340,6 @@ DO iFile=1,nMeshFiles
         END DO
         IF(BC_ID(k).EQ.-1) THEN
           WRITE(UNIT_stdOut,*)'ERROR - Could not find corresponding boundary definition of ',TRIM(BCnames(k))
-          !STOP
         END IF
       END IF
     END DO !k=1,4

@@ -13,7 +13,7 @@
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -31,7 +31,7 @@ MODULE MOD_Mesh_PostDeform
 IMPLICIT NONE
 PRIVATE
 !-----------------------------------------------------------------------------------------------------------------------------------
-! GLOBAL VARIABLES 
+! GLOBAL VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! Private Part ---------------------------------------------------------------------------------------------------------------------
 ! Public Part ----------------------------------------------------------------------------------------------------------------------
@@ -46,7 +46,7 @@ CONTAINS
 
 SUBROUTINE PostDeform()
 !===================================================================================================================================
-! input x,y,z node coordinates are transformed by a smooth (!) mapping to new x,y,z coordinates 
+! input x,y,z node coordinates are transformed by a smooth (!) mapping to new x,y,z coordinates
 !===================================================================================================================================
 !MODULE INPUT VARIABLES
 USE MOD_Globals
@@ -67,13 +67,14 @@ IMPLICIT NONE
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES
-TYPE(tElem),POINTER          :: aElem   
-INTEGER                      :: iNode   
-INTEGER                      :: nTotal 
+TYPE(tElem),POINTER          :: aElem
+INTEGER                      :: iNode
+INTEGER                      :: nTotal
 INTEGER                      :: i,iElem,ijk(3)
 REAL,DIMENSION(0:N)          :: xi_EQ,xi_GL,wBary_EQ,wBary_GL
 REAL,DIMENSION(0:N,0:N)      :: Vdm_EQtoGL, Vdm_GLtoEQ
-REAL                         :: xElem(3,0:N,0:N,0:N,nMeshElems)
+REAL                         :: xElem(      3,0:N,0:N,0:N,nMeshElems)
+REAL                         :: xElemDeform(3,0:N,0:N,0:N,nMeshElems)
 INTEGER                      :: HexaMapN1(8,3)
 !===================================================================================================================================
 IF(MeshPostDeform.EQ.0) RETURN
@@ -124,13 +125,14 @@ END IF !PostDeform_useGL
 
 !transform (all nodes are marked from -2 to -1)
 nTotal=(N+1)**3*nMeshElems
-CALL PostDeformFunc(nTotal,xElem,xElem)
+CALL PostDeformFunc(nTotal,xElem,xElemDeform)
+xElem = xElemDeform
 
 IF((PostDeform_useGL).AND.(N.GT.2))THEN
   !transform back from GL to EQ
   CALL ChangeBasis3D(3,nMeshElems,N,N,Vdm_GLtoEQ,xElem,xElem,.FALSE.)
 END IF
-  
+
 ! copy back (all nodes are marked from -1 to 0)
 DO iElem=1,nMeshElems
   aElem=>Elems(iElem)%ep
@@ -160,11 +162,11 @@ END SUBROUTINE PostDeform
 
 SUBROUTINE PostDeformFunc(nTotal,X_in,X_out)
 !===================================================================================================================================
-! input x,y,z node coordinates are transformed by a smooth (!) mapping to new x,y,z coordinates 
+! input x,y,z node coordinates are transformed by a smooth (!) mapping to new x,y,z coordinates
 !===================================================================================================================================
 !MODULE INPUT VARIABLES
 USE MOD_Globals
-USE MOD_Mesh_Vars,ONLY:MeshPostDeform,PostDeform_R0,PostDeform_Rtorus 
+USE MOD_Mesh_Vars,ONLY:MeshPostDeform,PostDeform_R0,PostDeform_Rtorus
 USE MOD_Mesh_Vars,ONLY:PostDeform_sq,PostDeform_Lz
 !MODULE OUTPUT VARIABLES
 ! MODULES
@@ -176,7 +178,7 @@ INTEGER,INTENT(IN) :: nTotal         ! total number of points
 REAL,INTENT(IN)    :: X_in(3,nTotal) ! contains original xyz coords
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT/OUTPUT VARIABLES
-REAL,INTENT(OUT)   :: X_out(3,nTotal)    ! contains new XYZ position 
+REAL,INTENT(OUT)   :: X_out(3,nTotal)    ! contains new XYZ position
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -185,9 +187,9 @@ INTEGER            :: i
 REAL               :: rr,x(3),dx(3),dx1(3),dx2(3),dx3(3)
 REAL               :: xout(3)
 REAL               :: alpha,HH, xi,eta
-REAL               :: cosa,cosb,sina,sinb 
+REAL               :: cosa,cosb,sina,sinb
 REAL               :: rotmat(2,2),arg
-REAL               :: g,h,hMax,xLeft,normal,vec(2),length
+REAL               :: g,h,hMax,xLeft,vec(2),length
 REAL               :: vecRefBottom(2),xBlendBottom
 REAL               :: vecRefTop(2),   xBlendTop
 !===================================================================================================================================
@@ -213,7 +215,7 @@ CASE(1,11,12)
       dx(1:2)=alpha*(dx1(1:2)*(/2*x(1),1./)+dx2(1:2)*(/1.,2*x(2)/))
     ELSE !outside [-0.5,0.5]^2
       IF(ABS(x(2)).LT.ABS(x(1)))THEN !left and right quarter
-        dx(1)=x(1)*SQRT(2.)*COS(0.25*Pi*x(2)/x(1))-x(1) 
+        dx(1)=x(1)*SQRT(2.)*COS(0.25*Pi*x(2)/x(1))-x(1)
         dx(2)=x(1)*SQRT(2.)*SIN(0.25*Pi*x(2)/x(1))-x(2)
       ELSEIF(ABS(x(2)).GE.ABS(x(1)))THEN !upper and lower quarter
         dx(1)=x(2)*SQRT(2.)*SIN(0.25*Pi*x(1)/x(2))-x(1)
@@ -221,7 +223,7 @@ CASE(1,11,12)
       END IF
       alpha=MIN(1.,2.*rr-1.) !maps [0.5,1] --> [0,1] and alpha=1 outside [-1,1]^2
       alpha=SIN(0.5*Pi*alpha) !smooth transition at the outer boundary max(|x|,|y|)=1
-      alpha=1.0*alpha+0.35*(1.-alpha) !alpha=1 at max(|x|,|y|)=1, and alpha=0.35 at max(|x|,|y|)=0.5 
+      alpha=1.0*alpha+0.35*(1.-alpha) !alpha=1 at max(|x|,|y|)=1, and alpha=0.35 at max(|x|,|y|)=0.5
       dx(1:2)=alpha*dx(1:2)
     END IF
     xout(1:2)=PostDeform_R0*SQRT(0.5)*(x(1:2)+dx(1:2))
@@ -249,7 +251,7 @@ CASE(1,11,12)
     END IF
     X_out(:,i)=xout(:)
   END DO !i=1,nTotal
-CASE(66) 
+CASE(66)
   DO i=1,nTotal
     x(:)=X_in(:,i)
     ! 2D HEXAGON, x,y in [-1,1]^2, to cylinder with radius PostDeform_R0 (with PostDeform_Rtorus>0 to a torus, with zperiodic [0,1])
@@ -260,8 +262,8 @@ CASE(66)
     !              |                             _
     !        0-----------0                        ^
     !       / \         / \                       |
-    !      /   \       /   \               _      | 
-    !     /     3-----2     \               ^     |1.0    
+    !      /   \       /   \               _      |
+    !     /     3-----2     \               ^     |1.0
     !    /     / \     \     \              |0.5  |
     !   /     /   \     \     \             |     |
     !  0-----4     0-----1-----0 -----> x  _v    _v
@@ -274,7 +276,7 @@ CASE(66)
     !              |<>|           0.25
     !              |<--->|        0.5
     !              |<--------->|  1.
-    !  y direction is not correctly scaled, will be scaled here by sqrt(3)/2 
+    !  y direction is not correctly scaled, will be scaled here by sqrt(3)/2
     !
     ! inside [-1,1]^2 and outside [-0.5,0.5]^2 there will be a blending from a circle to a square
     ! the inner square [-0.5,0.5]^2 will be a linear blending of the bounding curves
@@ -302,7 +304,7 @@ CASE(66)
           ELSE  ! domain (0-5-6-1)
             dx1(1:2)=    (/0.5,0./)+eta*(/-0.25,-0.5*HH/) !point at 1-6
             dx2(1:2)= xi*(/0.5,0./)+    (/-0.25,-0.5*HH/) !point at 5-6
-          END IF 
+          END IF
         ELSE ! domain (0-1-6-5), xi 0->3, eta 0->5
           eta= -x(2)/HH-2.*x(1)
           xi =  x(2)/HH-2.*x(1)
@@ -311,10 +313,10 @@ CASE(66)
         END IF
         dx(1:2)= alpha*xi* (0.5/SQRT(SUM(dx1(1:2)**2))-1.)*dx1(1:2) &
                 +alpha*eta*(0.5/SQRT(SUM(dx2(1:2)**2))-1.)*dx2(1:2)
-      ELSE !outside hexagon 1-6, rr>=0.5 , for rr>1, alpha=1 
+      ELSE !outside hexagon 1-6, rr>=0.5 , for rr>1, alpha=1
         alpha=MIN(1.,2.*rr-1.) !maps [0.5,1] --> [0,1] and alpha=1 outside [-1,1]^2
         alpha=SIN(0.5*Pi*alpha) !smooth transition at the outer boundary rr=1
-        alpha=1.0*alpha+0.35*(1.-alpha) !alpha=1 at rr=1, and alpha=0.35 at rr=0.5 
+        alpha=1.0*alpha+0.35*(1.-alpha) !alpha=1 at rr=1, and alpha=0.35 at rr=0.5
         !r=SQRT(x(1)**2+x(2)**2) !r always > 0 here
         dx(1:2)=alpha*(rr/SQRT(SUM(x(1:2)**2))-1.)*x(1:2)
       END IF !inside/outside hexagon
@@ -323,7 +325,7 @@ CASE(66)
     xout(3)=x(3)*PostDeform_Lz !cylinder
     X_out(:,i)=xout(:)
   END DO !i=1,nTotal
-CASE(2) ! 3D box, x,y in [-1,1]^3, to Sphere with radius PostDeform_R0 
+CASE(2) ! 3D box, x,y in [-1,1]^3, to Sphere with radius PostDeform_R0
         ! all points outside [-1,1]^4 will be mapped directly to a sphere
   DO i=1,nTotal
     x(:)=x_in(:,i)
@@ -357,7 +359,7 @@ CASE(2) ! 3D box, x,y in [-1,1]^3, to Sphere with radius PostDeform_R0
       dx3(3)=cosa*cosb
       dx3(:)=dx3(:)*0.5*SQRT(3./(cosb*cosb+(cosa*sinb)**2))-(/x(1),x(2),0.5/)
       alpha=0.35
-      !dx =0 at the corners, coons mapping for faces 
+      !dx =0 at the corners, coons mapping for faces
       dx(1:3)=alpha*( dx1(1:3)*(/   2*x(1),     1.,     1./) &
                      +dx2(1:3)*(/       1.,2*x(2) ,     1./) &
                      +dx3(1:3)*(/       1.,     1.,2*x(3) /))
@@ -389,7 +391,7 @@ CASE(2) ! 3D box, x,y in [-1,1]^3, to Sphere with radius PostDeform_R0
               alpha*2*( dx1(1:3)*(/ x(1) ,  x(2) ,  0.5*(ABS(x(1))+ABS(x(2))) /) &
                        +dx2(1:3)*(/ 0.5*(ABS(x(2))+ABS(x(3))),  x(2) , x(3) /) &
                        +dx3(1:3)*(/ x(1) ,0.5*(ABS(x(1))+ABS(x(3))), x(3) /))
-      
+
     ELSE !outside [-0.5,0.5]^3
       IF((ABS(x(2)).LT.ABS(x(1))).AND.(ABS(x(3)).LT.ABS(x(1))))THEN !left and right (x dir)
         cosa=COS(0.25*Pi*x(2)/x(1))
@@ -421,14 +423,14 @@ CASE(2) ! 3D box, x,y in [-1,1]^3, to Sphere with radius PostDeform_R0
       END IF
       alpha=MIN(1.,2.*rr-1.) !maps [0.5,1] --> [0,1] and alpha=1 outside [-1,1]^2
       alpha=SIN(0.5*Pi*alpha) !smooth transition at the outer boundary max(|x|,|y|,|z|)=1
-      alpha=1.0*alpha+0.35*(1.-alpha) !alpha=1 at max(|x|,|y|,|z|)=1, and alpha=0.35 at max(|x|,|y|,|z|)=0.5 
+      alpha=1.0*alpha+0.35*(1.-alpha) !alpha=1 at max(|x|,|y|,|z|)=1, and alpha=0.35 at max(|x|,|y|,|z|)=0.5
       dx(:)=alpha*dx(:)
     END IF
     xout(1:3)=PostDeform_R0/SQRT(3.)*(x(1:3)+dx(1:3))
     X_out(:,i)=xout(:)
   END DO !i=1,nTotal
 CASE(3) ! 2D box, x,y in [-1,1]^2, to cylinder with radius PostDeform_R0 z  [0,1] is mapped to z*PostDeform_Lz)
-        ! all points outside [-1,1]^3 and inside [-4,4]^3 are smoothly mapped back to a cube of 
+        ! all points outside [-1,1]^3 and inside [-4,4]^3 are smoothly mapped back to a cube of
         ! of size [-4,4]*PostDeform_R0/sqrt(2)
   DO i=1,nTotal
     x(:)=x_in(:,i)
@@ -454,19 +456,19 @@ CASE(3) ! 2D box, x,y in [-1,1]^2, to cylinder with radius PostDeform_R0 z  [0,1
       IF(rr.LE.1.)THEN
         alpha=2.*rr-1. !maps [0.5,1] --> [0,1] and alpha=1 outside [-1,1]^2
         alpha=SIN(0.5*Pi*alpha) !smooth transition at the outer boundary max(|x|,|y|,|z|)=1
-        alpha=1.0*alpha+0.35*(1.-alpha) !alpha=1 at max(|x|,|y|,|z|)=1, and alpha=0.35 at max(|x|,|y|,|z|)=0.5 
+        alpha=1.0*alpha+0.35*(1.-alpha) !alpha=1 at max(|x|,|y|,|z|)=1, and alpha=0.35 at max(|x|,|y|,|z|)=0.5
         dx(1:2)=alpha*dx(1:2)
       ELSE
         !alpha=((4.-rr)/((4.-1.)*rr)) !between [-1,1] and [-4,4]
         alpha=(4.-rr)/(4.-1.) !maps [1,4] --> [1,0] and alpha=1 outside [-1,1]^2
-        alpha=SIN(0.5*Pi*alpha) !smooth transition 
+        alpha=SIN(0.5*Pi*alpha) !smooth transition
         dx(1:2)=alpha*(dx(1:2)/rr)
       END IF
     ELSE !outside [-4,4]^2
       dx=0.
     END IF
     xout(1:2)=PostDeform_R0*SQRT(0.5)*(x(1:2)+dx(1:2))
-    xout(3)=x(3)*PostDeform_Lz 
+    xout(3)=x(3)*PostDeform_Lz
     X_out(:,i)=xout(:)
   END DO !i=1,nTotal
 CASE(300) ! planar Annulus: tensor-product mapping: input 2*pi*x=>theta must be  [-1,1] y => height in z ,z=> radius
@@ -485,8 +487,8 @@ CASE(310) ! spherical Annulus: tensor-product mapping: input pi*x=>theta must be
     xout(3)=PostDeform_R0*x(3)*SIN(pi*x(2))
     X_out(:,i)=xout(:)
   END DO !i=1,nTotal
-CASE(4) ! 3D box, x,y in [-1,1]^3, to Sphere with radius PostDeform_R0 
-        ! all points outside [-1,1]^3 and inside [-4,4]^3 are smoothly mapped back to a cube of 
+CASE(4) ! 3D box, x,y in [-1,1]^3, to Sphere with radius PostDeform_R0
+        ! all points outside [-1,1]^3 and inside [-4,4]^3 are smoothly mapped back to a cube of
         ! of size [-4,4]*PostDeform_R0/sqrt(3)
   DO i=1,nTotal
     x(:)=x_in(:,i)
@@ -520,7 +522,7 @@ CASE(4) ! 3D box, x,y in [-1,1]^3, to Sphere with radius PostDeform_R0
       dx3(3)=cosa*cosb
       dx3(:)=dx3(:)*0.5*SQRT(3./(cosb*cosb+(cosa*sinb)**2))-(/x(1),x(2),0.5/)
       alpha=0.35
-      !dx =0 at the corners, coons mapping for faces 
+      !dx =0 at the corners, coons mapping for faces
       dx(1:3)=alpha*( dx1(1:3)*(/   2*x(1),     1.,     1./) &
                      +dx2(1:3)*(/       1.,2*x(2) ,     1./) &
                      +dx3(1:3)*(/       1.,     1.,2*x(3) /))
@@ -552,7 +554,7 @@ CASE(4) ! 3D box, x,y in [-1,1]^3, to Sphere with radius PostDeform_R0
               alpha*2*( dx1(1:3)*(/ x(1) ,  x(2) ,  0.5*(ABS(x(1))+ABS(x(2))) /) &
                        +dx2(1:3)*(/ 0.5*(ABS(x(2))+ABS(x(3))),  x(2) , x(3) /) &
                        +dx3(1:3)*(/ x(1) ,0.5*(ABS(x(1))+ABS(x(3))), x(3) /))
-      
+
     ELSEIF((rr.GT.0.5).AND.(rr.LE.4.))THEN !outside [-0.5,0.5]^3 and inside [-4,4]^3
       IF((ABS(x(2)).LT.ABS(x(1))).AND.(ABS(x(3)).LT.ABS(x(1))))THEN !left and right (x dir)
         cosa=COS(0.25*Pi*x(2)/x(1))
@@ -585,15 +587,15 @@ CASE(4) ! 3D box, x,y in [-1,1]^3, to Sphere with radius PostDeform_R0
       IF(rr.LE.1.)THEN
         alpha=2.*rr-1. !maps [0.5,1] --> [0,1] and alpha=1 outside [-1,1]^2
         alpha=SIN(0.5*Pi*alpha) !smooth transition at the outer boundary max(|x|,|y|,|z|)=1
-        alpha=1.0*alpha+0.35*(1.-alpha) !alpha=1 at max(|x|,|y|,|z|)=1, and alpha=0.35 at max(|x|,|y|,|z|)=0.5 
+        alpha=1.0*alpha+0.35*(1.-alpha) !alpha=1 at max(|x|,|y|,|z|)=1, and alpha=0.35 at max(|x|,|y|,|z|)=0.5
         dx(:)=alpha*dx(:)
       ELSE
         !alpha=((4.-rr)/((4.-1.)*rr)) !between [-1,1] and [-4,4]
         alpha=(4.-rr)/(4.-1.) !maps [1,4] --> [1,0] and alpha=1 outside [-1,1]^2
-        alpha=SIN(0.5*Pi*alpha) !smooth transition 
+        alpha=SIN(0.5*Pi*alpha) !smooth transition
         dx(:)=alpha*(dx(:)/rr)
       END IF
-    ELSE   !outside [-4,4]^3 
+    ELSE   !outside [-4,4]^3
       dx=0.
     END IF !rr
     xout(1:3)=PostDeform_R0/SQRT(3.)*(x(1:3)+dx(1:3))
@@ -614,7 +616,7 @@ CASE(5) ! 2D periodic hill geometry, see http://www.kbwiki.ercoftac.org/w/index.
     h = PHILL_H(x(1))
 
     ! polynomial for smooth mesh deformation across points in y direction
-    g = 2./hMax**3*x(2)**3 - 3./hMax**2*x(2)**2 + 1. 
+    g = 2./hMax**3*x(2)**3 - 3./hMax**2*x(2)**2 + 1.
 
     ! First, simply move the geometry in y-direction regarding to the local hill size
     xout(2) = xout(2) + g*h
@@ -626,8 +628,8 @@ CASE(5) ! 2D periodic hill geometry, see http://www.kbwiki.ercoftac.org/w/index.
       ! Length of the vector from the hill to the current point, used for scaling
       length = xout(2) - h
 
-      ! surface normal vector: 
-      ! Near the horizontal walls on the top and bottom of the hill, 
+      ! surface normal vector:
+      ! Near the horizontal walls on the top and bottom of the hill,
       ! the slope will be lineary increased/decreased to infinity to smear out the sharp bends
       xBlendTop    = 0.8
       xBlendBottom = 1.6
@@ -640,7 +642,7 @@ CASE(5) ! 2D periodic hill geometry, see http://www.kbwiki.ercoftac.org/w/index.
         ! hill bottom
         vecRefBottom = PHILL_NORMAL(xBlendBottom)
         vec = vecRefBottom + (xLeft-xBlendBottom)/(4.5-xBlendBottom)*((/0.,1./)-vecRefBottom)
-      ELSE 
+      ELSE
         ! default case (at the hill slope): take the actual normal vector
         vec = PHILL_NORMAL(xLeft)
       END IF
@@ -650,12 +652,12 @@ CASE(5) ! 2D periodic hill geometry, see http://www.kbwiki.ercoftac.org/w/index.
 
       ! Smooth out the mesh deformation
       xout(1:2) = xout(1:2) + 0.9*g**3*length*(vec-(/0.,1./))
-    END IF 
+    END IF
 
     X_out(:,i)=xout(:)
   END DO !i=1,nTotal
 
-CASE(21)!Laval nozzle 
+CASE(21)!Laval nozzle
         ! 3D box, x,y in [-1,1]^2 and z in [0,nozzle_length], to cylindrical cross section with a r(z) profile
         ! r(z) profile here given by a fitted monomial polynomial over z.
         ! all points outside [-1,1]^2 will be mapped directly to a circle (p.e. 2,2 => sqrt(0.5)*PostDeform_R0*(2,2) )
@@ -684,12 +686,12 @@ CASE(21)!Laval nozzle
       END IF
       alpha=MIN(1.,2.*rr-1.) !maps [0.5,1] --> [0,1] and alpha=1 outside [-1,1]^2
       alpha=SIN(0.5*Pi*alpha) !smooth transition at the outer boundary max(|x|,|y|)=1
-      alpha=1.0*alpha+0.35*(1.-alpha) !alpha=1 at max(|x|,|y|)=1, and alpha=0.35 at max(|x|,|y|)=0.5 
+      alpha=1.0*alpha+0.35*(1.-alpha) !alpha=1 at max(|x|,|y|)=1, and alpha=0.35 at max(|x|,|y|)=0.5
       dx(1:2)=alpha*dx(1:2)
     END IF
     xout(1:2)=PostDeform_R0*SQRT(0.5)*(x(1:2)+dx(1:2))  !r=[0;1]
     !scale with radius (polynomial given for z in [0;3.2]!!)
-    xout(1:2)=xout(1:2)* ((((((( 5.650243547593181E-03)*x(3) -6.234872576213188E-02)*x(3) +2.717131733412690E-01)*x(3) & 
+    xout(1:2)=xout(1:2)* ((((((( 5.650243547593181E-03)*x(3) -6.234872576213188E-02)*x(3) +2.717131733412690E-01)*x(3) &
                                 -5.898455159792279E-01)*x(3) +6.077001327643441E-01)*x(3) -3.529284589734004E-02)*x(3) &
                                 +5.008061090611048E-01)
     xout(3)=x(3)
@@ -715,19 +717,19 @@ CASE(34) ! cos3D (1.5Pi) [-1;1]^3
   x_out(1,:) = x_in(1,:)+ 0.1*COS(1.5*Pi*x_in(1,:))*COS(1.5*Pi*x_in(2,:))*COS(1.5*Pi*x_in(3,:))
   x_out(2,:) = x_in(2,:)+ 0.1*COS(1.5*Pi*x_in(1,:))*COS(1.5*Pi*x_in(2,:))*COS(1.5*Pi*x_in(3,:))
   x_out(3,:) = x_in(3,:)+ 0.1*COS(1.5*Pi*x_in(1,:))*COS(1.5*Pi*x_in(2,:))*COS(1.5*Pi*x_in(3,:))
-CASE(40) ! cos with coupling  [-1;1]^3 (from https://arxiv.org/pdf/1809.01178.pdf, page 20) 
+CASE(40) ! cos with coupling  [-1;1]^3 (from https://arxiv.org/pdf/1809.01178.pdf, page 20)
   x_out(2,:) = x_in(2,:)+ 0.15*COS(1.5*Pi*x_in( 1,:))*COS(0.5*Pi*x_in( 2,:))*COS(0.5*Pi*x_in(3,:))
   x_out(1,:) = x_in(1,:)+ 0.15*COS(0.5*Pi*x_in( 1,:))*SIN(2.0*Pi*x_out(2,:))*COS(0.5*Pi*x_in(3,:))
   x_out(3,:) = x_in(3,:)+ 0.15*COS(0.5*Pi*x_out(1,:))*COS(    Pi*x_out(2,:))*COS(0.5*Pi*x_in(3,:))
-CASE(41) ! cos in xy with coupling  [-1;1]^2 (from https://arxiv.org/pdf/1809.01178.pdf, page 18) 
+CASE(41) ! cos in xy with coupling  [-1;1]^2 (from https://arxiv.org/pdf/1809.01178.pdf, page 18)
   x_out(1,:) = x_in(1,:)+ 0.15*COS(0.5*Pi*x_in( 1,:))*COS(1.5*Pi*x_in( 2,:))
   x_out(2,:) = x_in(2,:)+ 0.15*COS(2.0*Pi*x_out(1,:))*COS(0.5*Pi*x_in( 2,:))
   x_out(3,:) = x_in(3,:)
-CASE(42) ! cos in xz with coupling  [-1;1]^2 (from https://arxiv.org/pdf/1809.01178.pdf, page 18) 
+CASE(42) ! cos in xz with coupling  [-1;1]^2 (from https://arxiv.org/pdf/1809.01178.pdf, page 18)
   x_out(1,:) = x_in(1,:)+ 0.15*COS(0.5*Pi*x_in( 1,:))*COS(1.5*Pi*x_in( 3,:))
   x_out(2,:) = x_in(2,:)
   x_out(3,:) = x_in(3,:)+ 0.15*COS(2.0*Pi*x_out(1,:))*COS(0.5*Pi*x_in( 3,:))
-CASE(43) ! cos in yz with coupling  [-1;1]^2 (from https://arxiv.org/pdf/1809.01178.pdf, page 18) 
+CASE(43) ! cos in yz with coupling  [-1;1]^2 (from https://arxiv.org/pdf/1809.01178.pdf, page 18)
   x_out(1,:) = x_in(1,:)
   x_out(2,:) = x_in(2,:)+ 0.15*COS(0.5*Pi*x_in( 2,:))*COS(1.5*Pi*x_in( 3,:))
   x_out(3,:) = x_in(3,:)+ 0.15*COS(2.0*Pi*x_out(2,:))*COS(0.5*Pi*x_in( 3,:))
@@ -794,9 +796,12 @@ ELSEIF((xloc.GT.40.).AND.(xloc.LE.54.)) THEN
 ! Between x=54. and middle of domain
 ELSEIF(xloc.GT.54.) THEN
   PHILL_H = 0.
+ELSE
+  PHILL_H = 0.
 END IF
 
 PHILL_H = PHILL_H/scale_factor ! Scale back to computational domain
+
 END FUNCTION PHILL_H
 
 !===================================================================================================================================
@@ -867,7 +872,7 @@ ELSE
   ! This is the vector along the normal
   PHILL_NORMAL = (/ 1.,-1./hDeriv /)
   PHILL_NORMAL = PHILL_NORMAL/NORM2(PHILL_NORMAL)
-END IF 
+END IF
 END FUNCTION PHILL_NORMAL
 
 END MODULE MOD_Mesh_PostDeform

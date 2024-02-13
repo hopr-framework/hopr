@@ -42,6 +42,10 @@ INTERFACE NetVisu
   MODULE PROCEDURE NetVisu
 END INTERFACE
 
+INTERFACE FEMnetVisu
+  MODULE PROCEDURE FEMnetVisu
+END INTERFACE
+
 INTERFACE BCVisu
   MODULE PROCEDURE BCVisu
 END INTERFACE
@@ -62,7 +66,7 @@ INTERFACE CheckMortarWaterTight
   MODULE PROCEDURE CheckMortarWaterTight
 END INTERFACE
 
-PUBLIC::CountSplines,NetVisu,BCVisu
+PUBLIC::CountSplines,NetVisu,BCVisu,FEMnetVisu
 PUBLIC::chkspl_surf,chkspl_vol
 PUBLIC::SetTempMarker
 PUBLIC::CheckMortarWaterTight
@@ -220,6 +224,125 @@ CALL Timer(.FALSE.)
 
 END SUBROUTINE netVisu
 
+SUBROUTINE FEMNetVisu()
+  !===================================================================================================================================
+  ! Debug visualization of the grid with the unique Face ID, unique FEM Edge ID and unique Vertex ID.
+  ! Visulaize faceID separately
+  !===================================================================================================================================
+  ! MODULES
+  USE MOD_Globals
+  USE MOD_Mesh_Vars,ONLY:tElem,tSide,tNode,tLocalEdge,tVertex
+  USE MOD_Mesh_Vars,ONLY:FirstElem,CGNSElemEdgeToNode
+  USE MOD_Output   ,ONLY:Visualize
+  ! IMPLICIT VARIABLE HANDLING
+  IMPLICIT NONE
+  !-----------------------------------------------------------------------------------------------------------------------------------
+  ! INPUT VARIABLES
+  !-----------------------------------------------------------------------------------------------------------------------------------
+  ! OUTPUT VARIABLES
+  !-----------------------------------------------------------------------------------------------------------------------------------
+  ! LOCAL VARIABLES 
+  TYPE(tElem),POINTER             :: Elem 
+  TYPE(tSide),POINTER             :: Side
+  TYPE(tLocalEdge),POINTER        :: lEdge 
+  TYPE(tNode),POINTER             :: aNode,bNode
+  TYPE(tVertex),POINTER           :: avert,bVert
+  INTEGER                         :: nVal,iNode,nElems,nSidesElem,nSides,nEdges,iSide,iElemSide,iEdge,iLocEdge  ! ?
+  INTEGER                         :: NodeMap(1:4,3:4)  ! ?
+  CHARACTER(LEN=255)              :: FileString  ! ?
+  CHARACTER(LEN=255)              :: VarNames(5)  ! ?
+  REAL,ALLOCATABLE                :: Coord(:,:,:),Solution(:,:,:)  ! ?
+  INTEGER                      :: nSides_from_nNodes(4:8)=(/4,5,5,-1, 6/)
+  !===================================================================================================================================
+  WRITE(UNIT_stdOut,'(132("~"))')
+  WRITE(UNIT_stdOut,'(A)')'WRITING THE DEBUGMESH FOR FEM CONNECTIVITY...'
+  CALL Timer(.TRUE.)
+  ! Count elements and nodes and DoF
+  nElems      = 0
+  nSides=0
+  nEdges=0
+  Elem=>firstElem
+  DO WHILE(ASSOCIATED(elem))
+    nElems=nElems+1
+    nSidesElem=nSides_from_nNodes(Elem%nNodes)
+    nSides=nSides+nSidesElem
+    nEdges=nEdges+Elem%nEdges
+    elem=>elem%nextElem
+  END DO
+  WRITE(UNIT_stdOut,*)'  #Elements ',nElems, '#Sides',nSides,'#Edges',nEdges
+  filestring=TRIM(ProjectName)//'_'//'Debugmesh_Faces'
+  nVal=2
+  VarNames(1)='elemind'
+  VarNames(2)='UniqueFaceID'
+  
+  NodeMap=0
+  !mapping from Side nNodes to i,j [0;1]
+  NodeMap(:,3)=(/1,2,3,3/) !tri
+  NodeMap(:,4)=(/1,2,4,3/) !quad
+  
+  ALLOCATE(Coord(3,1:4,nSides))
+  ALLOCATE(Solution(nVal,1:4,nSides))
+  
+  iSide=0
+  Elem=>firstElem
+  DO WHILE(ASSOCIATED(elem))
+    
+    nSidesElem=nSides_from_nNodes(Elem%nNodes)
+    Side=>Elem%firstSide
+    DO iElemSide=1,nSidesElem
+      iSide=iSide+1
+      DO iNode=1,4
+        Coord(:,iNode,iSide)=(Side%Node(NodeMap(iNode,Side%nNodes))%np%x)
+      END DO
+      Solution(1,:,iSide)=Elem%ind
+      Solution(2,:,iSide)=Side%ind
+      Side=>Side%nextElemSide
+    END DO !nSides
+    Elem=>elem%nextElem
+  END DO
+  CALL Visualize(2,nVal,1,nSides,VarNames(1:nVal),Coord,Solution,FileString)
+  
+  DEALLOCATE(Coord,Solution)
+
+  filestring=TRIM(ProjectName)//'_'//'Debugmesh_Edges'
+  nVal=5
+  ALLOCATE(Coord(3,1:2,nEdges))
+  ALLOCATE(Solution(nVal,1:2,nEdges))
+  VarNames(1)='elemind'
+  VarNames(2)='FEMedgeID'
+  VarNames(3)='FEMVertexID'
+  VarNames(4)='EdgeIsMaster'
+  VarNames(5)='VertexIsMaster'
+
+  
+  iEdge=0
+  Elem=>firstElem
+  DO WHILE(ASSOCIATED(elem))
+    DO iLocEdge=1,Elem%nEdges
+      lEdge=>Elem%localEdge(iLocEdge)%LEDP
+      aVert=>Elem%Vertex(CGNSElemEdgeToNode(Elem%nNodes,iLocEdge,1))%vp
+      bVert=>Elem%Vertex(CGNSElemEdgeToNode(Elem%nNodes,iLocEdge,2))%vp
+      aNode=>Elem%Node(CGNSElemEdgeToNode(Elem%nNodes,iLocEdge,1))%np
+      bNode=>Elem%Node(CGNSElemEdgeToNode(Elem%nNodes,iLocEdge,2))%np
+      iEdge=iEdge+1
+      Coord(:,1,iEdge)=aNode%x
+      Coord(:,2,iEdge)=bNode%x
+      Solution(1,:,iEdge)=Elem%ind
+      Solution(2,:,iEdge)=lEdge%ind
+      Solution(3,1,iEdge)=aVert%ind
+      Solution(3,2,iEdge)=bVert%ind
+      Solution(4,:,iEdge)=MERGE(1,-1, (lEdge%tmp.GT.0) )
+      Solution(5,1,iEdge)=MERGE(1,-1, (aVert%tmp.GT.0) )
+      Solution(5,2,iEdge)=MERGE(1,-1, (bVert%tmp.GT.0) )
+    END DO !iLocEdge
+    Elem=>elem%nextElem
+  END DO
+  CALL Visualize(1,nVal,1,nEdges,VarNames(1:nVal),Coord,Solution,FileString)
+  
+  DEALLOCATE(Coord,Solution)
+  CALL Timer(.FALSE.)
+  
+END SUBROUTINE FEMnetVisu
 
 SUBROUTINE BCVisu()
 !===================================================================================================================================
@@ -415,8 +538,7 @@ DO WHILE(ASSOCIATED(Elem))
         IF(ASSOCIATED(Side%curvedNode(iNode)%np))THEN
           xNode(iNode,:)=Side%curvedNode(iNode)%np%x
         ELSE
-          CALL abort(__STAMP__, &
-           'Curved node array has not the right size.',999,999.) ! check required due to intel compiler error (02)
+          CALL abort(__STAMP__,'Curved node array has not the right size.',999,999.) ! check required due to intel compiler error (02)
         END IF
       END DO
       SELECT CASE(Side%nNodes)
@@ -553,8 +675,7 @@ DO WHILE(ASSOCIATED(Elem))
         IF(ASSOCIATED(Elem%curvedNode(iNode)%np))THEN
           xNode(iNode,:)=Elem%curvedNode(iNode)%np%x
         ELSE
-          CALL abort(__STAMP__, &
-           'Curved node array has not the right size.',999,999.) ! check required due to intel compiler error (02)
+          CALL abort(__STAMP__,'Curved node array has not the right size.',999,999.) ! check required due to intel compiler error (02)
         END IF
       END DO
       x  = MATMUL(Vdm_Visu_Hexa,xNode(1:nNodes,:))
@@ -875,8 +996,7 @@ END DO !while Elem associated
 IF(waterTight.GT.0) THEN
   WRITE(UNIT_stdOut,*)'  ERROR: ', waterTight,' Mortar sides of ',nMortars, &
                     ' are not watertight, MaxError= ',MaxNsurfErr
-  CALL abort(__STAMP__, &
-         'ERROR: mortars not watertight !!!',waterTight,maxNsurfErr)
+  CALL abort(__STAMP__,'ERROR: mortars not watertight !!!',waterTight,maxNsurfErr)
 ELSE
   WRITE(UNIT_stdOut,*)' ==> all mortars are watertight ;)'
 END IF

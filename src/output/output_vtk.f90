@@ -9,7 +9,7 @@
 ! /____//   /____//  /______________//  /____//           /____//   |_____/)    ,X`      XXX`
 ! )____)    )____)   )______________)   )____)            )____)    )_____)   ,xX`     .XX`
 !                                                                           xxX`      XXx
-! Copyright (C) 2017  Florian Hindenlang <hindenlang@gmail.com>
+! Copyright (C) 2017-2024  Florian Hindenlang <hindenlang@gmail.com>
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
@@ -64,7 +64,7 @@ USE MOD_Globals
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT VARIABLES
-INTEGER,INTENT(IN)            :: dim1                    ! dimension of the data (either 2=quads or 3=hexas)
+INTEGER,INTENT(IN)            :: dim1                    !  dimension of the data (either 1:lines,2=quads or 3=hexas)
 INTEGER,INTENT(IN)            :: vecdim                  ! dimension of coordinates 
 INTEGER,INTENT(IN)            :: nVal                    ! Number of nodal output variables
 INTEGER,INTENT(IN)            :: NPlot                   ! Number of output points .EQ. NAnalyze
@@ -77,10 +77,14 @@ CHARACTER(LEN=*),INTENT(IN)   :: FileString              ! Output file name
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES
-INTEGER            :: i,j,k,iVal,iElem,Offset,nBytes,nVTKElems,nVTKCells,ivtk=44
-INTEGER            :: INT
-INTEGER            :: Vertex(2**dim1,(NPlot+1)**dim1*nElems)  ! ?
-INTEGER            :: NPlot_p1_3,NPlot_p1_2,NPlot_p1,NodeID,NodeIDElem,ElemType  ! ?
+INTEGER,PARAMETER     :: kindFloat=8  !set floating point accuracy single (4) double (8), should be equal or lower than input data!
+REAL(KIND=kindFloat)  :: FLOATdummy
+CHARACTER(LEN=7)      :: strfloat
+INTEGER               :: INTdummy
+INTEGER               :: sizefloat,sizeInt
+INTEGER            :: i,j,k,iVal,iElem,Offset,nBytes,nVTKPoints,nVTKCells,ivtk=44
+INTEGER            :: Vertex(2**dim1,(NPlot)**dim1*nElems)  ! ?
+INTEGER            :: NPlot_p1_3,NPlot_p1_2,NPlot_p1,CellID,PointID,ElemType  ! ?
 CHARACTER(LEN=35)  :: StrOffset,TempStr1,TempStr2  ! ?
 CHARACTER(LEN=300) :: Buffer
 CHARACTER(LEN=255) :: tmpVarName,tmpVarNameY,tmpVarNameZ
@@ -88,16 +92,25 @@ INTEGER            :: StrLen,iValVec,nValVec,VecOffset(0:nVal)
 LOGICAL            :: isVector,maybeVector
 CHARACTER(LEN=1)   :: strvecdim
 CHARACTER(LEN=1)   :: lf
-REAL(KIND=4)       :: Float
 !===================================================================================================================================
 WRITE(UNIT_stdOut,'(A)',ADVANCE='NO')"   WRITE DATA TO VTX XML BINARY (VTU) FILE... "//TRIM(FileString)
 NPlot_p1  =(Nplot+1)
 NPlot_p1_2=Nplot_p1*Nplot_p1
 NPlot_p1_3=NPlot_p1_2*Nplot_p1
 
+IF(kindFloat.EQ.4) THEN 
+  strfloat='Float32'
+ELSEIF(kindFloat.EQ.8)THEN
+  strfloat='Float64'
+ELSE 
+  CALL abort(__STAMP__,'kindFloat not implemented in output vtk')
+END IF
+sizefloat=SIZEOF_F(FLOATdummy)
+sizeInt  =SIZEOF_F(INTdummy)
+
 IF(vecdim.LT.dim1) THEN
   WRITE(*,*)'WARNING:dim1 should be > vecdim! dim1= ',dim1,' vecdim= ',vecdim
-  STOP
+  CALL abort(__STAMP__,'WARNING:dim1 should be > vecdim!')
 END IF
 ! Line feed character
 lf = char(10)
@@ -109,10 +122,10 @@ OPEN(UNIT=ivtk,FILE=TRIM(FileString),ACCESS='STREAM')
 Buffer='<?xml version="1.0"?>'//lf;WRITE(ivtk) TRIM(Buffer)
 Buffer='<VTKFile type="UnstructuredGrid" version="0.1" byte_order="LittleEndian">'//lf;WRITE(ivtk) TRIM(Buffer)
 ! Specify file type
-nVTKElems=NPlot_p1**dim1*nElems
+nVTKPoints=NPlot_p1**dim1*nElems
 nVTKCells=NPlot**dim1*nElems
 Buffer='  <UnstructuredGrid>'//lf;WRITE(ivtk) TRIM(Buffer)
-WRITE(TempStr1,'(I16)')nVTKElems
+WRITE(TempStr1,'(I16)')nVTKPoints
 WRITE(TempStr2,'(I16)')nVTKCells
 Buffer='    <Piece NumberOfPoints="'//TRIM(ADJUSTL(TempStr1))//'" &
        &NumberOfCells="'//TRIM(ADJUSTL(TempStr2))//'">'//lf;WRITE(ivtk) TRIM(Buffer)
@@ -152,16 +165,16 @@ DO WHILE(iVal.LT.nVal)
 
   IF(isvector)THEN !variable is a vector!
     tmpVarName=tmpVarName(:StrLen-1)
-    Buffer='        <DataArray type="Float32" Name="'//TRIM(tmpVarName)//'" NumberOfComponents="'//strvecdim// &
+    Buffer='        <DataArray type="'//strfloat//'" Name="'//TRIM(tmpVarName)//'" NumberOfComponents="'//strvecdim// &
            &'" format="appended" offset="'//TRIM(ADJUSTL(StrOffset))//'"/>'//lf;WRITE(ivtk) TRIM(Buffer)
-    Offset=Offset+SIZEOF_F(INT)+vecdim*nVTKElems*SIZEOF_F(FLOAT)
+    Offset=Offset+sizeInt+vecdim*nVTKPoints*sizefloat
     WRITE(StrOffset,'(I16)')Offset
     VecOffset(iValVec)=VecOffset(iValVec-1)+vecdim
     iVal=iVal+vecdim-1 !skip the Y (& Z) components
   ELSE
-    Buffer='        <DataArray type="Float32" Name="'//TRIM(tmpVarName)// &
+    Buffer='        <DataArray type="'//strfloat//'" Name="'//TRIM(tmpVarName)// &
            &'" format="appended" offset="'//TRIM(ADJUSTL(StrOffset))//'"/>'//lf;WRITE(ivtk) TRIM(Buffer)
-    Offset=Offset+SIZEOF_F(INT)+nVTKElems*SIZEOF_F(FLOAT)
+    Offset=Offset+sizeInt+nVTKPoints*sizeFloat
     WRITE(StrOffset,'(I16)')Offset
     VecOffset(iValVec)=VecOffset(iValVec-1)+1
   END IF !isvector
@@ -173,9 +186,9 @@ Buffer='      </PointData>'//lf;WRITE(ivtk) TRIM(Buffer)
 Buffer='      <CellData> </CellData>'//lf;WRITE(ivtk) TRIM(Buffer)
 ! Specify coordinate data
 Buffer='      <Points>'//lf;WRITE(ivtk) TRIM(Buffer)
-Buffer='        <DataArray type="Float32" Name="Coordinates" NumberOfComponents="'//strvecdim// &
+Buffer='        <DataArray type="'//strfloat//'" Name="Coordinates" NumberOfComponents="'//strvecdim// &
 '" format="appended" offset="'//TRIM(ADJUSTL(StrOffset))//'"/>'//lf;WRITE(ivtk) TRIM(Buffer)
-Offset=Offset+SIZEOF_F(INT)+vecdim*nVTKElems*SIZEOF_F(FLOAT)
+Offset=Offset+sizeInt+vecdim*nVTKPoints*sizeFloat
 WRITE(StrOffset,'(I16)')Offset
 Buffer='      </Points>'//lf;WRITE(ivtk) TRIM(Buffer)
 ! Specify necessary cell data
@@ -183,12 +196,12 @@ Buffer='      <Cells>'//lf;WRITE(ivtk) TRIM(Buffer)
 ! Connectivity
 Buffer='        <DataArray type="Int32" Name="connectivity" format="appended" &
          &offset="'//TRIM(ADJUSTL(StrOffset))//'"/>'//lf;WRITE(ivtk) TRIM(Buffer)
-Offset=Offset+SIZEOF_F(INT)+2**dim1*nVTKElems*SIZEOF_F(INT)
+Offset=Offset+sizeInt+2**dim1*nVTKCells*sizeInt
 WRITE(StrOffset,'(I16)')Offset
-! Offsets
+! Offset in connectivity data
 Buffer='        <DataArray type="Int32" Name="offsets" format="appended" &
          &offset="'//TRIM(ADJUSTL(StrOffset))//'"/>'//lf;WRITE(ivtk) TRIM(Buffer)
-Offset=Offset+SIZEOF_F(INT)+nVTKElems*SIZEOF_F(INT)
+Offset=Offset+sizeInt+nVTKCells*sizeInt
 WRITE(StrOffset,'(I16)')Offset
 ! Elem types
 Buffer='        <DataArray type="Int32" Name="types" format="appended" &
@@ -203,70 +216,88 @@ Buffer='_';WRITE(ivtk) TRIM(Buffer)
 
 ! Write binary raw data into append section
 ! Point data
-nBytes = nVTKElems*SIZEOF_F(FLOAT)
+nBytes = nVTKPoints*sizeFloat
 DO iValVec=1,nValVec
-  WRITE(ivtk) (vecOffset(iValVec)-vecOffset(iValVec-1))*nBytes, &
-              REAL(Values(VecOffSet(iValVec-1)+1:VecOffset(iValVec),:,:),4)
+  WRITE(ivtk) (vecOffset(iValVec)-vecOffset(iValVec-1))*nBytes
+  WRITE(ivtk) REAL(Values(VecOffSet(iValVec-1)+1:VecOffset(iValVec),:,:),kindFloat)
 END DO !iValVec
-! Points
-nBytes = nBytes * vecdim
+! Point coordinates
+nBytes = nVTKPoints *vecdim*sizeFloat
 WRITE(ivtk) nBytes
-WRITE(ivtk) REAL(Coord(:,:,:),4)
+WRITE(ivtk) REAL(Coord(:,:,:),kindFloat)
 ! Connectivity
 SELECT CASE(dim1)
+CASE(1)
+  CellID = 0
+  PointID= 0
+  DO iElem=1,nElems
+    DO i=1,NPlot
+      CellID = CellID+1
+      !visuQuadElem
+      Vertex(:,CellID) = (/ PointID+(i-1), PointID+ i /) 
+    END DO
+    PointID=PointID+(Nplot+1)
+  END DO
 CASE(2)
-  NodeID = 0
-  NodeIDElem = 0
+  CellID = 0
+  PointID = 0
   DO iElem=1,nElems
     DO j=1,NPlot
       DO i=1,NPlot
-        NodeID = NodeID+1
+        CellID = CellID+1
         !visuQuadElem
-        Vertex(:,NodeID) = (/                  &
-          NodeIDElem+i+   j   *(NPlot+1)-1,    & !P4
-          NodeIDElem+i+  (j-1)*(NPlot+1)-1,    & !P1(CGNS=tecplot standard)
-          NodeIDElem+i+1+(j-1)*(NPlot+1)-1,    & !P2
-          NodeIDElem+i+1+ j   *(NPlot+1)-1    /) !P3
+        Vertex(:,CellID) = (/                  &
+          PointID+(i-1)+ j   *(NPlot+1),    & !P4
+          PointID+(i-1)+(j-1)*(NPlot+1),    & !P1(CGNS=tecplot standard)
+          PointID+ i   +(j-1)*(NPlot+1),    & !P2
+          PointID+ i   + j   *(NPlot+1)    /) !P3
       END DO
     END DO
-    NodeIDElem=NodeIDElem+NPlot_p1_2
+    PointID=PointID+NPlot_p1_2
   END DO
 CASE(3)
-  NodeID=0
-  NodeIDElem=0
+  CellID=0
+  PointID=0
   DO iElem=1,nElems
     DO k=1,NPlot
       DO j=1,NPlot
         DO i=1,NPlot
-          NodeID=NodeID+1
+          CellID=CellID+1
           !
-          Vertex(:,NodeID)=(/                                       &
-            NodeIDElem+i+   j   *(NPlot+1)+(k-1)*NPlot_p1_2-1,      & !P4(CGNS=tecplot standard)
-            NodeIDElem+i+  (j-1)*(NPlot+1)+(k-1)*NPlot_p1_2-1,      & !P1
-            NodeIDElem+i+1+(j-1)*(NPlot+1)+(k-1)*NPlot_p1_2-1,      & !P2
-            NodeIDElem+i+1+ j   *(NPlot+1)+(k-1)*NPlot_p1_2-1,      & !P3
-            NodeIDElem+i+   j   *(NPlot+1)+ k   *NPlot_p1_2-1,      & !P8
-            NodeIDElem+i+  (j-1)*(NPlot+1)+ k   *NPlot_p1_2-1,      & !P5
-            NodeIDElem+i+1+(j-1)*(NPlot+1)+ k   *NPlot_p1_2-1,      & !P6
-            NodeIDElem+i+1+ j   *(NPlot+1)+ k   *NPlot_p1_2-1      /) !P7
+          Vertex(:,CellID)=(/                                       &
+            PointID+i+   j   *(NPlot+1)+(k-1)*NPlot_p1_2-1,      & !P4(CGNS=tecplot standard)
+            PointID+i+  (j-1)*(NPlot+1)+(k-1)*NPlot_p1_2-1,      & !P1
+            PointID+i+1+(j-1)*(NPlot+1)+(k-1)*NPlot_p1_2-1,      & !P2
+            PointID+i+1+ j   *(NPlot+1)+(k-1)*NPlot_p1_2-1,      & !P3
+            PointID+i+   j   *(NPlot+1)+ k   *NPlot_p1_2-1,      & !P8
+            PointID+i+  (j-1)*(NPlot+1)+ k   *NPlot_p1_2-1,      & !P5
+            PointID+i+1+(j-1)*(NPlot+1)+ k   *NPlot_p1_2-1,      & !P6
+            PointID+i+1+ j   *(NPlot+1)+ k   *NPlot_p1_2-1      /) !P7
         END DO
       END DO
     END DO
     !
-    NodeIDElem=NodeIDElem+NPlot_p1_3
+    PointID=PointID+NPlot_p1_3
   END DO
 END SELECT
-nBytes = 2**dim1*nVTKElems*SIZEOF_F(INT)
+nBytes = 2**dim1*nVTKCells*sizeInt
 WRITE(ivtk) nBytes
 WRITE(ivtk) Vertex(:,:)
-! Offset
-nBytes = nVTKElems*SIZEOF_F(INT)
+! Offset in connectivity
+nBytes = nVTKCells*sizeInt
 WRITE(ivtk) nBytes
-WRITE(ivtk) (Offset,Offset=2**dim1,2**dim1*nVTKElems,2**dim1)
+WRITE(ivtk) (Offset,Offset=2**dim1,2**dim1*nVTKCells,2**dim1)
 ! Elem type
-ElemType =3+3*dim1 !9 VTK_QUAD 12  VTK_HEXAHEDRON
+SELECT CASE(dim1)
+CASE(1)
+  ElemType =3 !VTK_LINE
+CASE(2)
+  ElemType =9 !VTK_QUAD
+CASE(3)
+  ElemType =12  !VTK_HEXAHEDRON
+END SELECT
 WRITE(ivtk) nBytes
-WRITE(ivtk) (ElemType,iElem=1,nVTKElems)
+WRITE(ivtk) (ElemType,iElem=1,nVTKCells)
 ! Write footer
 Buffer=lf//'  </AppendedData>'//lf;WRITE(ivtk) TRIM(Buffer)
 Buffer='</VTKFile>'//lf;WRITE(ivtk) TRIM(Buffer)

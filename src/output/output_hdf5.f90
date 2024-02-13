@@ -9,7 +9,8 @@
 ! /____//   /____//  /______________//  /____//           /____//   |_____/)    ,X`      XXX`
 ! )____)    )____)   )______________)   )____)            )____)    )_____)   ,xX`     .XX`
 !                                                                           xxX`      XXx
-! Copyright (C) 2017  Florian Hindenlang <hindenlang@gmail.com>
+! Copyright (C) 2017-2023  Florian Hindenlang <hindenlang@gmail.com>
+! Copyright (C) 2023  Tobias Ott <tobias.ott@proton.me>
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
@@ -52,7 +53,7 @@ SUBROUTINE WriteMeshToHDF5(FileString)
 ! Subroutine to write Data to HDF5 format
 !===================================================================================================================================
 ! MODULES
-USE MOD_Mesh_Vars,ONLY:tElem,tSide
+USE MOD_Mesh_Vars,ONLY:tElem,tSide,generateFEMconnectivity,tEdge,tLocalEdge,tNode,tVertex
 USE MOD_Mesh_Vars,ONLY:FirstElem
 USE MOD_Mesh_Vars,ONLY:N
 USE MOD_Output_Vars,ONLY:dosortIJK
@@ -68,9 +69,13 @@ CHARACTER(LEN=*),INTENT(IN)    :: FileString  ! ?
 ! LOCAL VARIABLES
 TYPE(tElem),POINTER            :: Elem  ! ?
 TYPE(tSide),POINTER            :: Side  ! ?
-INTEGER                        :: ElemID,SideID,NodeID  ! ?
+TYPE(tEdge),POINTER            :: aEdge  ! ?
+TYPE(tLocalEdge),POINTER       :: lEdge,nextLedge  ! ?
+TYPE(tnode),POINTER            :: aNode  ! ?
+TYPE(tVertex),POINTER          :: vert,next_vert  ! ?
+INTEGER                        :: ElemID,SideID,NodeID,EdgeID,FEMEdgeID,FEMVertexID  ! ?
 INTEGER                        :: locnSides
-INTEGER                        :: iNode,i,iMortar
+INTEGER                        :: iNode,i,iMortar,iLocEdge,iLocVert
 LOGICAL                        :: found
 CHARACTER(LEN=26)              :: ElemTypeName(1:11)
 !===================================================================================================================================
@@ -102,11 +107,18 @@ END DO
 
 
 ! count Elements , unique sides and nodes are marked with ind=0
+nNodes=0   !number of all nodes
 nNodeIDs=0 !number of unique nodeIDs
+nSides=0   !number of all sides
 nSideIDs=0 !number of unique side IDs (side and side%connection have the same sideID)
 nElems=0   !number of elements
-nSides=0   !number of all sides
-nNodes=0   !number of all nodes
+nEdges=0    !number of all element local Edges
+nEdgeIDs=0
+nFEMEdgeIDs=0
+nFEMEdgeConnections=0
+nVertices=0
+nFEMVertexIDs=0
+nFEMVertexConnections=0
 
 Elem=>firstElem
 DO WHILE(ASSOCIATED(Elem))
@@ -158,12 +170,43 @@ DO WHILE(ASSOCIATED(Elem))
     nNodes = nNodes+Elem%nCurvedNodes
   END IF
   nSides = nSides+locnSides
+  IF(generateFEMconnectivity)THEN
+    nEdges=nEdges+Elem%nEdges
+    ! Count edges
+    DO iLocEdge=1,Elem%nEdges
+      lEdge=>Elem%localEdge(iLocEdge)%ledp
+      aEdge=>lEdge%edge
+      IF(aEdge%ind.NE.-777777) THEN
+        nEdgeIDs=nEdgeIDs+1
+        aEdge%ind=-777777
+      END IF
+      IF(aEdge%FirstLocalEdge%ind.NE.-99999) THEN
+        nFEMEdgeIDs=nFEMEdgeIDs+1
+        aEdge%FirstLocalEdge%ind=-99999
+      END IF
+      !!! COUNT connections here and save them to aEdge%FirstLocalEdge%tmp
+      IF(aEdge%FirstLocalEdge%tmp.LE.0) CALL abort(__STAMP__,'Something is wrong with edge multiplicity')
+      nFEMEdgeConnections=nFEMEdgeConnections+(aEdge%FirstLocalEdge%tmp-1)
+    END DO !iLocEdge
+    nVertices=nVertices+Elem%nNodes
+    ! Count Vertices
+    DO iLocVert=1,Elem%nNodes
+      vert=>Elem%Vertex(iLocVert)%vp
+      aNode=>vert%node
+      IF(aNode%FirstVertex%ind.NE.-5555) THEN
+        nFEMVertexIDs=nFEMVertexIDs+1
+        aNode%FirstVertex%ind=-5555
+      END IF
+      !!! COUNT connections here and save them to aEdge%FirstLocalEdge%tmp
+      IF(aNode%FirstVertex%tmp.LE.0) CALL abort(__STAMP__,'Something is wrong with vertex multiplicity')
+      nFEMVertexConnections=nFEMVertexConnections+(aNode%FirstVertex%tmp-1)
+    END DO !iLocVert
+  END IF !FEMCONNECT
   Elem=>Elem%nextElem
 END DO
 
-
 !NOW CALLED IN FILLMESH!!
-!! prepare sorting by space filling curve
+!! prepare sorting by space filling curvedic.ini (Failed)
 !! NOTE: SpaceFillingcurve is not used, if existing hdf5 mesh is read in and the sorting should stay identical
 !IF(useSpaceFillingCurve)THEN
 !  CALL SpaceFillingCurve()
@@ -176,6 +219,9 @@ ALLOCATE(ElemBarycenters(1:nElems,3))
 ElemID=0
 SideID=0
 NodeID=0
+EdgeID=0
+FEMEdgeID=0
+FEMVertexID=0
 Elem=>firstElem
 DO WHILE(ASSOCIATED(Elem))
   ElemID=ElemID+1
@@ -219,16 +265,53 @@ DO WHILE(ASSOCIATED(Elem))
     END IF
     Side=>Side%nextElemSide
   END DO
+  IF(generateFEMconnectivity)THEN
+    ! set edge counters
+    DO iLocEdge=1,Elem%nEdges
+      lEdge=>Elem%localEdge(iLocEdge)%ledp
+      aEdge=>lEdge%Edge
+      IF(aEdge%ind.EQ.-777777)THEN
+        EdgeID=EdgeID+1
+        aEdge%ind=EdgeID
+      END IF
+      IF(aEdge%FirstLocalEdge%ind.EQ.-99999)THEN
+        FEMEdgeID=FEMEdgeID+1
+        aEdge%FirstLocalEdge%ind=FEMEdgeID
+        nextLedge=>aEdge%FirstLocalEdge%next_connected
+        DO WHILE(ASSOCIATED(nextlEdge))
+          IF(nextLedge%tmp.NE.-1) CALL abort(__STAMP__,'Something wrong with nextLedge not being set')
+          nextLedge%ind=FEMEdgeID
+          nextLedge=>nextLedge%next_connected
+        END DO
+      END IF
+    END DO
+    ! set vertex counters (node counters already set)
+    DO iLocVert=1,Elem%nNodes
+      vert=>Elem%Vertex(iLocVert)%vp
+      aNode=>vert%node
+      IF(aNode%FirstVertex%ind.EQ.-5555) THEN
+        FEMVertexID=FEMVertexID+1
+        aNode%FirstVertex%ind=FEMVertexID
+        next_vert=>aNode%FirstVertex%next_connected
+        DO WHILE(ASSOCIATED(next_vert))
+          IF(next_vert%tmp.NE.-1) CALL abort(__STAMP__,'Something wrong with next_vert not being set')
+          next_vert%ind=FEMVertexID
+          next_vert=>next_vert%next_connected
+        END DO
+      END IF
+    END DO !iLocVert
+  END IF !FEMCONNECT
   Elem=>Elem%nextElem
 END DO !Elem
 
-IF(NodeID.NE.nNodeIDs) CALL abort(__STAMP__,&
-                     'Sanity check: max(nodeID <> nNodeIDs!')
-IF(SideID.NE.nSideIDs) CALL abort(__STAMP__,&
-                     'Sanity check: max(sideID <> nSideIDs!')
-IF(ElemID.NE.nElems) CALL abort(__STAMP__,&
-                     'Sanity check: max(elemID <> nElems!')
-
+IF(NodeID.NE.nNodeIDs) CALL abort(__STAMP__,'Sanity check: max(nodeID <> nNodeIDs!')
+IF(SideID.NE.nSideIDs) CALL abort(__STAMP__,'Sanity check: max(sideID <> nSideIDs!')
+IF(ElemID.NE.nElems) CALL abort(__STAMP__,'Sanity check: max(elemID <> nElems!')
+IF(generateFEMconnectivity)THEN
+  IF(EdgeID.NE.nEdgeIDs) CALL abort(__STAMP__,'Sanity check: max(edgeID <> nEdgeIDs!')
+  IF(FEMEdgeID.NE.nFEMEdgeIDs) CALL abort(__STAMP__,'Sanity check: max(femedgeID <> nFEMEdgeIDs!')
+  IF(FEMVertexID.NE.nFEMVertexIDs) CALL abort(__STAMP__,'Sanity check: max(femvertexID <> nFEMVertexIDs!')
+END IF !FEMconnect
 
 !set Side Flip
 Elem=>firstElem
@@ -256,10 +339,9 @@ DO WHILE(ASSOCIATED(Elem))
           EXIT
         END IF
       END DO
-      IF(.NOT.found) STOP 'Flip not found'
+      IF(.NOT.found) CALL abort(__STAMP__,'Flip not found')
       Side%flip=iNode
-      IF(.NOT.ASSOCIATED(Side%connection)) CALL ABORT(__STAMP__, &
-        'Side connection should be associated for non-oreinted side')
+      IF(.NOT.ASSOCIATED(Side%connection)) CALL ABORT(__STAMP__,'Side connection should be associated for non-oreinted side')
       IF (Side%connection%MortarType.LE.0) Side%connection%flip=iNode !flip is the same for the connection
     END IF
     Side=>Side%nextElemSide
@@ -272,7 +354,7 @@ CALL getMeshInfo() !allocates and fills ElemInfo,SideInfo,NodeInfo,NodeCoords
 ! Create the file
 CALL OpenHDF5File(FileString,create=.TRUE.)
 
-!attributes 
+!attributes
 WRITE(UNIT=HoprVersionStr,FMT='(I0,A1,I0,A1,I0)') MajorVersion,".",MinorVersion,".",PatchVersion
 CALL WriteAttribute(File_ID,'HoprVersion',1,StrScalar=TRIM(HoprVersionStr))
 CALL WriteAttribute(File_ID,'HoprVersionInt',1,IntScalar=HoprVersionInt)
@@ -282,6 +364,16 @@ CALL WriteAttribute(File_ID,'nSides',1,IntScalar=nSides)
 CALL WriteAttribute(File_ID,'nNodes',1,IntScalar=nNodes)
 CALL WriteAttribute(File_ID,'nUniqueSides',1,IntScalar=nSideIDs)
 CALL WriteAttribute(File_ID,'nUniqueNodes',1,IntScalar=nNodeIDs)
+CALL WriteAttribute(File_ID,'FEMconnect',1,StrScalar=TRIM(MERGE("ON ","OFF",generateFEMconnectivity)))
+IF(generateFEMconnectivity)THEN
+  CALL WriteAttribute(File_ID,'nEdges',1,IntScalar=nEdges)
+  CALL WriteAttribute(File_ID,'nUniqueEdges',1,IntScalar=nEdgeIDs)
+  CALL WriteAttribute(File_ID,'nFEMEdges',1,IntScalar=nFEMEdgeIDs)
+  CALL WriteAttribute(File_ID,'nFEMEdgeConnections',1,IntScalar=nFEMEdgeConnections)
+  CALL WriteAttribute(File_ID,'nVertices',1,IntScalar=nVertices)
+  CALL WriteAttribute(File_ID,'nFEMVertices',1,IntScalar=nFEMVertexIDs)
+  CALL WriteAttribute(File_ID,'nFEMVertexConnections',1,IntScalar=nFEMVertexConnections)
+END IF !FEMCONNECT
 
 !WRITE ElemInfo,into (1,nElems)
 CALL WriteArrayToHDF5(File_ID,'ElemInfo',2,(/ElemInfoSize,nElems/),IntegerArray=ElemInfo)
@@ -290,6 +382,25 @@ DEALLOCATE(ElemInfo)
 !WRITE SideInfo,into (1,nSides)
 CALL WriteArrayToHDF5(File_ID,'SideInfo',2,(/SideInfoSize,nSides/),IntegerArray=SideInfo)
 DEALLOCATE(SideInfo)
+
+IF(generateFEMconnectivity)THEN
+  CALL WriteArrayToHDF5(File_ID,'FEMElemInfo',2,(/FEMElemInfoSize,nElems/),IntegerArray=FEMElemInfo)
+  DEALLOCATE(FEMElemInfo)
+
+  !WRITE EdgeInfo
+  CALL WriteArrayToHDF5(File_ID,'EdgeInfo',2,(/EdgeInfoSize,nEdges/),IntegerArray=EdgeInfo)
+  DEALLOCATE(EdgeInfo)
+
+  CALL WriteArrayToHDF5(File_ID,'EdgeConnectInfo',2,(/EDGEConnectInfoSize,nFEMEdgeConnections/),IntegerArray=EdgeConnectInfo)
+  DEALLOCATE(EdgeConnectInfo)
+
+  !WRITE EdgeInfo
+  CALL WriteArrayToHDF5(File_ID,'VertexInfo',2,(/VertexInfoSize,nVertices/),IntegerArray=VertexInfo)
+  DEALLOCATE(VertexInfo)
+
+  CALL WriteArrayToHDF5(File_ID,'VertexConnectInfo',2,(/VertexConnectInfoSize,nFEMVertexConnections/),IntegerArray=VertexConnectInfo)
+  DEALLOCATE(VertexConnectInfo)
+END IF !FEMCONNECT
 
 ! WRITE NodeCoords and NodeIDs
 CALL WriteArrayToHDF5(File_ID,'NodeCoords',2,(/3,nNodes/),RealArray=NodeCoords)
@@ -328,17 +439,17 @@ WRITE(*,'(A40)') &
         '    #elements  .......... of type:      '
 WRITE(*,'(A40)')   &
         '    ------------------------------------'
-ElemTypeName(1:11)= (/' straight-edge Tetrahedra ', &
-                      '        curved Tetrahedra ', &
-                      '  planar-faced Prisms     ', &
-                      ' straight-edge Prisms     ', &
-                      '        curved Prisms     ', &
-                      '  planar-faced Pyramids   ', &
-                      ' straight-edge Pyramids   ', &
-                      '        curved Pyramids   ', &
-                      '  planar-faced Hexahedra  ', &
-                      ' straight-edge Hexahedra  ', &
-                      '        curved Hexahedra  '/)
+ElemTypeName(1:11)= (/' straight-edge Tetrahedra ', & !104
+                      '        curved Tetrahedra ', & !204
+                      '  planar-faced Pyramids   ', & !105
+                      ' straight-edge Pyramids   ', & !115
+                      '        curved Pyramids   ', & !205
+                      '  planar-faced Prisms     ', & !106
+                      ' straight-edge Prisms     ', & !116
+                      '        curved Prisms     ', & !206
+                      '  planar-faced Hexahedra  ', & !108
+                      ' straight-edge Hexahedra  ', & !118
+                      '        curved Hexahedra  '/)  !208
 DO i=1,11
 IF(ElemCounter(2,i).GT.0) &
   WRITE(*,'(A4,I9,A26)')'    ',Elemcounter(2, i),ElemTypeName(i)
@@ -365,7 +476,7 @@ SUBROUTINE getMeshInfo()
 ! Subroutine prepares ElemInfo,Sideinfo,Nodeinfo,NodeCoords arrays
 !===================================================================================================================================
 ! MODULES
-USE MOD_Mesh_Vars,ONLY:tElem,tSide
+USE MOD_Mesh_Vars,ONLY:tElem,tSide,generateFEMconnectivity,tEdge,tlocalEdge,tNode,tVertex
 USE MOD_Mesh_Vars,ONLY:FirstElem
 USE MOD_Mesh_Vars,ONLY:N
 USE MOD_Mesh_Basis,ONLY:ISORIENTED
@@ -377,9 +488,13 @@ IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES
 TYPE(tElem),POINTER            :: Elem  ! ?
+TYPE(tEdge),POINTER            :: aEdge  ! ?
+TYPE(tlocalEdge),POINTER       :: lEdge,next_lEdge  ! ?
+TYPE(tNode),POINTER            :: aNode  ! ?
+TYPE(tVertex),POINTER          :: vert,next_vert  ! ?
 TYPE(tSide),POINTER            :: Side  ! ?
 INTEGER                        :: locnNodes,locnSides
-INTEGER                        :: iNode,iSide,iElem,i,iMortar
+INTEGER                        :: iNode,iSide,iElem,i,iMortar,iEdge,jEdge,iLocEdge,iVert,jVert,iLocVert
 TYPE(tSide),POINTER            :: aSide
 !===================================================================================================================================
 !fill ElementInfo.
@@ -480,9 +595,8 @@ DO WHILE(ASSOCIATED(Elem))
     END IF
 
     IF (Side%MortarType.GT.0) THEN ! Mortar master side (only implemented for Quad-sides!!!)
-      IF(ASSOCIATED(Side%Connection)) CALL abort(__STAMP__,&
-                                                 'Mortar master with connection is not allowed')
-      IF(Side%flip.NE.0) STOP 'Problem with flip on mortar'
+      IF(ASSOCIATED(Side%Connection)) CALL abort(__STAMP__,'Mortar master with connection is not allowed')
+      IF(Side%flip.NE.0) CALL abort(__STAMP__,'Problem with flip on mortar')
       SideInfo(SIDE_nbElemID,iSide)= -Side%MortarType
       SideInfo(SIDE_nbLocSide_flip,iSide)=0
       DO iMortar=1,Side%nMortars
@@ -517,9 +631,96 @@ DO WHILE(ASSOCIATED(Elem))
   Elem=>Elem%nextElem
 END DO
 
-IF(iSide.NE.nSides) CALL abort(__STAMP__,&
-                     'Sanity check: nSides not equal to total number of sides!')
+IF(iSide.NE.nSides) CALL abort(__STAMP__,'Sanity check: nSides not equal to total number of sides!')
 
+IF(generateFEMconnectivity)THEN
+  ALLOCATE(FEMElemInfo(FEMElemInfoSize,1:nElems))
+  FEMElemInfo=0
+  iElem=0
+  iEdge=0
+  iVert=0
+  Elem=>firstElem
+  DO WHILE(ASSOCIATED(Elem))
+    iElem=iElem+1
+
+    FEMElemInfo(FEMELEM_FirstEdgeInd,iElem)=iEdge
+    iEdge=iEdge+Elem%nEdges
+    FEMElemInfo(FEMELEM_lastEdgeInd,iElem)=iEdge
+
+    FEMElemInfo(FEMELEM_FirstVertexInd,iElem)=iVert
+    iVert=iVert+Elem%nNodes
+    FEMElemInfo(FEMELEM_lastVertexInd,iElem)=iVert
+    Elem=>Elem%nextElem
+  END DO
+
+  !fill Edge Info
+  ALLOCATE(EdgeInfo(EdgeInfoSize,1:nEdges))
+  ALLOCATE(EdgeConnectInfo(EDGEConnectInfoSize,1:nFEMEdgeConnections))
+  EdgeInfo=0
+  EdgeConnectInfo=0
+  iEdge=0  !counter in EdgeInfo
+  jEdge=0  !counter in EdgeConnectInfo
+
+  Elem=>firstElem
+  DO WHILE(ASSOCIATED(Elem))
+    DO iLocEdge=1,Elem%nEdges
+      lEdge=>Elem%localEdge(iLocEdge)%LEDP
+      aEdge=>lEdge%edge
+      iEdge=iEdge+1
+      EdgeInfo(EDGE_FEMEdgeID,iEdge)=ledge%ind*(MERGE(1,-1,lEdge%orientation))  ! negative sign means opposite orientation of local to global edge
+      EdgeInfo(EDGE_offsetIndEdgeConnect,iEdge)=jEdge
+      !start the connection list from the firstLocalEdge
+      next_lEdge=>lEdge%edge%FirstlocalEdge
+      DO WHILE (ASSOCIATED(next_lEdge))
+        IF(.NOT.((Elem%ind.EQ.next_lEdge%elem%ind).AND.(iLocEdge.EQ.next_lEdge%localEdgeID)))THEN !skip own edge "connection" (same element & same iLocEdge)
+          jEdge=jEdge+1
+          EdgeConnectInfo(EDGEConnect_nbElemID,jEdge)=next_lEdge%elem%ind*(MERGE(1,-1, (next_lEdge%tmp.GT.0) ))   ! + is master, -  is slave
+          EdgeConnectInfo(EDGEConnect_nbLocEdgeID,jEdge)=next_lEdge%localEdgeID*(MERGE(1,-1,next_lEdge%orientation))
+        END IF
+        next_lEdge=>next_lEdge%next_connected
+      END DO !
+      EdgeInfo(EDGE_lastIndEdgeConnect,iEdge)=jEdge
+      IF((EdgeInfo(EDGE_lastIndEdgeConnect,iEdge)-EdgeInfo(EDGE_offsetIndEdgeConnect,iEdge)).NE. (aEdge%FirstLocalEdge%tmp-1)) THEN
+        CALL abort(__STAMP__,"wrong number of edge connections in firstEdge%tmp")
+      END IF
+    END DO !iLoc
+    Elem=>Elem%nextElem
+  END DO
+
+  !fill Vertex Info
+  ALLOCATE(VertexInfo(VertexInfoSize,1:nVertices))
+  ALLOCATE(VertexConnectInfo(VertexConnectInfoSize,1:nFEMVertexConnections))
+  VertexInfo=0
+  VertexConnectInfo=0
+  iVert=0  !counter in VertexInfo
+  jVert=0  !counter in VertexConnectInfo
+  Elem=>firstElem
+  DO WHILE(ASSOCIATED(Elem))
+    DO iLocVert=1,Elem%nNodes
+      vert=>Elem%Vertex(iLocVert)%vp
+      aNode=>vert%node
+      iVert=iVert+1
+      VertexInfo(VERTEX_FEMVertexID,iVert)=vert%ind
+      VertexInfo(VERTEX_offsetIndVertexConnect,iVert)=jVert
+      !start the connection list from the firstVertex
+      next_vert=>vert%node%FirstVertex
+      DO WHILE (ASSOCIATED(next_vert))
+        IF(.NOT.((Elem%ind.EQ.next_vert%elem%ind).AND.(iLocVert.EQ.next_vert%localVertexID)))THEN !skip own vertex "connection" (same element & same iLocVertex)
+          jVert=jVert+1
+          VertexConnectInfo(VERTEXConnect_nbElemID,jVert)=next_vert%elem%ind*(MERGE(1,-1, (next_vert%tmp.GT.0) ))   ! + is master, -  is slave
+          VertexConnectInfo(VERTEXConnect_nbLocVertexID,jVert)=next_vert%localVertexID
+        END IF
+        next_vert=>next_vert%next_connected
+      END DO !
+      VertexInfo(VERTEX_lastIndVertexConnect,iVert)=jVert
+      IF((VertexInfo(VERTEX_lastIndVertexConnect,iVert)-VertexInfo(VERTEX_offsetIndVertexConnect,iVert)).NE. (aNode%FirstVertex%tmp-1)) THEN
+        CALL abort(__STAMP__,"wrong number of vertex connections in firstvertex%tmp")
+      END IF
+    END DO !iLoc
+    Elem=>Elem%nextElem
+  END DO
+
+END IF !FEMCONNECT
 !fill GlobalNodeID
 ALLOCATE(NodeCoords(3,nNodes),GlobalNodeIDs(nNodes))
 iNode=0
@@ -545,8 +746,7 @@ ELSE ! CurvedNodes
   END DO
 END IF
 
-IF(iNode.NE.nNodes) CALL abort(__STAMP__,&
-                     'Sanity check: nNodes not equal to total number of nodes!')
+IF(iNode.NE.nNodes) CALL abort(__STAMP__,'Sanity check: nNodes not equal to total number of nodes!')
 
 END SUBROUTINE getMeshinfo
 

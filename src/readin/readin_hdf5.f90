@@ -91,8 +91,7 @@ INTEGER                        :: nDims
 !===================================================================================================================================
 IF(initMesh) RETURN
 INQUIRE (FILE=TRIM(FileString), EXIST=fileExists)
-IF(.NOT.FileExists)  CALL abort(__STAMP__, &
-        'readMesh from HDF5, file "'//TRIM(FileString)//'" does not exist')
+IF(.NOT.FileExists)  CALL abort(__STAMP__,'readMesh from HDF5, file "'//TRIM(FileString)//'" does not exist')
 
 WRITE(UNIT_stdOut,'(132("~"))')
 CALL Timer(.TRUE.)
@@ -122,7 +121,7 @@ IF(usecurveds) THEN
   IF(N.NE.Ngeo) THEN
     WRITE(*,*) 'boundary order of inifile = ',N+1,&
                ' does not match the boundary order in the mesh file:', Ngeo+1
-    STOP
+    CALL abort(__STAMP__,'boundary order of inifile does not match the boundary order in the mesh file')
   END IF
 END IF
 !----------------------------------------------------------------------------------------------------------------------------
@@ -177,8 +176,7 @@ DO iElem=1,nElems
   IF(N.EQ.1)THEN
     IF(Elem%nNodes.NE.locnNodes) THEN
       write(*,*) Elem%nNodes, locnNodes
-      CALL abort(__STAMP__, &
-            ' Sanity check, number of element nodes do not fit for Ngeo=1')
+      CALL abort(__STAMP__,' Sanity check, number of element nodes do not fit for Ngeo=1')
     END IF
     DO i=1,Elem%nNodes
       iNode=iNode+1
@@ -202,8 +200,7 @@ DO iElem=1,nElems
     CASE(8) !hex
       Elem%nCurvedNodes=(N+1)**3
     END SELECT
-    IF(Elem%nCurvedNodes.NE.LocnNodes) CALL abort(__STAMP__, &
-            ' Sanity check, number of curved element nodes do not fit')
+    IF(Elem%nCurvedNodes.NE.LocnNodes) CALL abort(__STAMP__,' Sanity check, number of curved element nodes do not fit')
     ALLOCATE(Elem%CurvedNode(Elem%nCurvedNodes))
     DO i=1,Elem%nCurvedNodes
       iNode=iNode+1
@@ -323,7 +320,7 @@ DO iElem=1,nElems
         END DO !j=1,Side%nNodes
       ELSE !not oriented
         aSide%flip=MOD(Sideinfo(SIDE_nbLocSide_Flip,iSide),10)
-        IF((aSide%flip.LT.0).OR.(aSide%flip.GT.4)) STOP 'NodeID doesnt belong to side'
+        IF((aSide%flip.LT.0).OR.(aSide%flip.GT.4)) CALL abort(__STAMP__,'NodeID doesnt belong to side')
         k=aSide%flip
         DO j=1,aSide%nNodes
           aSide%OrientedNode(j)%np=>aSide%Node(k)%np
@@ -337,7 +334,7 @@ DO iElem=1,nElems
       DO iMortar=1,aSide%nMortars
         iSide=iSide+1
         aSide%mortarSide(iMortar)%sp%Elem=>Elem
-        IF(SideInfo(SIDE_ID,iSide).LT.0) STOP 'Problem in Mortar readin,should be flip=0'
+        IF(SideInfo(SIDE_ID,iSide).LT.0) CALL abort(__STAMP__,'Problem in Mortar readin,should be flip=0')
         aSide%mortarSide(iMortar)%sp%flip=0
         aSide%mortarSide(iMortar)%sp%Ind=ABS(SideInfo(SIDE_ID,iSide))
       END DO !iMortar
@@ -415,8 +412,7 @@ DO iElem=1,nElems
             bbSide=>bbSide%nextElemSide
           END DO
         ELSE !MPI connection
-          CALL abort(__STAMP__, &
-            ' elemID of neighbor not in global Elem list ')
+          CALL abort(__STAMP__,' elemID of neighbor not in global Elem list ')
         END IF
       END IF
     END DO !iMortar 
@@ -481,8 +477,7 @@ IF (doConnection) THEN
     aSide=>Elem%firstSide
     DO WHILE(ASSOCIATED(aSide))
       IF(aSide%LocSide .LE. 0) &
-        CALL abort(__STAMP__, &
-        'io_hdf5: Side%LocSide not set!',999,999.)
+        CALL abort(__STAMP__,'io_hdf5: Side%LocSide not set!',999,999.)
       IF(ASSOCIATED(aSide%BC))THEN
         IF((.NOT. ASSOCIATED(aSide%Connection)) .AND. (aSide%BC%BCType .EQ. 1))THEN
           IF (aSide%nMortars.EQ.0) i1=i1+1
@@ -502,8 +497,7 @@ IF (doConnection) THEN
   END DO
   IF(i1+j1 .GT. 0) THEN
     LOGWRITE(*,*)'..',k1
-    CALL abort(__STAMP__, &
-      'missing Connection of Side: with/without BC',i1,REAL(j1))
+    CALL abort(__STAMP__,'missing Connection of Side: with/without BC',i1,REAL(j1))
   END IF
 END IF
 
@@ -637,7 +631,7 @@ END IF
 
 ! Read boundary types from HDF5 file
 CALL GetHDF5DataSize(File_ID,'BCType',nDims,HSize)
-IF(HSize(2).NE.nBCs) STOP 'Problem in readBC'
+IF(HSize(2).NE.nBCs) CALL abort(__STAMP__,'Problem in readBC')
 ERRWRITE(*,*)'BCType: ',nDims,HSize(:)
 DEALLOCATE(HSize)
 ALLOCATE(BCType(4,nBCs))

@@ -9,6 +9,8 @@
 ! /____//   /____//  /______________//  /____//           /____//   |_____/)    ,X`      XXX`
 ! )____)    )____)   )______________)   )____)            )____)    )_____)   ,xX`     .XX`
 !                                                                           xxX`      XXx
+! Copyright (C) 2023  Florian Hindenlang <hindenlang@gmail.com>
+! Copyright (C) 2023  Tobias Ott <tobias.ott@proton.me>
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
@@ -55,8 +57,8 @@ CHARACTER(LEN=255)          :: ProjectName                ! necessary data for i
 LOGICAL                     :: Logging                    ! Set .TRUE. to activate logging function for each processor
 
 INTEGER,PARAMETER           :: MajorVersion = 1           !> HoprVersion saved in each hdf5 file with hdf5 header
-INTEGER,PARAMETER           :: MinorVersion = 2           !> HoprVersion saved in each hdf5 file with hdf5 header
-INTEGER,PARAMETER           :: PatchVersion = 1           !> HoprVersion saved in each hdf5 file with hdf5 header
+INTEGER,PARAMETER           :: MinorVersion = 3           !> HoprVersion saved in each hdf5 file with hdf5 header
+INTEGER,PARAMETER           :: PatchVersion = 0           !> HoprVersion saved in each hdf5 file with hdf5 header
 INTEGER,PARAMETER           :: HoprVersionInt = PatchVersion+MinorVersion*100+MajorVersion*10000 !> Hopr version number saved in each hdf5 file with hdf5 header
 CHARACTER(LEN=10)           :: HoprVersionStr             !> Hopr version string saved in each hdf5 file with hdf5 header
 
@@ -405,8 +407,7 @@ REAL,INTENT(INOUT)  :: B(dim1,nRHS) ! Right hand side of the system
 !-----------------------------------------------------------------------------------------------------------------------------------
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES
-INTEGER            :: IPIV(dim1),INFO,lwork ! ?
-REAL               :: WORK(dim1*dim1)  ! ?
+INTEGER            :: IPIV(dim1),INFO  ! ?
 !===================================================================================================================================
 ! DGETRF computes an LU factorization of a general M-by-N matrix A
 ! using partial pivoting with row interchanges. A will be overwritten with LU factorization.

@@ -83,14 +83,14 @@ SELECT CASE(doPrintVersion)
     ! Print version and exit
     WRITE(UNIT_stdOut,'(A)')"hopr version "&
         //TRIM(int2strf(MajorVersion))//"."//TRIM(int2strf(MinorVersion))//"."//TRIM(int2strf(PatchVersion))
-    STOP
+    STOP 0
   CASE DEFAULT ! 2+
     ! Print extended version and exit
     WRITE(UNIT_stdOut,'(A)')"hopr version "&
         //TRIM(int2strf(MajorVersion))//"."//TRIM(int2strf(MinorVersion))//"."//TRIM(int2strf(PatchVersion))&
         //" ("//TRIM(GIT_CURRENT_COMMIT)//", "//TRIM(BUILD_DATE)       //")"                                &
         //" ["//TRIM(BUILD_VERSION_GCC) //", "//TRIM(BUILD_VERSION_MPI)//"]"
-    STOP
+    STOP 0
 END SELECT
 
 ! Get all remaining parameters
@@ -163,7 +163,7 @@ WRITE(UNIT_stdOut,'(A)') '  -h, --help       display this help and exit'
 WRITE(UNIT_stdOut,'(A)') '  -V, --version    display the version number and exit'
 WRITE(UNIT_stdOut,'(A)') '                   when given twice, print more information about the build'
 ! CALL Abort(__STAMP__,'Parameter file not specified!')
-STOP
+STOP 0
 END SUBROUTINE PrintHelp
 
 END MODULE MOD_Commandline_Arguments
