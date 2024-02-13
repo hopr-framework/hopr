@@ -508,7 +508,7 @@ CHARACTER(LEN=*),INTENT(IN),OPTIONAL   :: IniFile                    ! Name of i
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES
 TYPE(tString),POINTER                  :: Str1=>NULL(),Str2=>NULL()  ! ?
-CHARACTER(LEN=255)                     :: HelpStr,Str  ! ?
+CHARACTER(LEN=:),ALLOCATABLE           :: HelpStr
 CHARACTER(LEN=300)                     :: File  ! ?
 TYPE(Varying_String)                   :: aStr,bStr,Separator  ! ?
 INTEGER                                :: EOF  ! ?
@@ -539,7 +539,6 @@ DO WHILE(EOF.NE.IOSTAT_END)
 
   ! Read line from file
   CALL Get(103,aStr,iostat=EOF)
-  Str=aStr
   IF (EOF.NE.IOSTAT_END) THEN
     IF (newString) CALL GetNewString(Str1)
     newString = .FALSE.
@@ -562,7 +561,8 @@ DO WHILE(EOF.NE.IOSTAT_END)
     ! Replace commas
     Str1%Str=Replace(Str1%Str,","," ",Every=.true.)
     ! Lower case
-    CALL LowCase(CHAR(Str1%Str),HelpStr)
+    HelpStr = CHAR(Str1%Str)              ! define HelpStr to set size of deferred-shape array
+    CALL LowCase(CHAR(Str1%Str),HelpStr)  ! overwrite HelpStr without modifying size
     ! If we have a remainder (no comment only)
     IF(LEN_TRIM(HelpStr).GT.2) THEN
       Str1%Str=Var_Str(HelpStr)
