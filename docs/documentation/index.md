@@ -31,6 +31,18 @@ developerguide/index.md
 
 ```{toctree}
 ---
+maxdepth: 4
+caption: Tutorials
+---
+tutorials/index_inbuiltmeshgenerators.md
+tutorials/index_externalmeshes.md
+tutorials/index_agglomeration.md
+tutorials/index_postprocessing.md
+tutorials/index_visualization.md
+```
+
+```{toctree}
+---
 maxdepth: 1
 caption: References
 ---
