@@ -12,7 +12,7 @@ These choices are depicted in the figures bellow, the table lists the scaled Jac
   <tr>
     <td style="width:25%">
         <figure id="fig-all-curved">
-        <a class="reference internal image-reference" href="../_images/All_curved.png"><img alt="../_images/All_curved.png" src="../_images/All_curved.png" style="height: 200px;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/All_curved.png"><img alt="../../../tutorials/figures/All_curved.png" src="../../../tutorials/figures/All_curved.png" style="height: 200px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.1 </span><span class="caption-text">NACA-profile with all elements curved</span><a class="headerlink" href="#fig-all-curved" title="Permalink to this image"></a></p>
         </figcaption>
@@ -20,7 +20,7 @@ These choices are depicted in the figures bellow, the table lists the scaled Jac
     </td>
     <td style="width:25%">
         <figure id="fig-0-curved">
-        <a class="reference internal image-reference" href="../_images/0_curved.png"><img alt="../_images/0_curved.png" src="../_images/0_curved.png" style="height: 200px;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/0_curved.png"><img alt="../../../tutorials/figures/0_curved.png" src="../../../tutorials/figures/0_curved.png" style="height: 200px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.2 </span><span class="caption-text">NACA-profile with only the profile boundary curved</span><a class="headerlink" href="#fig-0-curved" title="Permalink to this image"></a></p>
         </figcaption>
@@ -28,7 +28,7 @@ These choices are depicted in the figures bellow, the table lists the scaled Jac
     </td>
     <td style="width:25%">
         <figure id="fig-1-curved">
-        <a class="reference internal image-reference" href="../_images/1_curved.png"><img alt="../_images/1_curved.png" src="../_images/1_curved.png" style="height: 200px;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/1_curved.png"><img alt="../../../tutorials/figures/1_curved.png" src="../../../tutorials/figures/1_curved.png" style="height: 200px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.3 </span><span class="caption-text">NACA-profile with the first cell curved</span><a class="headerlink" href="#fig-1-curved" title="Permalink to this image"></a></p>
         </figcaption>
@@ -36,7 +36,7 @@ These choices are depicted in the figures bellow, the table lists the scaled Jac
     </td>
     <td style="width:25%">
         <figure id="fig-3-curved">
-        <a class="reference internal image-reference" href="../_images/3_curved.png"><img alt="../_images/3_curved.png" src="../_images/3_curved.png" style="height: 200px;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/3_curved.png"><img alt="../../../tutorials/figures/3_curved.png" src="../../../tutorials/figures/3_curved.png" style="height: 200px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.4 </span><span class="caption-text">NACA-profile with the first three cells curved</span><a class="headerlink" href="#fig-3-curved" title="Permalink to this image"></a></p>
         </figcaption>

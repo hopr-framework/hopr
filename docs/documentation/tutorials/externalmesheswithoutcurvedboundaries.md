@@ -39,7 +39,7 @@ Another important fact is that for external meshes no `BCIndex` parameter is nee
 
 
 <figure class="align-center" id="fig-cgnsviewer-spheremesh04">
-    <a class="reference internal image-reference" href="../_images/CGNSviewer_spheremesh04.png"><img alt="../_images/CGNSviewer_spheremesh04.png" src="../_images/CGNSviewer_spheremesh04.png" style="width: 30%;" /></a>
+    <a class="reference internal image-reference" href="../../../tutorials/figures/CGNSviewer_spheremesh04.png"><img alt="../../../tutorials/figures/CGNSviewer_spheremesh04.png" src="../../../tutorials/figures/CGNSviewer_spheremesh04.png" style="width: 30%;" /></a>
     <figcaption>
     <p><span class="caption-number">Fig. 1.1 </span><span class="caption-text">Screenshot of the folder structure of a CGNS mesh.</span><a class="headerlink" href="#fig-cgnsviewer-spheremesh04" title="Permalink to this image"></a></p>
     </figcaption>
@@ -74,7 +74,7 @@ The figures below show the visualizations of the `SPHERE_Debugmesh.vtu` file. In
   <tr>
     <td style="width:33%">
         <figure id="fig-exmeshwo-spheremesh01-surfaces">
-        <a class="reference internal image-reference" href="../_images/Exmeshwo_spheremesh01_surfaces.jpg"><img alt="../_images/Exmeshwo_spheremesh01_surfaces.jpg" src="../_images/Exmeshwo_spheremesh01_surfaces.jpg" style="height:300px;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Exmeshwo_spheremesh01_surfaces.jpg"><img alt="../../../tutorials/figures/Exmeshwo_spheremesh01_surfaces.jpg" src="../../../tutorials/figures/Exmeshwo_spheremesh01_surfaces.jpg" style="height:300px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.2 </span><span class="caption-text">HOPR output of spheremesh01.cgns</span><a class="headerlink" href="#fig-exmeshwo-spheremesh01-surfaces" title="Permalink to this image"></a></p>
         </figcaption>
@@ -82,7 +82,7 @@ The figures below show the visualizations of the `SPHERE_Debugmesh.vtu` file. In
     </td>
     <td style="width:33%">
         <figure id="fig-exmeshwo-spheremesh01-mesh">
-        <a class="reference internal image-reference" href="../_images/Exmeshwo_spheremesh01_mesh.jpg"><img alt="../_images/Exmeshwo_spheremesh01_mesh.jpg" src="../_images/Exmeshwo_spheremesh01_mesh.jpg" style="height:300px;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Exmeshwo_spheremesh01_mesh.jpg"><img alt="../../../tutorials/figures/Exmeshwo_spheremesh01_mesh.jpg" src="../../../tutorials/figures/Exmeshwo_spheremesh01_mesh.jpg" style="height:300px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.3 </span><span class="caption-text">HOPR output of spheremesh01.cgns with extracted edges.</span><a class="headerlink" href="#fig-exmeshwo-spheremesh01-mesh" title="Permalink to this image"></a></p>
         </figcaption>
@@ -90,7 +90,7 @@ The figures below show the visualizations of the `SPHERE_Debugmesh.vtu` file. In
     </td style="width:33%">
         <td>
         <figure id="fig-exmeshwo-spheremesh01-innerbc">
-        <a class="reference internal image-reference" href="../_images/Exmeshwo_spheremesh01_innerbc.jpg"><img alt="../_images/Exmeshwo_spheremesh01_innerbc.jpg" src="../_images/Exmeshwo_spheremesh01_innerbc.jpg" style="height:300px;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Exmeshwo_spheremesh01_innerbc.jpg"><img alt="../../../tutorials/figures/Exmeshwo_spheremesh01_innerbc.jpg" src="../../../tutorials/figures/Exmeshwo_spheremesh01_innerbc.jpg" style="height:300px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.4 </span><span class="caption-text">Element surfaces (6) of spheremesh01.cgns the boundary condition sphere was assigned to.</span><a class="headerlink" href="#fig-exmeshwo-spheremesh01-innerbc" title="Permalink to this image"></a></p>
         </figcaption>
@@ -105,7 +105,7 @@ The figures below show the visualizations of the `SPHERE_Debugmesh.vtu` file. In
   <tr>
     <td style="width:33%">
         <figure id="fig-exmeshwo-spheremesh02-surfaces">
-        <a class="reference internal image-reference" href="../_images/Exmeshwo_spheremesh02_surfaces.jpg"><img alt="../_images/Exmeshwo_spheremesh02_surfaces.jpg" src="../_images/Exmeshwo_spheremesh02_surfaces.jpg" style="height:300px;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Exmeshwo_spheremesh02_surfaces.jpg"><img alt="../../../tutorials/figures/Exmeshwo_spheremesh02_surfaces.jpg" src="../../../tutorials/figures/Exmeshwo_spheremesh02_surfaces.jpg" style="height:300px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.5 </span><span class="caption-text">HOPR output of spheremesh02.cgns</span><a class="headerlink" href="#fig-exmeshwo-spheremesh02-surfaces" title="Permalink to this image"></a></p>
         </figcaption>
@@ -113,7 +113,7 @@ The figures below show the visualizations of the `SPHERE_Debugmesh.vtu` file. In
     </td>
     <td style="width:33%">
         <figure id="fig-exmeshwo-spheremesh02-mesh">
-        <a class="reference internal image-reference" href="../_images/Exmeshwo_spheremesh02_mesh.jpg"><img alt="../_images/Exmeshwo_spheremesh02_mesh.jpg" src="../_images/Exmeshwo_spheremesh02_mesh.jpg" style="height:300px;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Exmeshwo_spheremesh02_mesh.jpg"><img alt="../../../tutorials/figures/Exmeshwo_spheremesh02_mesh.jpg" src="../../../tutorials/figures/Exmeshwo_spheremesh02_mesh.jpg" style="height:300px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.6 </span><span class="caption-text">HOPR output of spheremesh02.cgns with extracted edges.</span><a class="headerlink" href="#fig-exmeshwo-spheremesh02-mesh" title="Permalink to this image"></a></p>
         </figcaption>
@@ -121,7 +121,7 @@ The figures below show the visualizations of the `SPHERE_Debugmesh.vtu` file. In
     </td style="width:33%">
         <td>
         <figure id="fig-exmeshwo-spheremesh02-innerbc">
-        <a class="reference internal image-reference" href="../_images/Exmeshwo_spheremesh02_innerbc.jpg"><img alt="../_images/Exmeshwo_spheremesh02_innerbc.jpg" src="../_images/Exmeshwo_spheremesh02_innerbc.jpg" style="height:300px;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Exmeshwo_spheremesh02_innerbc.jpg"><img alt="../../../tutorials/figures/Exmeshwo_spheremesh02_innerbc.jpg" src="../../../tutorials/figures/Exmeshwo_spheremesh02_innerbc.jpg" style="height:300px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.7 </span><span class="caption-text">Element surfaces (24) of spheremesh02.cgns the boundary condition sphere was assigned to.</span><a class="headerlink" href="#fig-exmeshwo-spheremesh02-innerbc" title="Permalink to this image"></a></p>
         </figcaption>
@@ -136,7 +136,7 @@ The figures below show the visualizations of the `SPHERE_Debugmesh.vtu` file. In
   <tr>
     <td style="width:33%">
         <figure id="fig-exmeshwo-spheremesh04-surfaces">
-        <a class="reference internal image-reference" href="../_images/Exmeshwo_spheremesh04_surfaces.jpg"><img alt="../_images/Exmeshwo_spheremesh04_surfaces.jpg" src="../_images/Exmeshwo_spheremesh04_surfaces.jpg" style="height:300px;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Exmeshwo_spheremesh04_surfaces.jpg"><img alt="../../../tutorials/figures/Exmeshwo_spheremesh04_surfaces.jpg" src="../../../tutorials/figures/Exmeshwo_spheremesh04_surfaces.jpg" style="height:300px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.8 </span><span class="caption-text">HOPR output of spheremesh04.cgns</span><a class="headerlink" href="#fig-exmeshwo-spheremesh04-surfaces" title="Permalink to this image"></a></p>
         </figcaption>
@@ -144,7 +144,7 @@ The figures below show the visualizations of the `SPHERE_Debugmesh.vtu` file. In
     </td>
     <td style="width:33%">
         <figure id="fig-exmeshwo-spheremesh04-mesh">
-        <a class="reference internal image-reference" href="../_images/Exmeshwo_spheremesh04_mesh.jpg"><img alt="../_images/Exmeshwo_spheremesh04_mesh.jpg" src="../_images/Exmeshwo_spheremesh04_mesh.jpg" style="height:300px;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Exmeshwo_spheremesh04_mesh.jpg"><img alt="../../../tutorials/figures/Exmeshwo_spheremesh04_mesh.jpg" src="../../../tutorials/figures/Exmeshwo_spheremesh04_mesh.jpg" style="height:300px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.9 </span><span class="caption-text">HOPR output of spheremesh04.cgns with extracted edges.</span><a class="headerlink" href="#fig-exmeshwo-spheremesh02-mesh" title="Permalink to this image"></a></p>
         </figcaption>
@@ -152,7 +152,7 @@ The figures below show the visualizations of the `SPHERE_Debugmesh.vtu` file. In
     </td style="width:33%">
         <td>
         <figure id="fig-exmeshwo-spheremesh04-innerbc">
-        <a class="reference internal image-reference" href="../_images/Exmeshwo_spheremesh04_innerbc.jpg"><img alt="../_images/Exmeshwo_spheremesh04_innerbc.jpg" src="../_images/Exmeshwo_spheremesh04_innerbc.jpg" style="height:300px;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Exmeshwo_spheremesh04_innerbc.jpg"><img alt="../../../tutorials/figures/Exmeshwo_spheremesh04_innerbc.jpg" src="../../../tutorials/figures/Exmeshwo_spheremesh04_innerbc.jpg" style="height:300px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.10 </span><span class="caption-text">Element surfaces (64) of spheremesh04.cgns the boundary condition sphere was assigned to.</span><a class="headerlink" href="#fig-exmeshwo-spheremesh04-innerbc" title="Permalink to this image"></a></p>
         </figcaption>

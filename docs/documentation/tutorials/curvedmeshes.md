@@ -12,7 +12,7 @@ To generate a curved structured mesh the following parameter settings are mandat
   This mode activates a transformation of the cartesian coordinate system to a turned cylindrical coordinate system. The element distribution which the user can determine by the parameter `nElems` refers subsequently to the new coordinate system.
 
   <figure class="align-center" id="fig-carttocurve">
-      <a class="reference internal image-reference" href="../_images/Carttocurve.jpg"><img alt="../_images/Carttocurve.jpg" src="../_images/Carttocurve.jpg" style="width: 30%;" /></a>
+      <a class="reference internal image-reference" href="../../../tutorials/figures/Carttocurve.jpg"><img alt="../../../tutorials/figures/Carttocurve.jpg" src="../../../tutorials/figures/Carttocurve.jpg" style="width: 30%;" /></a>
       <figcaption>
       <p><span class="caption-number">Fig. 2.1 </span><span class="caption-text">Transformation of the coordinate system.</span><a class="headerlink" href="#fig-carttocurve" title="Permalink to this image"></a></p>
       </figcaption>
@@ -24,7 +24,7 @@ To generate a curved structured mesh the following parameter settings are mandat
 The HOPR user has to choose whether he wants to generate a half or a full cylindrical mesh. Therefore the new parameter `WhichMapping` is provided. For specifying the general shape of the (half) cylinder three parameters are provided: `R_0`, `R_INF` and `DZ`. Their meaning is visualized in <a class="reference internal" href="#fig-curvecos"><span class="std std-numref">Fig. 2.2</span></a>. It must be taken into account that the value for the inner radius (`R_0`) must not be zero and the value for `DZ` corresponds to the half thickness of the (half) cylinder. 
 
 <figure class="align-center" id="fig-curvecos">
-    <a class="reference internal image-reference" href="../_images/CurveCOS.jpg"><img alt="../_images/CurveCOS.jpg" src="../_images/CurveCOS.jpg" style="width: 30%;" /></a>
+    <a class="reference internal image-reference" href="../../../tutorials/figures/CurveCOS.jpg"><img alt="../../../tutorials/figures/CurveCOS.jpg" src="../../../tutorials/figures/CurveCOS.jpg" style="width: 30%;" /></a>
     <figcaption>
     <p><span class="caption-number">Fig. 2.2 </span><span class="caption-text">Visualization of the parameters which determine the shape.</span><a class="headerlink" href="#fig-curvecos" title="Permalink to this image"></a></p>
     </figcaption>
@@ -74,7 +74,7 @@ For a better understanding how the element sizes are calculated the formulas for
   $$ \Delta x(\xi) \sim 1 + \left( \frac{\Delta x_{max}}{\Delta x_{min}}-1\right)\cdot \left( \frac{\exp[-(\xi \cdot f)^2] - \exp[-f^2]}{\exp[0] - \exp[-f^2]}\right) $$
 
 <figure class="align-center" id="fig-stretching-math">
-    <a class="reference internal image-reference" href="../_images/Stretching-math.jpg"><img alt="../_images/Stretching-math.jpg" src="../_images/Stretching-math.jpg" style="width: 30%;" /></a>
+    <a class="reference internal image-reference" href="../../../tutorials/figures/Stretching-math.jpg"><img alt="../../../tutorials/figures/Stretching-math.jpg" src="../../../tutorials/figures/Stretching-math.jpg" style="width: 30%;" /></a>
     <figcaption>
     <p><span class="caption-number">Fig. 2.3 </span><span class="caption-text">Plot of the calculation function if the parameter `stretchType` is set to 3 ($ f $ means `fac`, $ \frac{\Delta x_{max}}{\Delta x_{min}} $ means `DXmaxToDXmin`). If the value of fac increases, the peakedness will increase and the element sizes near the bonudaries will decrease.</span><a class="headerlink" href="#fig-stretching-math" title="Permalink to this image"></a></p>
     </figcaption>
@@ -89,7 +89,7 @@ Furthermore, three different stretching cases are presented below with a full ci
   <tr>
     <td style="width:25%">
         <figure id="fig-stretch-curve-ex1">
-        <a class="reference internal image-reference" href="../_images/Stretch-curve_ex1.jpg"><img alt="../_images/Stretch-curve_ex1.jpg" src="../_images/Stretch-curve_ex1.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Stretch-curve_ex1.jpg"><img alt="../../../tutorials/figures/Stretch-curve_ex1.jpg" src="../../../tutorials/figures/Stretch-curve_ex1.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 2.4 </span><span class="caption-text">Non-stretched element arrangement.<br><code class="docutils literal notranslate"><span class="pre">nElems        =(/8,6,4/)</span></code><br>
         <code class="docutils literal notranslate"><span class="pre">stretchType   =(/1,1,0/)</span></code><br>
@@ -100,7 +100,7 @@ Furthermore, three different stretching cases are presented below with a full ci
     </td>
     <td style="width:25%">
         <figure id="fig-stretch-curve-ex2">
-        <a class="reference internal image-reference" href="../_images/Stretch-curve_ex2.jpg"><img alt="../_images/Stretch-curve_ex2.jpg" src="../_images/Stretch-curve_ex2.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Stretch-curve_ex2.jpg"><img alt="../../../tutorials/figures/Stretch-curve_ex2.jpg" src="../../../tutorials/figures/Stretch-curve_ex2.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 2.5 </span><span class="caption-text">Stretched element arrangement. The element size in the direction of the x-axis increases by a factor of 1.5. In the direction of the y-axis it increases by the factor of 2.2.<br><code class="docutils literal notranslate"><span class="pre">nElems        =(/8,6,4/)</span></code><br>
         <code class="docutils literal notranslate"><span class="pre">stretchType   =(/1,1,0/)</span></code><br>
@@ -111,7 +111,7 @@ Furthermore, three different stretching cases are presented below with a full ci
     </td>
     <td style="width:25%">
         <figure id="fig-stretch-curve-ex3">
-        <a class="reference internal image-reference" href="../_images/Stretch-curve_ex3.jpg"><img alt="../_images/Stretch-curve_ex3.jpg" src="../_images/Stretch-curve_ex3.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Stretch-curve_ex3.jpg"><img alt="../../../tutorials/figures/Stretch-curve_ex3.jpg" src="../../../tutorials/figures/Stretch-curve_ex3.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 2.6 </span><span class="caption-text">The `stretchType` parameter is set to 3 for the x-axis. The plot of the belonging calculation function shows that the element sizes increase immediately. In the direction of the y-axis the element size increases by the factor of 2.2.<br><code class="docutils literal notranslate"><span class="pre">nElems        =(/8,6,4/)</span></code><br>
         <code class="docutils literal notranslate"><span class="pre">stretchType   =(/3,1,0/)</span></code><br>
@@ -122,7 +122,7 @@ Furthermore, three different stretching cases are presented below with a full ci
     </td>
     <td style="width:25%">
         <figure id="fig-stretch-curve-ex3">
-        <a class="reference internal image-reference" href="../_images/Stretch-curve_ex4.jpg"><img alt="../_images/Stretch-curve_ex4.jpg" src="../_images/Stretch-curve_ex4.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Stretch-curve_ex4.jpg"><img alt="../../../tutorials/figures/Stretch-curve_ex4.jpg" src="../../../tutorials/figures/Stretch-curve_ex4.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 2.7 </span><span class="caption-text">The `stretchType` parameter is set to 3 for the x-axis and the y-axis. although the fac values are different the plots of the belonging calculation function looks very similar to each other.<br><code class="docutils literal notranslate"><span class="pre">nElems        =(/8,6,4/)</span></code><br>
         <code class="docutils literal notranslate"><span class="pre">stretchType   =(/3,3,0/)</span></code><br>
@@ -146,7 +146,7 @@ The second one consists of the same number of elements in each direction but ins
   <tr>
     <td style="width:50%">
         <figure id="fig-cylinder">
-        <a class="reference internal image-reference" href="../_images/Cylinder.jpg"><img alt="../_images/Cylinder.jpg" src="../_images/Cylinder.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Cylinder.jpg"><img alt="../../../tutorials/figures/Cylinder.jpg" src="../../../tutorials/figures/Cylinder.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 2.8 </span><span class="caption-text">Sketch of the 1 zone curved structured mesh. The full cirlce mesh (<code class="docutils literal notranslate"><span class="pre">WhichMapping=4</span></code>) shall consist of twelve elements in x-direction, eight elements in y-direction and four elements in z-direction, all equidistant.</span><a class="headerlink" href="#fig-cylinder" title="Permalink to this image"></a></p>
         </figcaption>
@@ -154,7 +154,7 @@ The second one consists of the same number of elements in each direction but ins
     </td>
     <td style="width:50%">
         <figure id="fig-cylinder2">
-        <a class="reference internal image-reference" href="../_images/Cylinder2.jpg"><img alt="../_images/Cylinder2.jpg" src="../_images/Cylinder2.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Cylinder2.jpg"><img alt="../../../tutorials/figures/Cylinder2.jpg" src="../../../tutorials/figures/Cylinder2.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 2.9 </span><span class="caption-text">Sketch of the 1 zone curved structured mesh with a stretched element arrangement. For the x-direction the <code class="docutils literal notranslate"><span class="pre">stretchType</span></code> parameter was set to 3. The parameter <code class="docutils literal notranslate"><span class="pre">DXmaxToDXmin</span></code> was set to 6 and the parameter <code class="docutils literal notranslate"><span class="pre">fac</span></code> to 1.5. For the y-direction the <code class="docutils literal notranslate"><span class="pre">stretchType</span></code> parameter was set to 1 and the elements were stretched by the factor 2.2. The elements in z-direction remain equidistant.</span><a class="headerlink" href="#fig-cylinder2" title="Permalink to this image"></a></p>
         </figcaption>
@@ -172,7 +172,7 @@ If there is a need for assistance of visualizing the HOPR output visit {ref}`tut
   <tr>
     <td style="width:50%">
         <figure id="fig-curvedtotal">
-        <a class="reference internal image-reference" href="../_images/Curvedtotal.jpg"><img alt="../_images/Curvedtotal.jpg" src="../_images/Curvedtotal.jpg" style="height: 400px;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Curvedtotal.jpg"><img alt="../../../tutorials/figures/Curvedtotal.jpg" src="../../../tutorials/figures/Curvedtotal.jpg" style="height: 400px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 2.10 </span><span class="caption-text">Curved structured mesh</span><a class="headerlink" href="#fig-curvedtotal" title="Permalink to this image"></a></p>
         </figcaption>
@@ -180,7 +180,7 @@ If there is a need for assistance of visualizing the HOPR output visit {ref}`tut
     </td>
     <td style="width:50%">
         <figure id="fig-curvedinner">
-        <a class="reference internal image-reference" href="../_images/Curvedinner.jpg"><img alt="../_images/Curvedinner.jpg" src="../_images/Curvedinner.jpg" style="height: 400px;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Curvedinner.jpg"><img alt="../../../tutorials/figures/Curvedinner.jpg" src="../../../tutorials/figures/Curvedinner.jpg" style="height: 400px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 2.11 </span><span class="caption-text">Inner domain of the curved structured mesh</span><a class="headerlink" href="#fig-curvedinner" title="Permalink to this image"></a></p>
         </figcaption>
@@ -195,7 +195,7 @@ If there is a need for assistance of visualizing the HOPR output visit {ref}`tut
   <tr>
     <td style="width:50%">
         <figure id="fig-curvedstretchedtotal">
-        <a class="reference internal image-reference" href="../_images/Curvedstretchedtotal.jpg"><img alt="../_images/Curvedstretchedtotal.jpg" src="../_images/Curvedstretchedtotal.jpg" style="height: 400px;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Curvedstretchedtotal.jpg"><img alt="../../../tutorials/figures/Curvedstretchedtotal.jpg" src="../../../tutorials/figures/Curvedstretchedtotal.jpg" style="height: 400px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 2.12 </span><span class="caption-text">Curved structured mesh with stretched element arrangement.</span><a class="headerlink" href="#fig-curvedstretchedtotal" title="Permalink to this image"></a></p>
         </figcaption>
@@ -203,7 +203,7 @@ If there is a need for assistance of visualizing the HOPR output visit {ref}`tut
     </td>
     <td style="width:50%">
         <figure id="fig-curvedstretchedinner">
-        <a class="reference internal image-reference" href="../_images/Curvedstretchedinner.jpg"><img alt="../_images/Curvedstretchedinner.jpg" src="../_images/Curvedstretchedinner.jpg" style="height: 400px;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Curvedstretchedinner.jpg"><img alt="../../../tutorials/figures/Curvedstretchedinner.jpg" src="../../../tutorials/figures/Curvedstretchedinner.jpg" style="height: 400px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 2.13 </span><span class="caption-text">Inner domain of the curved structured mesh with stretched element arrangement</span><a class="headerlink" href="#fig-curvedstretchedinner" title="Permalink to this image"></a></p>
         </figcaption>
@@ -244,7 +244,7 @@ The order of the curved element mapping can be chosen arbitrarily
   <tr>
     <td>
         <figure id="fig-nopost">
-        <a class="reference internal image-reference" href="../_images/Nopost.jpg"><img alt="../_images/Nopost.jpg" src="../_images/Nopost.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Nopost.jpg"><img alt="../../../tutorials/figures/Nopost.jpg" src="../../../tutorials/figures/Nopost.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 2.14 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">MeshPostDeform=0</span></code>
         </span><a class="headerlink" href="#fig-nopost" title="Permalink to this image"></a></p>
@@ -253,7 +253,7 @@ The order of the curved element mapping can be chosen arbitrarily
     </td>
     <td>
         <figure id="fig-withpost">
-        <a class="reference internal image-reference" href="../_images/Withpost.jpg"><img alt="../_images/Withpost.jpg" src="../_images/Withpost.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Withpost.jpg"><img alt="../../../tutorials/figures/Withpost.jpg" src="../../../tutorials/figures/Withpost.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 2.15 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">MeshPostDeform=1</span></code></span><a class="headerlink" href="#fig-withpost" title="Permalink to this image"></a></p>
         </figcaption>
@@ -281,7 +281,7 @@ In another variant of the parameterfile, parameter3.ini, a mesh with 9 zones in 
   <tr>
     <td>
         <figure id="fig-cylinder-param2">
-        <a class="reference internal image-reference" href="../_images/Cylinder_param2.jpg"><img alt="../_images/Cylinder_param2.jpg" src="../_images/Cylinder_param2.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Cylinder_param2.jpg"><img alt="../../../tutorials/figures/Cylinder_param2.jpg" src="../../../tutorials/figures/Cylinder_param2.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 2.16 </span><span class="caption-text">Outer circular mapping with parameter2.ini </span><a class="headerlink" href="#fig-cylinder-param2" title="Permalink to this image"></a></p>
         </figcaption>
@@ -289,7 +289,7 @@ In another variant of the parameterfile, parameter3.ini, a mesh with 9 zones in 
     </td>
     <td>
         <figure id="fig-cylinder-param3">
-        <a class="reference internal image-reference" href="../_images/Cylinder_param3.jpg"><img alt="../_images/Cylinder_param3.jpg" src="../_images/Cylinder_param3.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Cylinder_param3.jpg"><img alt="../../../tutorials/figures/Cylinder_param3.jpg" src="../../../tutorials/figures/Cylinder_param3.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 2.17 </span><span class="caption-text">9 block mesh with stretching parameter3.ini</span><a class="headerlink" href="#fig-cylinder-param2" title="Permalink to this image"></a></p>
         </figcaption>
@@ -320,7 +320,7 @@ Since the connectivity of the mesh is created before the deformation, the bounda
   <tr>
     <td style="width:50%">
         <figure id="fig-nopost-torus">
-        <a class="reference internal image-reference" href="../_images/Nopost_torus.jpg"><img alt="../_images/Nopost_torus.jpg" src="../_images/Nopost_torus.jpg" style="height: 350px;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Nopost_torus.jpg"><img alt="../../../tutorials/figures/Nopost_torus.jpg" src="../../../tutorials/figures/Nopost_torus.jpg" style="height: 350px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 2.18 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">MeshPostDeform=0</span></code></span><a class="headerlink" href="#fig-nopost-torus" title="Permalink to this image"></a></p>
         </figcaption>
@@ -328,7 +328,7 @@ Since the connectivity of the mesh is created before the deformation, the bounda
     </td>
     <td style="width:50%">
         <figure id="fig-torusmesh-q0">
-        <a class="reference internal image-reference" href="../_images/Torusmesh_q0.jpg"><img alt="../_images/Torusmesh_q0.jpg" src="../_images/Torusmesh_q0.jpg" style="height: 350px;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Torusmesh_q0.jpg"><img alt="../../../tutorials/figures/Torusmesh_q0.jpg" src="../../../tutorials/figures/Torusmesh_q0.jpg" style="height: 350px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 2.19 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">MeshPostDeform=1</span></code></span><a class="headerlink" href="#fig-torusmesh-q0" title="Permalink to this image"></a></p>
         </figcaption>
@@ -356,7 +356,7 @@ The initial box consists of 1 central zone and 6 neighbor zones, and forms a cub
   <tr>
     <td>
         <figure id="fig-nopost-sphere">
-        <a class="reference internal image-reference" href="../_images/Nopost_sphere.jpg"><img alt="../_images/Nopost_sphere.jpg" src="../_images/Nopost_sphere.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Nopost_sphere.jpg"><img alt="../../../tutorials/figures/Nopost_sphere.jpg" src="../../../tutorials/figures/Nopost_sphere.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 2.20 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">MeshPostDeform=0</span></code></span><a class="headerlink" href="#fig-nopost-sphere" title="Permalink to this image"></a></p>
         </figcaption>
@@ -364,7 +364,7 @@ The initial box consists of 1 central zone and 6 neighbor zones, and forms a cub
     </td>
     <td>
         <figure id="fig-withpost-sphere">
-        <a class="reference internal image-reference" href="../_images/Withpost_sphere.jpg"><img alt="../_images/Withpost_sphere.jpg" src="../_images/Withpost_sphere.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Withpost_sphere.jpg"><img alt="../../../tutorials/figures/Withpost_sphere.jpg" src="../../../tutorials/figures/Withpost_sphere.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 2.21 </span><span class="caption-text"><code class="docutils literal notranslate"><span class="pre">MeshPostDeform=2</span></code></span><a class="headerlink" href="#fig-withpost-sphere" title="Permalink to this image"></a></p>
         </figcaption>
@@ -380,7 +380,7 @@ In a variant of the parameterfile, parameter_shell.ini, only 6 domains without t
   <tr>
     <td>
         <figure id="fig-nopost-shell">
-        <a class="reference internal image-reference" href="../_images/Nopost_shell.jpg"><img alt="../_images/Nopost_shell.jpg" src="../_images/Nopost_shell.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Nopost_shell.jpg"><img alt="../../../tutorials/figures/Nopost_shell.jpg" src="../../../tutorials/figures/Nopost_shell.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 2.22 </span><span class="caption-text">parameter_shell.ini, <code class="docutils literal notranslate"><span class="pre">MeshPostDeform=0</span></code></span><a class="headerlink" href="#fig-nopost-shell" title="Permalink to this image"></a></p>
         </figcaption>
@@ -388,7 +388,7 @@ In a variant of the parameterfile, parameter_shell.ini, only 6 domains without t
     </td>
     <td>
         <figure id="fig-withpost-shell">
-        <a class="reference internal image-reference" href="../_images/Withpost_shell.jpg"><img alt="../_images/Withpost_shell.jpg" src="../_images/Withpost_shell.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Withpost_shell.jpg"><img alt="../../../tutorials/figures/Withpost_shell.jpg" src="../../../tutorials/figures/Withpost_shell.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 2.23 </span><span class="caption-text">parameter_shell.ini, <code class="docutils literal notranslate"><span class="pre">MeshPostDeform=2</span></code></span><a class="headerlink" href="#fig-withpost-shell" title="Permalink to this image"></a></p>
         </figcaption>

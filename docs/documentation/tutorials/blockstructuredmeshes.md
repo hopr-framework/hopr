@@ -31,7 +31,7 @@ The use of block-structured meshes enables the generation of fully three-dimensi
   <tr>
     <td>
         <figure id="fig-aggl-nv-fern">
-        <a class="reference internal image-reference" href="../_images/Aggl-nv-fern.jpg"><img alt="../_images/Aggl-nv-fern.jpg" src="../_images/Aggl-nv-fern.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Aggl-nv-fern.jpg"><img alt="../../../tutorials/figures/Aggl-nv-fern.jpg" src="../../../tutorials/figures/Aggl-nv-fern.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.1 </span><span class="caption-text">Overall view of initial mesh 1</span><a class="headerlink" href="#fig-aggl-nv-fern" title="Permalink to this image"></a></p>
         </figcaption>
@@ -39,7 +39,7 @@ The use of block-structured meshes enables the generation of fully three-dimensi
     </td>
     <td>
         <figure id="fig-aggl-nv-nah">
-        <a class="reference internal image-reference" href="../_images/Aggl-nv-nah.jpg"><img alt="../_images/Aggl-nv-nah.jpg" src="../_images/Aggl-nv-nah.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Aggl-nv-nah.jpg"><img alt="../../../tutorials/figures/Aggl-nv-nah.jpg" src="../../../tutorials/figures/Aggl-nv-nah.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.2 </span><span class="caption-text">Close-up image of mesh 1 of the leading edge of the NACA-profile</span><a class="headerlink" href="#fig-aggl-nv-nah" title="Permalink to this image"></a></p>
         </figcaption>
@@ -54,7 +54,7 @@ The use of block-structured meshes enables the generation of fully three-dimensi
   <tr>
     <td>
         <figure id="fig-aggl-v-fern">
-        <a class="reference internal image-reference" href="../_images/Aggl-v-fern.jpg"><img alt="../_images/Aggl-v-fern.jpg" src="../_images/Aggl-v-fern.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Aggl-v-fern.jpg"><img alt="../../../tutorials/figures/Aggl-v-fern.jpg" src="../../../tutorials/figures/Aggl-v-fern.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.3 </span><span class="caption-text">Overall view of initial mesh 2</span><a class="headerlink" href="#fig-aggl-v-fern" title="Permalink to this image"></a></p>
         </figcaption>
@@ -62,7 +62,7 @@ The use of block-structured meshes enables the generation of fully three-dimensi
     </td>
     <td>
         <figure id="fig-aggl-v-nah">
-        <a class="reference internal image-reference" href="../_images/Aggl-v-nah.jpg"><img alt="../_images/Aggl-v-nah.jpg" src="../_images/Aggl-v-nah.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Aggl-v-nah.jpg"><img alt="../../../tutorials/figures/Aggl-v-nah.jpg" src="../../../tutorials/figures/Aggl-v-nah.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.4 </span><span class="caption-text">Close-up image of mesh 2 of the leading edge of the NACA-profile</span><a class="headerlink" href="#fig-aggl-v-nah" title="Permalink to this image"></a></p>
         </figcaption>
@@ -83,7 +83,7 @@ When using agglomeration, the important parameters are
 and they lead to a coarsening in all three dimensions of the structured mesh, using the internal points as interpolation points for the curved mapping. The number of elements in each direction of the structured block must be a multiple number of `BoundaryOrder-1`!!! This situation is explained on an exemplary mesh in <a class="reference internal" href="#fig-nskip"><span class="std std-numref">Fig. 1.5</span></a>. For `BoundaryOrder = 2` the initial linear mesh is found and no agglomeration is done.
 
 <figure class="align-center" id="fig-nskip">
-    <a class="reference internal image-reference" href="../_images/Nskip.jpg"><img alt="../_images/Nskip.jpg" src="../_images/Nskip.jpg" style="width: 50%;" /></a>
+    <a class="reference internal image-reference" href="../../../tutorials/figures/Nskip.jpg"><img alt="../../../tutorials/figures/Nskip.jpg" src="../../../tutorials/figures/Nskip.jpg" style="width: 50%;" /></a>
     <figcaption>
     <p><span class="caption-number">Fig. 1.5 </span><span class="caption-text">Block-structuring with the parameter BoundaryOrder=2/3/5, (BoundaryOrder-1)^3 elements are grouped together.</span><a class="headerlink" href="#fig-nskip" title="Permalink to this image"></a></p>
     </figcaption>
@@ -110,7 +110,7 @@ name: tab:Block-Structured Meshes Description of Parameters
   <tr>
     <td style="width:33%">
         <figure id="fig-aggl-c1">
-        <a class="reference internal image-reference" href="../_images/Aggl-c1.jpg"><img alt="../_images/Aggl-c1.jpg" src="../_images/Aggl-c1.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Aggl-c1.jpg"><img alt="../../../tutorials/figures/Aggl-c1.jpg" src="../../../tutorials/figures/Aggl-c1.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.6 </span><span class="caption-text">Front view of the leading edge with the initial mesh configuration. All elements and edges are linear.</span><a class="headerlink" href="#fig-aggl-c1" title="Permalink to this image"></a></p>
         </figcaption>
@@ -118,7 +118,7 @@ name: tab:Block-Structured Meshes Description of Parameters
     </td>
     <td style="width:33%">
         <figure id="fig-aggl-c2">
-        <a class="reference internal image-reference" href="../_images/Aggl-c2.jpg"><img alt="../_images/Aggl-c2.jpg" src="../_images/Aggl-c2.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Aggl-c2.jpg"><img alt="../../../tutorials/figures/Aggl-c2.jpg" src="../../../tutorials/figures/Aggl-c2.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.7 </span><span class="caption-text">Front view of the leading edge of the mesh with the following setting: <code class="docutils literal notranslate"><span class="pre">BoundaryOrder = 5</span></code>. One block consists of 4x4x4 = 64 elements. The blocks' edges (blue lines) are the boundary of the curved elements. The initial structured mesh is shown in grey. All nodes/connections of the white lines are interpolation points</span><a class="headerlink" href="#fig-aggl-c2" title="Permalink to this image"></a></p>
         </figcaption>
@@ -126,7 +126,7 @@ name: tab:Block-Structured Meshes Description of Parameters
     </td>
     <td style="width:33%">
         <figure id="fig-aggl-c3">
-        <a class="reference internal image-reference" href="../_images/Aggl-c3.jpg"><img alt="../_images/Aggl-c3.jpg" src="../_images/Aggl-c3.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Aggl-c3.jpg"><img alt="../../../tutorials/figures/Aggl-c3.jpg" src="../../../tutorials/figures/Aggl-c3.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.8 </span><span class="caption-text">Generated curved high order mesh by agglomeration.</span><a class="headerlink" href="#fig-aggl-c3" title="Permalink to this image"></a></p>
         </figcaption>
@@ -144,7 +144,7 @@ For coarsening two new parameters are provided: `nskip` applies to all structure
   <tr>
     <td style="width:25%">
         <figure id="fig-aggl-nv-skip0">
-        <a class="reference internal image-reference" href="../_images/Aggl-nv-skip0.jpg"><img alt="../_images/Aggl-nv-skip0.jpg" src="../_images/Aggl-nv-skip0.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Aggl-nv-skip0.jpg"><img alt="../../../tutorials/figures/Aggl-nv-skip0.jpg" src="../../../tutorials/figures/Aggl-nv-skip0.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.9 </span><span class="caption-text">Initial mesh 1 <code class="docutils literal notranslate"><span class="pre">nskip =1</span></code></span><a class="headerlink" href="#fig-aggl-nv-skip0" title="Permalink to this image"></a></p>
         </figcaption>
@@ -152,7 +152,7 @@ For coarsening two new parameters are provided: `nskip` applies to all structure
     </td>
     <td style="width:25%">
         <figure id="fig-aggl-nv-skip2">
-        <a class="reference internal image-reference" href="../_images/Aggl-nv-skip2.jpg"><img alt="../_images/Aggl-nv-skip2.jpg" src="../_images/Aggl-nv-skip2.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Aggl-nv-skip2.jpg"><img alt="../../../tutorials/figures/Aggl-nv-skip2.jpg" src="../../../tutorials/figures/Aggl-nv-skip2.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.10 </span><span class="caption-text">Mesh by following parameter setting: <code class="docutils literal notranslate"><span class="pre">nskip =2</span></code></span><a class="headerlink" href="#fig-aggl-nv-skip2" title="Permalink to this image"></a></p>
         </figcaption>
@@ -160,7 +160,7 @@ For coarsening two new parameters are provided: `nskip` applies to all structure
     </td>
     <td style="width:25%">
         <figure id="fig-aggl-nv-skip4">
-        <a class="reference internal image-reference" href="../_images/Aggl-nv-skip4.jpg"><img alt="../_images/Aggl-nv-skip4.jpg" src="../_images/Aggl-nv-skip4.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Aggl-nv-skip4.jpg"><img alt="../../../tutorials/figures/Aggl-nv-skip4.jpg" src="../../../tutorials/figures/Aggl-nv-skip4.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.11 </span><span class="caption-text">Generated curved high order mesh by agglomeration.</span><a class="headerlink" href="#fig-aggl-nv-skip4" title="Permalink to this image"></a></p>
         </figcaption>
@@ -168,7 +168,7 @@ For coarsening two new parameters are provided: `nskip` applies to all structure
     </td>
     <td style="width:25%">
         <figure id="fig-aggl-nv-skip8">
-        <a class="reference internal image-reference" href="../_images/Aggl-nv-skip8.jpg"><img alt="../_images/Aggl-nv-skip8.jpg" src="../_images/Aggl-nv-skip8.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Aggl-nv-skip8.jpg"><img alt="../../../tutorials/figures/Aggl-nv-skip8.jpg" src="../../../tutorials/figures/Aggl-nv-skip8.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.12 </span><span class="caption-text">Generated curved high order mesh by agglomeration.</span><a class="headerlink" href="#fig-aggl-nv-skip8" title="Permalink to this image"></a></p>
         </figcaption>
@@ -188,7 +188,7 @@ In section Output Visualization a few different parameter settings are illustrat
   <tr>
     <td style="width:25%">
         <figure id="fig-aggl-nv-skip2z-">
-        <a class="reference internal image-reference" href="../_images/Aggl-nv-skip2z-.jpg"><img alt="../_images/Aggl-nv-skip2z-.jpg" src="../_images/Aggl-nv-skip2z-.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Aggl-nv-skip2z-.jpg"><img alt="../../../tutorials/figures/Aggl-nv-skip2z-.jpg" src="../../../tutorials/figures/Aggl-nv-skip2z-.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.13 </span><span class="caption-text">View of mesh 1 by following parameter setting: <code class="docutils literal notranslate"><span class="pre">nskip  = 2</span></code> <code class="docutils literal notranslate"><span class="pre">!nskipZ = ..</span></code></span><a class="headerlink" href="#fig-aggl-nv-skip2z-" title="Permalink to this image"></a></p>
         </figcaption>
@@ -196,7 +196,7 @@ In section Output Visualization a few different parameter settings are illustrat
     </td>
     <td style="width:25%">
         <figure id="fig-aggl-nv-skip2z1">
-        <a class="reference internal image-reference" href="../_images/Aggl-nv-skip2z1.jpg"><img alt="../_images/Aggl-nv-skip2z1.jpg" src="../_images/Aggl-nv-skip2z1.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Aggl-nv-skip2z1.jpg"><img alt="../../../tutorials/figures/Aggl-nv-skip2z1.jpg" src="../../../tutorials/figures/Aggl-nv-skip2z1.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.14 </span><span class="caption-text">View of mesh 1 by following parameter setting: <code class="docutils literal notranslate"><span class="pre">nskip  = 2</span></code> <code class="docutils literal notranslate"><span class="pre">nskipZ = 1</span></code></span><a class="headerlink" href="#fig-aggl-nv-skip2z1" title="Permalink to this image"></a></p>
         </figcaption>
@@ -204,7 +204,7 @@ In section Output Visualization a few different parameter settings are illustrat
     </td>
     <td style="width:25%">
         <figure id="fig-aggl-nv-skip2z-">
-        <a class="reference internal image-reference" href="../_images/Aggl-nv-skip2z-.jpg"><img alt="../_images/Aggl-nv-skip2z-.jpg" src="../_images/Aggl-nv-skip2z-.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Aggl-nv-skip2z-.jpg"><img alt="../../../tutorials/figures/Aggl-nv-skip2z-.jpg" src="../../../tutorials/figures/Aggl-nv-skip2z-.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.15 </span><span class="caption-text">View of mesh 1 by following parameter setting: <code class="docutils literal notranslate"><span class="pre">nskip  = 2</span></code> <code class="docutils literal notranslate"><span class="pre">nskipZ = 2</span></code></span><a class="headerlink" href="#fig-aggl-nv-skip2z-" title="Permalink to this image"></a></p>
         </figcaption>
@@ -212,7 +212,7 @@ In section Output Visualization a few different parameter settings are illustrat
     </td>
     <td style="width:25%">
         <figure id="fig-aggl-nv-skip2z2">
-        <a class="reference internal image-reference" href="../_images/Aggl-nv-skip2z2.jpg"><img alt="../_images/Aggl-nv-skip2z2.jpg" src="../_images/Aggl-nv-skip2z2.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Aggl-nv-skip2z2.jpg"><img alt="../../../tutorials/figures/Aggl-nv-skip2z2.jpg" src="../../../tutorials/figures/Aggl-nv-skip2z2.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.16 </span><span class="caption-text">Oblique view of mesh 1 by following parameter setting: <code class="docutils literal notranslate"><span class="pre">nskip  = 2</span></code> <code class="docutils literal notranslate"><span class="pre">nskipZ = 4</span></code></span><a class="headerlink" href="#fig-aggl-nv-skip2z2" title="Permalink to this image"></a></p>
         </figcaption>

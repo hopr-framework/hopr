@@ -4,7 +4,7 @@ In HOPR, it is possible to read unstructured meshes with straight edged elements
 ```{figure} figures/DLRF6_bOrd5_innersplines.png
 ---
 name: fig:DLRF6_bOrd5_innersplines
-width: 400px
+width: 200px
 align: center
 ---
 HOPR output: Curved surface and first layer of curved elements

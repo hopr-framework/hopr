@@ -6,7 +6,7 @@ It is often desirable to refine existing meshes, by subdividing the elements int
   <tr>
     <td style="width:50%">
         <figure id="fig-hopr-nfine1">
-        <a class="reference internal image-reference" href="../_images/Hopr_nfine1.png"><img alt="../_images/Hopr_nfine1.png" src="../_images/Hopr_nfine1.png" style="height: 350px;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Hopr_nfine1.png"><img alt="../../../tutorials/figures/Hopr_nfine1.png" src="../../../tutorials/figures/Hopr_nfine1.png" style="height: 350px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 2.1 </span><span class="caption-text">Standard mesh</span><a class="headerlink" href="#fig-hopr-nfine1" title="Permalink to this image"></a></p>
         </figcaption>
@@ -14,7 +14,7 @@ It is often desirable to refine existing meshes, by subdividing the elements int
     </td>
     <td style="width:50%">
         <figure id="fig-Hopr-nfine2">
-        <a class="reference internal image-reference" href="../_images/Hopr_nfine2.png"><img alt="../_images/Hopr_nfine2.png" src="../_images/Hopr_nfine2.png" style="height: 350px;" /></a>
+        <a class="reference internal image-reference" href="../../../tutorials/figures/Hopr_nfine2.png"><img alt="../../../tutorials/figures/Hopr_nfine2.png" src="../../../tutorials/figures/Hopr_nfine2.png" style="height: 350px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 2.2 </span><span class="caption-text">All elements refined by a factor of 2</span><a class="headerlink" href="#fig-Hopr-nfine2" title="Permalink to this image"></a></p>
         </figcaption>
