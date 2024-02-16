@@ -50,13 +50,14 @@ name: tab:Curving Using Normal Vectors Description of Parameters
   | `NormalsType`      | `1`     |  Source of the normal:<br>1: Reconstructed from coarse surface mesh (no additional parameters, `CurveIndex` of BC must be >0).<br>2: `NormalVectFile` (point normal vector file) needed<br>3: Analytical normals from surface point positions   |
   | `NormalVectFile`      | ` 	filename`     | Number of association between BC `CurveIndex` and analytical normal. Mandatory if `NormalsType=3`    |
   | `nExactNormals`      | `1`     | Number of association between BC `CurveIndex` and analytical normal. Mandatory if `NormalsType=3`    |
-  | `ExactNormals`      | `(/1,1/)`     | (/ BC `curveIndex`, number of analytical formula/). Build in formulas (see src/mesh/curved.f90):<br>1: Sphere with origin (0,0,0)<br>2: Cylinder around z-axis Mandatory if `NormalsType=3`    |
+  | `ExactNormals`      | `(/1,1/)`     | `(/ BC curveIndex, number of analytical formula/)`. Build in formulas (see src/mesh/curved.f90):<br>1: Sphere with origin (0,0,0)<br>2: Cylinder around z-axis Mandatory if `NormalsType=3`    |
   | `boundaryOrder`      | ` 	4`     | Not used here, fixed to cubic polynomial     |
 
 ```
 <h4>Output Visualization<a class="headerlink" href="#output-visualization" title="Permalink to this heading"></a></h4>
-The figures below show the visualizations of the boundary sphere (`BoundaryType=(/4,1,0,0/)`) of the meshes `spheremesh01.cgns` (<a class="reference internal" href="#fig-exmesh-01j"><span class="std std-numref">Fig. 2.4</span></a> - <a class="reference internal" href="#fig-exmesh-012"><span class="std std-numref">Fig. 2.6</span></a>), `spheremesh02.cgns` (<a class="reference internal" href="#fig-exmesh-02j"><span class="std std-numref">Fig. 2.8</span></a> - <a class="reference internal" href="#fig-exmesh-022"><span class="std std-numref">Fig. 2.10</span></a>) and `spheremesh04.cgns` (<a class="reference internal" href="#fig-exmesh-04j"><span class="std std-numref">Fig. 2.12</span></a> - <a class="reference internal" href="#fig-exmesh-042"><span class="std std-numref">Fig. 2.14</span></a>) for the three different normal vector approaches. Therefore, the `SPHERE_CURVED_SplineSurf.vtu` file was used. Furthermore, for the second normal vector approach (`NormalsType=2`) the point normal vector file `normals_out_000001.dat` was used (called filename in the captions).
-For the purpose of comparison the surfaces of the original meshes the boundary sphere were assigned to are also shown (<a class="reference internal" href="#fig-exmesh-sm1"><span class="std std-numref">Fig. 2.3</span></a>, <a class="reference internal" href="#fig-exmesh-sm2"><span class="std std-numref">Fig. 2.7</span></a>, <a class="reference internal" href="#fig-exmesh-sm4"><span class="std std-numref">Fig. 2.11</span></a>) and were visualized with the `SPHERE_CURVED_Debugmesh_BC.vtu` file.
+
+The figures below show the visualizations of the boundary sphere (`BoundaryType=(/4,1,0,0/)`) of the meshes spheremesh01.cgns (<a class="reference internal" href="#fig-exmesh-01j"><span class="std std-numref">Fig. 2.4</span></a> - <a class="reference internal" href="#fig-exmesh-012"><span class="std std-numref">Fig. 2.6</span></a>), spheremesh02.cgns (<a class="reference internal" href="#fig-exmesh-02j"><span class="std std-numref">Fig. 2.8</span></a> - <a class="reference internal" href="#fig-exmesh-022"><span class="std std-numref">Fig. 2.10</span></a>) and spheremesh04.cgns (<a class="reference internal" href="#fig-exmesh-04j"><span class="std std-numref">Fig. 2.12</span></a> - <a class="reference internal" href="#fig-exmesh-042"><span class="std std-numref">Fig. 2.14</span></a>) for the three different normal vector approaches. Therefore, the SPHERE_CURVED_SplineSurf.vtu file was used. Furthermore, for the second normal vector approach (`NormalsType=2`) the point normal vector file normals_out_000001.dat was used (called filename in the captions).
+For the purpose of comparison the surfaces of the original meshes the boundary sphere were assigned to are also shown (<a class="reference internal" href="#fig-exmesh-sm1"><span class="std std-numref">Fig. 2.3</span></a>, <a class="reference internal" href="#fig-exmesh-sm2"><span class="std std-numref">Fig. 2.7</span></a>, <a class="reference internal" href="#fig-exmesh-sm4"><span class="std std-numref">Fig. 2.11</span></a>) and were visualized with the SPHERE_CURVED_Debugmesh_BC.vtu file.
 
 If there is a need for assistance of visualizing the HOPR output visit {ref}`tutorials/index_visualization:Visualization`. 
 
@@ -194,7 +195,7 @@ name: tab:Curving Using Subdivided Surface Mesh Description of Parameters
 ```
 <h4>Output Visualization<a class="headerlink" href="#output-visualization" title="Permalink to this heading"></a></h4>
 
-The figures below show the visualization of the `SPHERE_Debugmesh_BC.vtu` file by using the mesh file `spheremesh01.cgns` (<a class="reference internal" href="#fig-exmesh-sm1"><span class="std std-numref">Fig. 2.3</span></a> - <a class="reference internal" href="#fig-exmesh-012"><span class="std std-numref">Fig. 2.6</span></a>), `spheremesh02.cgns` (<a class="reference internal" href="#fig-exmesh-sm2"><span class="std std-numref">Fig. 2.7</span></a> - <a class="reference internal" href="#fig-exmesh-022"><span class="std std-numref">Fig. 2.10</span></a>) and `spheremesh01.cgns` (<a class="reference internal" href="#fig-exmesh-sm4"><span class="std std-numref">Fig. 2.11</span></a> - 
+The figures below show the visualization of the SPHERE_Debugmesh_BC.vtu file by using the mesh file spheremesh01.cgns (<a class="reference internal" href="#fig-exmesh-sm1"><span class="std std-numref">Fig. 2.3</span></a> - <a class="reference internal" href="#fig-exmesh-012"><span class="std std-numref">Fig. 2.6</span></a>), spheremesh02.cgns (<a class="reference internal" href="#fig-exmesh-sm2"><span class="std std-numref">Fig. 2.7</span></a> - <a class="reference internal" href="#fig-exmesh-022"><span class="std std-numref">Fig. 2.10</span></a>) and spheremesh01.cgns (<a class="reference internal" href="#fig-exmesh-sm4"><span class="std std-numref">Fig. 2.11</span></a> - 
 <a class="reference internal" href="#fig-exmesh-042"><span class="std std-numref">Fig. 2.14</span></a>). In addition, for each file three examples with a different subdivision of the surface mesh are given.
 
 If there is a need for assistance of visualizing the HOPR output visit {ref}`tutorials/index_visualization:Visualization`. 
@@ -223,7 +224,7 @@ If there is a need for assistance of visualizing the HOPR output visit {ref}`tut
         <figure id="fig-exmesh-sm16">
         <a class="reference internal image-reference" href="../../../tutorials/figures/Exmesh-sm16.jpg"><img alt="../../../tutorials/figures/Exmesh-sm16.jpg" src="../../../tutorials/figures/Exmesh-sm16.jpg" style="height:200px;" /></a>
         <figcaption>
-        <p><span class="caption-number">Fig. 2.16 </span><span class="caption-text">Boundary sphere by using the sphere_surfmesh_06.cgns file. Because of the fact that this subdivision pattern was created neither with a double nor with a triple subdivision of the surface mesh the parameter boundaryOrder has to be adapted accordingly.<br><code class="docutils literal notranslate"><span class="pre">boundaryOrder = 7</span></code></span><a class="headerlink" href="#fig-exmesh-sm16" title="Permalink to this image"></a></p>
+        <p><span class="caption-number">Fig. 2.16 </span><span class="caption-text">Boundary sphere by using the sphere_surfmesh_06.cgns file. Because of the fact that this subdivision pattern was created neither with a double nor with a triple subdivision of the surface mesh the parameter <code class="docutils literal notranslate"><span class="pre">boundaryOrder</span></code> has to be adapted accordingly.<br><code class="docutils literal notranslate"><span class="pre">boundaryOrder = 7</span></code></span><a class="headerlink" href="#fig-exmesh-sm16" title="Permalink to this image"></a></p>
         </figcaption>
         </figure>
     </td>
@@ -262,7 +263,7 @@ If there is a need for assistance of visualizing the HOPR output visit {ref}`tut
         <figure id="fig-exmesh-sm210">
         <a class="reference internal image-reference" href="../../../tutorials/figures/Exmesh-sm210.jpg"><img alt="../../../tutorials/figures/Exmesh-sm210.jpg" src="../../../tutorials/figures/Exmesh-sm210.jpg" style="height:200px;" /></a>
         <figcaption>
-        <p><span class="caption-number">Fig. 2.20 </span><span class="caption-text">Boundary sphere by using the sphere_surfmesh_10.cgns file. Because of the fact that this subdivision pattern was created neither with a double nor with a triple subdivision of the surface mesh the parameter boundaryOrder has to be adapted accordingly.<br><code class="docutils literal notranslate"><span class="pre">boundaryOrder = 6</span></code></span><a class="headerlink" href="#fig-exmesh-sm210" title="Permalink to this image"></a></p>
+        <p><span class="caption-number">Fig. 2.20 </span><span class="caption-text">Boundary sphere by using the sphere_surfmesh_10.cgns file. Because of the fact that this subdivision pattern was created neither with a double nor with a triple subdivision of the surface mesh the parameter <code class="docutils literal notranslate"><span class="pre">boundaryOrder</span></code> has to be adapted accordingly.<br><code class="docutils literal notranslate"><span class="pre">boundaryOrder = 6</span></code></span><a class="headerlink" href="#fig-exmesh-sm210" title="Permalink to this image"></a></p>
         </figcaption>
         </figure>
     </td>
@@ -320,6 +321,7 @@ If there is a need for assistance of visualizing the HOPR output visit {ref}`tut
 In some situations the input mesh is already curved, e.g. when HOPRs own meshes are used for input or if the mesh generator already provides curved meshes (e.g. Gmsh). HOPR will read these meshes and directly use their high-order information. Existing high-order meshes from other sources can thus be directly translated into the HOPR format. Furthemore HOPR's various mesh post-processing capabilities can be applied to these meshes and the mesh curving can optionally also be redone by using the normal vector and the subdivision approach described above.
 
 <h4>Description of Parameters<a class="headerlink" href="#description-of-parameters" title="Permalink to this heading"></a></h4>
+
 Below the mandatory parameters for reading a Gmsh mesh file are described. Note that in case of Gmsh meshes HOPR only supports linear pyramids and prisms, while tetrahedra and hexahedra are supported up to order 4. A description of all parameters can be found in {ref}`userguide/parameters:List of Parameters`.
 
 ```{table} Use of pre-curved meshes: Description of Parameters.
@@ -334,7 +336,7 @@ name: tab:Use of pre-curved meshes Description of Parameters
 
 <h4>Output Visualization<a class="headerlink" href="#output-visualization" title="Permalink to this heading"></a></h4>
 
-The figures below show the visualization of the `CYLINDER_SplineVol.dat` file by using the mesh file `cylinder.msh`.
+The figures below show the visualization of the CYLINDER_SplineVol.dat file by using the mesh file cylinder.msh.
 
 <h5>cylinder<a class="headerlink" href="#cylinder" title="Permalink to this heading"></a></h5>
 

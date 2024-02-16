@@ -80,12 +80,12 @@ When using agglomeration, the important parameters are
     useCurved=T
     BoundaryOrder=5
 
-and they lead to a coarsening in all three dimensions of the structured mesh, using the internal points as interpolation points for the curved mapping. The number of elements in each direction of the structured block must be a multiple number of `BoundaryOrder-1`!!! This situation is explained on an exemplary mesh in <a class="reference internal" href="#fig-nskip"><span class="std std-numref">Fig. 1.5</span></a>. For `BoundaryOrder = 2` the initial linear mesh is found and no agglomeration is done.
+and they lead to a coarsening in all three dimensions of the structured mesh, using the internal points as interpolation points for the curved mapping. The number of elements in each direction of the structured block must be a multiple number of `BoundaryOrder`-1!!! This situation is explained on an exemplary mesh in <a class="reference internal" href="#fig-nskip"><span class="std std-numref">Fig. 1.5</span></a>. For `BoundaryOrder = 2` the initial linear mesh is found and no agglomeration is done.
 
 <figure class="align-center" id="fig-nskip">
     <a class="reference internal image-reference" href="../../../tutorials/figures/Nskip.jpg"><img alt="../../../tutorials/figures/Nskip.jpg" src="../../../tutorials/figures/Nskip.jpg" style="width: 50%;" /></a>
     <figcaption>
-    <p><span class="caption-number">Fig. 1.5 </span><span class="caption-text">Block-structuring with the parameter BoundaryOrder=2/3/5, (BoundaryOrder-1)^3 elements are grouped together.</span><a class="headerlink" href="#fig-nskip" title="Permalink to this image"></a></p>
+    <p><span class="caption-number">Fig. 1.5 </span><span class="caption-text">Block-structuring with the parameter <code class="docutils literal notranslate"><span class="pre">BoundaryOrder=2/3/5</span></code>, (<code class="docutils literal notranslate"><span class="pre">BoundaryOrder</span></code>-1)^3 elements are grouped together.</span><a class="headerlink" href="#fig-nskip" title="Permalink to this image"></a></p>
     </figcaption>
 </figure>
 
@@ -136,6 +136,7 @@ name: tab:Block-Structured Meshes Description of Parameters
 </table>
 
 <h4>Coarsening<a class="headerlink" href="#coarsening" title="Permalink to this heading"></a></h4>
+
 For coarsening two new parameters are provided: `nskip` applies to all structured directions equally, and `nskipZ` can be used for z-extruded meshes.<br>
 
 `nskip` Variations: <br>
@@ -180,7 +181,7 @@ For coarsening two new parameters are provided: `nskip` applies to all structure
 The mesh on the left side shows the initial mesh with an initial element, shown in grey. The parameter `nskip=1` uses every point of the initial mesh. The mesh in the middle shows the mesh if `nskip` is set to 2. That means that one node in each direction of the respective coordinate system is skipped and that the size of the new element reaches to the next node. The skipped nodes will not be used for the mesh anymore, also not for curving.
 The parameter `nskipZ` is has the same function as `nskip` but only for the z-direction. As a consequence of a setting of this parameter the skip level in z-direction by the parameter `nskip` will be repealed.<br>
 
-In section Output Visualization a few different parameter settings are illustrated for the NACA-profile. Take into account that the block-structuring will only work if the value for the parameter(s) `nskip` (and `nskipZ`) is a common divisor of the number of all mesh elements for each axis!!!<br<>>
+In section Output Visualization a few different parameter settings are illustrated for the NACA-profile. Take into account that the block-structuring will only work if the value for the parameter(s) `nskip` (and `nskipZ`) is a common divisor of the number of all mesh elements for each axis!!!<br>
 
 `nskip`-`nskipZ` Combinations: 
 
@@ -242,7 +243,7 @@ The boundary periodicity can be set here to be applied after the mesh connectivi
 
 ## Output Visualization
 
-The figures here were visualizations of the mesh `NACA0012_icem_32elems.cgns`. Therefore, the files `NACA0012_VISCOUS_Debugmesh.vtu` (<a class="reference internal" href="#fig-aggl-nv-fern"><span class="std std-numref">Fig. 1.1</span></a> - <a class="reference internal" href="#fig-aggl-v-nah"><span class="std std-numref">Fig. 1.4</span></a>, <a class="reference internal" href="#fig-aggl-nv-skip0"><span class="std std-numref">Fig. 1.9</span></a> - <a class="reference internal" href="#fig-aggl-nv-skip2z2"><span class="std std-numref">Fig. 1.16</span></a>) and `NACA0012_VISCOUS_SplineVol.vtu` (<a class="reference internal" href="#fig-aggl-c1"><span class="std std-numref">Fig. 1.6</span></a> - <a class="reference internal" href="#fig-aggl-c3"><span class="std std-numref">Fig. 1.8</span></a>) were used. The volume visualization can become quickly a large file. The number of elements can be reduced by the parameter
+The figures here were visualizations of the mesh NACA0012_icem_32elems.cgns. Therefore, the files NACA0012_VISCOUS_Debugmesh.vtu (<a class="reference internal" href="#fig-aggl-nv-fern"><span class="std std-numref">Fig. 1.1</span></a> - <a class="reference internal" href="#fig-aggl-v-nah"><span class="std std-numref">Fig. 1.4</span></a>, <a class="reference internal" href="#fig-aggl-nv-skip0"><span class="std std-numref">Fig. 1.9</span></a> - <a class="reference internal" href="#fig-aggl-nv-skip2z2"><span class="std std-numref">Fig. 1.16</span></a>) and NACA0012_VISCOUS_SplineVol.vtu (<a class="reference internal" href="#fig-aggl-c1"><span class="std std-numref">Fig. 1.6</span></a> - <a class="reference internal" href="#fig-aggl-c3"><span class="std std-numref">Fig. 1.8</span></a>) were used. The volume visualization can become quickly a large file. The number of elements can be reduced by the parameter
 
     Visu_sJ_limit= 0.1                  ! for DebugvisuLevel=2, only write elements with a scaled Jacobian < given limit
 

@@ -58,12 +58,18 @@ name: tab:Curved_Structured_Mesh_Stretching_Functions
   | Parameters             |Setting                | Description | 
   | :------                | :----------:          | :---------------------------     |
   | `stretchTypetype`      | ` 	(/3,1,0/)`         | This parameter manages the (de)activation of the stretching functions for all axis. For this reason the parameter is a vector with three components.<br>0: Stretching is deactivated<br>1: Stretching with a factor<br>2: Stretching with a legnth ratio<br>3: Stretching with a bell function.   |
-  | `fac         `         | `(/1.5,2.2,10/)`                   |  Stretching factor of the elements in the direction of the turned local cylindrical coordinate axis. A value >1 means an increase of the element size in the direction of the coordinate axis, however, a value of the intervall (0,1) means a decrease. The value 1 does not affect the element sizes and means an deactivation of the stretching function for this axis. The value 0 is only allowed if the stretching function for this axis is deactivated (`stretchType` vector component for this axis is 0). Furthermore the stretching behaviour can be mirrored by adding a negative sign to the values. If the `stretchType` vector component for an axis is 3, the factor will be multiplied by -1 if the half distance is reached. In addition, `fac` has not the significant influence on the element arrangement anymore but the parameter `DXmaxToDXmin`.<br> In case of `(/1.5,2.2,10/)` each following element in x-direction is stretched by the factor 1.5, in y-direction by the factor 2.2 and in the direction of the z-axis by the factor 10 (dependent on `stretchType`)   |
-  | `DXmaxToDXmin`         | ` 	(/6.,100.,1./)`                 |  This parameter specify the frame ratio of the maximum element size to the minimum element size for the stretched element arrangement. If the `stretchType` vector component for an axis is 3, the element arrangement is affected significantly by `DXmaxToDXmin` instead of the parameter `fac`.<br> In case of `(/6,100,1/)` the maximum element size in x-direction can be 6 times larger than the minimum element size. In y-direction the maximum element size can be 100 times larger than the minimum element size. The value 1, here set for ratio of the z-direction, is used typically for a deactivated stretching.    |
+  | `fac         `         | `(/1.5,2.2,10/)`                   |  Stretching factor of the elements in the direction of the turned local cylindrical coordinate axis. A value >1 means an increase of the element size in the direction of the coordinate axis,<br>however, a value of the intervall (0,1) means a decrease. The value 1 does not affect the element sizes and means an deactivation of the stretching function for this axis. The value 0<br>is only allowed if the stretching function for this axis is deactivated (`stretchType` vector component for this axis is 0). Furthermore the stretching behaviour can be mirrored by adding<br>a negative sign to the values. If the `stretchType` vector component for an axis is 3, the factor will be multiplied by -1 if the half distance is reached. In addition, `fac` has not the<br>significant influence on the element arrangement anymore but the parameter `DXmaxToDXmin`.<br> In case of `(/1.5,2.2,10/)` each following element in x-direction is stretched by the factor 1.5, in y-direction by the factor 2.2 and in the direction of the z-axis by the factor 10 (dependent on `stretchType`)   |
+  | `DXmaxToDXmin`         | ` 	(/6.,100.,1./)`                 |  This parameter specify the frame ratio of the maximum element size to the minimum element size for the stretched element arrangement. If the `stretchType` vector component for an<br>axis is 3, the element arrangement is affected significantly by `DXmaxToDXmin` instead of the parameter `fac`.<br> In case of `(/6,100,1/)` the maximum element size in x-direction can be 6 times larger than the minimum element size. In y-direction the maximum element size can be 100 times larger<br>than the minimum element size. The value 1, here set for ratio of the z-direction, is used typically for a deactivated stretching.    |
 ```
 
 <h4>Calculation Formulas<a class="headerlink" href="#calculation_formulas" title="Permalink to this heading"></a></h4>
+
 For a better understanding how the element sizes are calculated the formulas for different `stretchType` settings are shown below.
+
+<script
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+  type="text/javascript">
+</script>
 
 - Calculation of the element size for `stretchType = 1`:
 
@@ -76,7 +82,7 @@ For a better understanding how the element sizes are calculated the formulas for
 <figure class="align-center" id="fig-stretching-math">
     <a class="reference internal image-reference" href="../../../tutorials/figures/Stretching-math.jpg"><img alt="../../../tutorials/figures/Stretching-math.jpg" src="../../../tutorials/figures/Stretching-math.jpg" style="width: 30%;" /></a>
     <figcaption>
-    <p><span class="caption-number">Fig. 2.3 </span><span class="caption-text">Plot of the calculation function if the parameter `stretchType` is set to 3 ($ f $ means `fac`, $ \frac{\Delta x_{max}}{\Delta x_{min}} $ means `DXmaxToDXmin`). If the value of fac increases, the peakedness will increase and the element sizes near the bonudaries will decrease.</span><a class="headerlink" href="#fig-stretching-math" title="Permalink to this image"></a></p>
+    <p><span class="caption-number">Fig. 2.3 </span><span class="caption-text">Plot of the calculation function if the parameter <code class="docutils literal notranslate"><span class="pre">stretchType</span></code> is set to 3 (\(f\) means <code class="docutils literal notranslate"><span class="pre">fac</span></code>, \(\frac{\Delta x_{max}}{\Delta x_{min}}\) means <code class="docutils literal notranslate"><span class="pre">DXmaxToDXmin</span></code>). If the value of fac increases, the peakedness will increase and the element sizes near the bonudaries will decrease.</span><a class="headerlink" href="#fig-stretching-math" title="Permalink to this image"></a></p>
     </figcaption>
 </figure>
 
@@ -113,7 +119,7 @@ Furthermore, three different stretching cases are presented below with a full ci
         <figure id="fig-stretch-curve-ex3">
         <a class="reference internal image-reference" href="../../../tutorials/figures/Stretch-curve_ex3.jpg"><img alt="../../../tutorials/figures/Stretch-curve_ex3.jpg" src="../../../tutorials/figures/Stretch-curve_ex3.jpg" style="width: 80%;" /></a>
         <figcaption>
-        <p><span class="caption-number">Fig. 2.6 </span><span class="caption-text">The `stretchType` parameter is set to 3 for the x-axis. The plot of the belonging calculation function shows that the element sizes increase immediately. In the direction of the y-axis the element size increases by the factor of 2.2.<br><code class="docutils literal notranslate"><span class="pre">nElems        =(/8,6,4/)</span></code><br>
+        <p><span class="caption-number">Fig. 2.6 </span><span class="caption-text">The <code class="docutils literal notranslate"><span class="pre">stretchType</span></code> parameter is set to 3 for the x-axis. The plot of the belonging calculation function shows that the element sizes increase immediately. In the direction of the y-axis the element size increases by the factor of 2.2.<br><code class="docutils literal notranslate"><span class="pre">nElems        =(/8,6,4/)</span></code><br>
         <code class="docutils literal notranslate"><span class="pre">stretchType   =(/3,1,0/)</span></code><br>
         <code class="docutils literal notranslate"><span class="pre">fac           =(/1.5,2.2,0./)</span></code><br>
         <code class="docutils literal notranslate"><span class="pre">DXmaxToDXmin  =(/100.,100.,1/)</span></code></span><a class="headerlink" href="#fig-stretch-curve-ex3" title="Permalink to this image"></a></p>
@@ -124,7 +130,7 @@ Furthermore, three different stretching cases are presented below with a full ci
         <figure id="fig-stretch-curve-ex3">
         <a class="reference internal image-reference" href="../../../tutorials/figures/Stretch-curve_ex4.jpg"><img alt="../../../tutorials/figures/Stretch-curve_ex4.jpg" src="../../../tutorials/figures/Stretch-curve_ex4.jpg" style="width: 80%;" /></a>
         <figcaption>
-        <p><span class="caption-number">Fig. 2.7 </span><span class="caption-text">The `stretchType` parameter is set to 3 for the x-axis and the y-axis. although the fac values are different the plots of the belonging calculation function looks very similar to each other.<br><code class="docutils literal notranslate"><span class="pre">nElems        =(/8,6,4/)</span></code><br>
+        <p><span class="caption-number">Fig. 2.7 </span><span class="caption-text">The <code class="docutils literal notranslate"><span class="pre">stretchType</span></code> parameter is set to 3 for the x-axis and the y-axis. although the <code class="docutils literal notranslate"><span class="pre">fac</span></code> values are different the plots of the belonging calculation function looks very similar to each other.<br><code class="docutils literal notranslate"><span class="pre">nElems        =(/8,6,4/)</span></code><br>
         <code class="docutils literal notranslate"><span class="pre">stretchType   =(/3,3,0/)</span></code><br>
         <code class="docutils literal notranslate"><span class="pre">fac           =(/1.5,2.2,0./)</span></code><br>
         <code class="docutils literal notranslate"><span class="pre">DXmaxToDXmin  =(/100.,100.,1/)</span></code></span><a class="headerlink" href="#fig-stretch-curve-ex3" title="Permalink to this image"></a></p>
@@ -226,7 +232,7 @@ User-defined variables are searched and replaced in **all other lines(!)** of th
     DEFVAR=(INT):    i0 = 002    ! no. elems in inner square  i0xi0
     DEFVAR=(REAL):   ri = 0.5    ! inner square dim
 
-Note that each variable is searched and replaced one after the other, so that names should be absolutely unique. In the example, a variable called ri0 would not be allowed. 
+Note that each variable is searched and replaced one after the other, so that names should be absolutely unique. In the example, a variable called `ri0` would not be allowed. 
 
 ### Mesh Curving by Post-Deformation: Post-Deformation from a box to a cylinder
 The idea is to build first a simple box using the internal mesh procedures explained in Multiple Cartesian Boxes and then use a deformation function to obtain a cylinder. The post-deformation parameter is 
