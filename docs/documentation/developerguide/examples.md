@@ -26,14 +26,14 @@ As (@gleichung1) shows, blabla.
 ## Bibtex, cite
 Hindenlang [@Hindenlang2015]. Only works with pandoc!
 
-[bibshow file=https://www.flexi-project.org/wp-content/uploads/2016/07/userguide-1.bib]
+[bibshow file=references.bib]
 
 Hindenlang [bibcite key=Hindenlang2015], Gassner [bibcite key=gassner2011disp]
 
 
 ## section references
 ## Figures, caption
-![This is the caption\label{mylabel}](https://www.flexi-project.org/wp-content/uploads/2016/01/M7_ROE_N7M10_q_0000060p2000000.jpg)
+![This is the caption\label{mylabel}](https://github.com/hopr-framework/hopr/blob/master/docs/doxygen/HOPR.png?raw=true)
 
 See figure \ref{mylabel}.
 
