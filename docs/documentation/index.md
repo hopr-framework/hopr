@@ -34,7 +34,7 @@ developerguide/index.md
 maxdepth: 4
 caption: Tutorials
 ---
-tutorials/index_inbuiltmeshgenerators.md
+tutorials/index_builtinmeshgenerators.md
 tutorials/index_externalmeshes.md
 tutorials/index_agglomeration.md
 tutorials/index_postprocessing.md

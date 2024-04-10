@@ -1,5 +1,5 @@
 # Straight-Edged Boxes
-HOPR has several simple inbuilt mesh generators.
+HOPR has several simple built-in mesh generators.
 <figure class="align-center" id="fig-cartbox-multiple-stretch-mesh">
     <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_multiple_stretch_mesh.png"><img alt="../../../tutorials/figures/Cartbox_multiple_stretch_mesh.png" src="../../../tutorials/figures/Cartbox_multiple_stretch_mesh.png" style="width: 700px;" /></a>
     <figcaption>
@@ -8,35 +8,34 @@ HOPR has several simple inbuilt mesh generators.
 </figure>
 
 ## Cartesian Box
-This tutorial shows how to generate a simple mesh of a cubical box and the definition of boundary conditions.
-The parameter file can be found in
+This tutorial shows how to generate a simple mesh of a cubical box and the definition of boundary conditions. The parameter file can be found in
 
     tutorials/1-01-cartbox/parameter.ini
 
 See {ref}`tutorials/straightedgedboxes:Cartesian Box: Exemplary Variations of Boundary Conditions` for cases with different boundary conditions.
 
 ### Cartesian Box: Description of Parameters
-In the following all parameters of the parameter file are explained. This description consists only of parameters which are necessary to generate a cartesian box mesh. A description of all parameters can be found in {ref}`userguide/parameters:List of Parameters`. 
+The following table describes all parameters present in the parameter file. Therefore, it is limited to the parameters needed to generate a Cartesian box mesh. A description of all parameters can be found in {ref}`userguide/parameters:List of Parameters`. 
 
 ```{table} Parameters Cartesian Box.
 ---
 name: tab:Parameters Cartesian Box
 ---
-  | Parameters      |Setting                | Description | 
-  | :------         | :----------:          | :---------------------------     |
-  | `ProjectName`   | `cartbox `            |  Part of the output files' name which will be generated during the execution (cartbox_mesh.h5, cartbox_Debugmesh.dat, cartbox_Debugmesh_BC.dat, ...) . <br>These Files can be found in the directory of the executed parameter.ini file.                  |
-  | `Debugvisu`     | `T`                   | T (true) : The files *_Debugmesh.dat and *_Debugmesh_BC.dat will be generated, which enable you to visualize the mesh and the boundary mesh for debugging. <br>These Files can be found in the directory of the executed parameter.ini file<br>F (False): Files for visualization (cartbox_Debugmesh.dat, cartbox_Debugmesh_BC.dat) will not generated during executing of the parameter.ini file.                  |
-  | `Mode`          | `1`                   | Mode of mesh generation; 1: Cartmesh (intern), 3: CFD General Notation System (CGNS, extern)                 |
-  | `nZones`        | `1`                   | Number of cartesian boxes             |
-  | `Corner`        | `(/0.,0.,0. ,,1.,0.,0. ,,1.,1.,0. ,,0.,1.,0. ,,0.,0.,1. ,,1.,0.,1. ,,1.,1.,1. ,,0.,1.,1. /)`      | Coordinates of the box's corner nodes in the three-dimensional cartesian coordinate system. For proper operation the nodes have to be in the order as illustrated in {numref}`fig:CartmeshZone_3d`<br> at the right and each node with x,y,z coordinates. Furthermore the corner nodes define the six surfaces of the cartesian box, see {numref}`tab:Corner`.                 |
-  | `nElems`        | `(/2,3,4/)`           | Number of elements per box in the direction of the cartesian coordinate axes; `(/nElemX,nElemY,nElemZ/)`                       |
-  | `BCIndex`       | `(/1,2,3,4,5,6/)`     |  The `BCIndex` parameter assigns a bondary condition to each surface of the cartesian box in order of the surfaces. The number of a vector's component represents the nth boundary<br> condition in order of its position in the file. Hence, each position refers to the six box sides `(/z-,y-,x+,y+,x-,z+/)`. Here, six different boundary conditions were assigned to the box surfaces. <br>In case of a boundary condition defined on several faces, the components belonging to these faces will be equal in the BCIndex vector, see {ref}`tutorials/straightedgedboxes:Cartesian Box: Exemplary Variations of Boundary Conditions` <br>for details.                        |
-  | `elemtype`      | `108`                 | Type of cells/elements used for discretization; 104: Tetrahedron, 105: Pyramid, 106:Prism with triangular base, 108: Hexahedron                       |
-  | `BoundaryName`  | `BC_zminus`           | Name of the boundary condition                       |
-  | `BoundaryType`  | `(/4,0,0,0/)`         | For each boundary condition two parameters are mandatory, the Name and the Type. The Type parameter consists of four components to set: `(/ Type, curveIndex, State, alpha /)`. <br>For a single cartesian box only the component Type has to be set to a arbitrary number > 1. The other components have to be set 0; The further description of the components can be <br>found in the next tutorials or in the {ref}`userguide/parameters:List of Parameters`.                        |
+  | Parameters     | Setting                                                                                      | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+  | :------        | :----------:                                                                                 | :---------------------------                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+  | `ProjectName`  | `cartbox `                                                                                   | Defines the name embedded in the generated mesh file and is used as prefix for the output files (`cartbox_mesh.h5`, `cartbox_Debugmesh.dat`, `cartbox_Debugmesh_BC.dat`, ...).                                                                                                                                                                                                                                                                                         |
+  | `DebugVisu`    | `T`                                                                                          | Generation of visualization files for the volume and boundary mesh (`*_Debugmesh.dat`, `*_Debugmesh_BC.dat`) to aid debugging.                                                                                                                                                                                                                                                                                                                                         |
+  | `Mode`         | `1`                                                                                          | Mode of mesh generation; 1: Cartesian mesh (build-in), 3: CFD General Notation System (CGNS, extern)                                                                                                                                                                                                                                                                                                                                                                   |
+  | `nZones`       | `1`                                                                                          | Number of Cartesian boxes                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+  | `Corner`       | `(/0.,0.,0. ,,1.,0.,0. ,,1.,1.,0. ,,0.,1.,0. ,,0.,0.,1. ,,1.,0.,1. ,,1.,1.,1. ,,0.,1.,1. /)` | Coordinates of the box's corner nodes in the three-dimensional Cartesian coordinate system. Refer to {numref}`fig:CartmeshZone_3d` for the node ordering.<br>Furthermore, the corner nodes define the six surfaces of the cartesian box, see {numref}`tab:Corner`.                                                                                                                                                                                                     |
+  | `nElems`       | `(/2,3,4/)`                                                                                  | Number of elements per box in the direction of the Cartesian coordinate axes; `(/nElemX,nElemY,nElemZ/)`                                                                                                                                                                                                                                                                                                                                                               |
+  | `BCIndex`      | `(/1,2,3,4,5,6/)`                                                                            | The `BCIndex` parameter assigns a bondary condition to each surface of the cartesian box in order of the surfaces. The number of a vector's component represents<br> the nth boundary condition in order of its position in the file. Hence, each position refers to the six box sides `(/z-,y-,x+,y+,x-,z+/)`. Indices can be applied repeatedly,<br> see {ref}`tutorials/straightedgedboxes:Cartesian Box: Exemplary Variations of Boundary Conditions` for details. |
+  | `ElemType`     | `108`                                                                                        | Type of cells/elements used for discretization; `104`: Tetrahedron, `105`: Pyramid, `106`: Prism with triangular base, `108`: Hexahedron                                                                                                                                                                                                                                                                                                                               |
+  | `BoundaryName` | `BC_zminus`                                                                                  | Name of each boundary condition                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+  | `BoundaryType` | `(/4,0,0,0/)`                                                                                | Type of each boundary condition, provided with the components `(/ Type, curveIndex, State, alpha /)`.For a single Cartesian box, only the component `Type` has to be set.<br>The other components are set to the default value `0`. Further description of the components can be found in the next tutorials or in the {ref}`userguide/parameters:List of Parameters`.                                                                                                 |
 ```
 ### Cartesian Box: Boundary Conditions and Sketch
-<a class="reference internal" href="#fig-cartbox-sketch"><span class="std std-numref">Fig. 1.2</span></a> shows the sketch of the current problem. On the left side, however, one can see an excerpt of the parameter file which deals with the boundary conditions. In this code's excerpt some text elements are colored to show the connection between the surfaces and their assigned boundary conditions. The same colors are used for the visualization below. 
+<a class="reference internal" href="#fig-cartbox-sketch"><span class="std std-numref">Fig. 1.2</span></a> shows the sketch of the current flow setup. <a class="reference internal" href="#fig-cartbox-sketch"><span class="std std-numref">Fig. 1.3</span></a> gives the corresponding excerpt of the parameter file containing the boundary conditions. Entries are colored to highlight the connection between the `BCIndex` and the boundary conditions. The same colors are used for the visualization below. 
 
 <table align="center">
   <tr>
@@ -44,7 +43,7 @@ name: tab:Parameters Cartesian Box
         <figure id="fig-cartbox-sketch">
         <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_sketch.jpg"><img alt="../../../tutorials/figures/Cartbox_sketch.jpg" src="../../../tutorials/figures/Cartbox_sketch.jpg" style="height: 300px;" /></a>
         <figcaption>
-        <p><span class="caption-number">Fig. 1.2 </span><span class="caption-text">Sketch of the current problem</span><a class="headerlink" href="#fig-cartbox-sketch" title="Permalink to this image"></a></p>
+        <p><span class="caption-number">Fig. 1.2 </span><span class="caption-text">Sketch of the current flow setup</span><a class="headerlink" href="#fig-cartbox-sketch" title="Permalink to this image"></a></p>
         </figcaption>
         </figure>
     </td>
@@ -59,10 +58,10 @@ name: tab:Parameters Cartesian Box
   </tr>
 </table>
 
-The index of the first component of the `BCIndex` vector `1` says that the boundary condition on position one, `BC_zminus`, is assigned to the first surface. Furthermore, the index of the second component of the `BCIndex` vector `2` means that the second boundary condition `BC_yminus` is assigned to the second surface of the cartesian box. The other boundary conditions are assigned on the same way to their surfaces. For more examples go to {ref}`tutorials/straightedgedboxes:Cartesian Box: Exemplary Variations of Boundary Conditions`. 
+The index of the first component of the `BCIndex` vector `1` assigns the boundary condition on position one, `BC_zminus`, to the first surface. Consequently, the index of the second component of the `BCIndex` vector `2` assigns the second boundary condition `BC_yminus` to the second surface of the Cartesian box and so on. More examples are given in {ref}`tutorials/straightedgedboxes:Cartesian Box: Exemplary Variations of Boundary Conditions`. 
 
 ### Cartesian Box: Output Visualization
-If there is a need for assistance of visualizing the HOPR output visit {ref}`tutorials/index_visualization:Visualization`. 
+The following section highlights the visualization of the above setup. For more details on the HOPR visualization output, see {ref}`tutorials/index_visualization:Visualization`. 
 
 <h4>Mesh<a class="headerlink" href="#mesh-unlisted" title="Permalink to this heading"></a></h4>
 
@@ -76,7 +75,7 @@ This is a visualization of the cartbox_Debugmesh.dat file.
 
 <h4>Boundary Conditions<a class="headerlink" href="#boundary-conditions-unlisted" title="Permalink to this heading"></a></h4>
 
-This is a visualization of the cartbox_Debugmesh_BC.dat file. The colors of the surfaces represent the boundary conditions and are the same as in the excerpt of the parameter file.
+This is a visualization of the `cartbox_Debugmesh_BC.dat` file. The colors of the surfaces represent the boundary conditions and are identical to the ones in the excerpt of the parameter file.
 
 <table align="center" style="width:100%">
   <tr>
