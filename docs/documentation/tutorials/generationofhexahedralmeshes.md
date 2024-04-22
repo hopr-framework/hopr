@@ -1,6 +1,6 @@
 # Generation of Hexahedral Meshes
 
-As many solvers require purely hexahedral meshes, HOPR implements a subdivision strategy to split meshes consisting of tetrahedra, prisms and hexahedra into purely hexahedral meshes. This feature is activated using the parameter `splitToHex=T`. Note, that pyramids cannot be decomposed to hexahedra in a straightforward way, thus this feature cannot be applied to meshes containing pyramids. Note also that this option is up to now restricted to linear meshes. 
+Since many solvers require purely hexahedral meshes, HOPR implements a subdivision strategy to split meshes consisting of tetrahedra, prisms and hexahedra into purely hexahedral meshes. This feature is activated using the parameter `splitToHex=T`. Note, that pyramids cannot be decomposed to hexahedra in a straightforward way, thus this feature cannot be applied to meshes containing pyramids. Also note that this option is currently limited to linear meshes.
 
 <table align="center" style="width:100%">
   <tr>
@@ -25,6 +25,6 @@ As many solvers require purely hexahedral meshes, HOPR implements a subdivision 
 
 <h4>Parameter File<a class="headerlink" href="#parameter-file" title="Permalink to this heading"></a></h4>
 
-To test this feature, set elemtype to either 104 or 106 and add `splitToHex=T` to the parameter file, which is found in
+To test this feature, set `elemtype` to either `104` (Tetrahedron) or `106` (Prism with triangular base) and add `splitToHex=T` to the parameter file, which is found in
 
     tutorials/1-01-cartbox/parameter.ini
