@@ -1,6 +1,9 @@
 # Mesh Refinement
 
-It is often desirable to refine existing meshes, by subdividing the elements into smaller elements. As HOPR implements this feature for Hexahedra only, it is controlled by the flag `nFineHexa=x`, where x specifies the number of subdivision of each element. For meshes containing other element types than hexahedra, this option is not applicable. Up to now, the refinement only works for hexa with linear edges. 
+It is often desirable to refine existing meshes, which is done by subdividing the elements into smaller elements.
+Up to now, the refinement only works for hexahedra with linear edges.
+For meshes containing other element types than hexahedra, this option is not applicable.
+The feature is controlled by the flag `nFineHexa=x`, where x specifies the number of subdivisions of each element in each spatial direction.
 
 <table align="center" style="width:100%">
   <tr>
@@ -26,6 +29,6 @@ It is often desirable to refine existing meshes, by subdividing the elements int
 
 <h4>Parameter File<a class="headerlink" href="#parameter-file" title="Permalink to this heading"></a></h4>
 
-To test this feature add `nFineHexa=2` to the parameter file, which is also found in
+To test this feature, add `nFineHexa=2` to the parameter file, which is also found in
 
     tutorials/2-01-external_meshes_sphere/parameter.ini
