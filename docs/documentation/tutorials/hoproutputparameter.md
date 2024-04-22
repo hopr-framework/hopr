@@ -13,5 +13,5 @@ name: tab:HOPR Output Parameter
   | `ProjectName`   | `ProjectName=cartbox` |  Str      |   1        | OBLIGATORY    | Part of the output files' name which will be generated during the execution. These Files can be found in the directory of the executed `parameter.ini` file.             |
 ```
 
-A description of all parameters of the parameterfile can be found in
+A description of all parameters of the parameter file can be found in
 {ref}`userguide/parameters:List of Parameters`

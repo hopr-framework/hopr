@@ -3,38 +3,38 @@ This tutorial shows how to read in externally generated unstructured and structu
 
 The parameter file can be found in
 
-    tutorials/2-01-external_mesh_sphere/parameter.ini
+    tutorials/2-01-external_mesh_CGNS_sphere/parameter.ini
 
 ## External Mesh
-The external mesh which shall read in have to be available in the directory of the executed parameter file as CGNS file. This file is read-in by introducing the parameter `filename`. As one can see from the parameter.ini's excerpt and <a class="reference internal" href="#fig-cgnsviewer-spheremesh04"><span class="std std-numref">Fig. 1.1</span></a>, the parameters of the parameter file have to be adapted to the definitions in the CGNS mesh file. This means that the parameters Mode, `nZones`, `BoundaryName` and `BoundaryType` can not be set freely anymore because the structure of the external mesh must be retained. In this case, the external mesh spheremesh02 is available as CGNS file and consists of three zones. Therefore, the settings of the parameters are `Mode=3`, `nZones=3`, `filename=spheremesh02.cgns`.
+The external mesh file that is to be used has to be available in the directory of the executed parameter file as a CGNS format file. This file is read-in by introducing the parameter `filename`. As one can see from the parameter.ini's excerpt and <a class="reference internal" href="#fig-cgnsviewer-spheremesh04"><span class="std std-numref">Fig. 1.1</span></a>, the parameters of the parameter file have to be adapted to the definitions in the CGNS mesh file. This means that the parameters `Mode`, `nZones`, `BoundaryName` and `BoundaryType` cannot be set freely anymore because the structure of the external mesh must be retained. In this case, the external mesh spheremesh02 is available as CGNS file and consists of three zones. Therefore, the settings of the parameters are `Mode=3`, `nZones=3`, `filename=spheremesh02.cgns`.
 
-Another important fact is that for external meshes no `BCIndex` parameter is needed which assigns normally bondary conditions to the surfaces of the mesh. The reason for this is that the boundary conditions are assigned to their belonging surfaces by their names. The boundary condition, for example, of `Zone_1` of the CGNS file (`BC_sphere`) has to be defined as `BoundaryName=sphere` in the parameter file. 
+Another important fact is that for external meshes no `BCIndex` parameter is needed which normally assigns the boundary conditions to the surfaces of the mesh. The reason for this is that the boundary conditions are assigned to their belonging surfaces by their names. The boundary condition, for example, of `Zone_1` of the CGNS file (`BC_sphere`) has to be defined as `BoundaryName=sphere` in the parameter file.
 
     !================================================================= !
     ! MESH
     !================================================================= !
-    Mode    =3                  ! 1 Cartesian 3 CGNS 4 STAR-CD V3 
+    Mode    =3                  ! 1 Cartesian 3 CGNS 4 STAR-CD V3
     nZones  =3                  ! number of zones
     filename=spheremesh02.cgns  ! name of mesh file
     ...
     ...
-    
+
     !================================================================= !
     ! CURVED
     !================================================================= !
-    useCurveds=F                ! T to generate curved boundaries 
-    
-    
+    useCurveds=F                ! T to generate curved boundaries
+
+
     !================================================================= !
     ! BOUNDARY CONDITIONS
     !================================================================= !
     BoundaryName=sphere         ! BC_Name must be defined in mesh file
-    BoundaryType=(/4,1,0,0/)    
-    BoundaryName=inflow               
+    BoundaryType=(/4,1,0,0/)
+    BoundaryName=inflow
     BoundaryType=(/2,0,0,0/)
-    BoundaryName=outflow             
+    BoundaryName=outflow
     BoundaryType=(/2,0,0,0/)
-    BoundaryName=mantel           
+    BoundaryName=mantel
     BoundaryType=(/2,0,0,0/)
 
 
@@ -45,7 +45,7 @@ Another important fact is that for external meshes no `BCIndex` parameter is nee
     </figcaption>
 </figure>
 
-Furthermore, the `BoundaryType` parameter has to be adapted to the definitions in the CGNS mesh file. If a boundary of the external mesh is curved the `curveIndex` component (2nd component) of the `BoundaryType` parameter has to be an value unequal to zero. Wether curved boundaries shall be generated or not can be controlled by the parameter `useCurveds`. In this tutorial `useCurveds=F`. The case `useCurveds=T` is the topic of the next tutorial which explaines how to use mesh curving techniques to get curved boundaries for your mesh.
+Furthermore, the `BoundaryType` parameter has to be adapted to the definitions in the CGNS mesh file. If a boundary of the external mesh is curved, the `curveIndex` component (2nd component) of the `BoundaryType` parameter has to be a value unequal to zero. Whether curved boundaries are generated or not is controlled by the parameter `useCurveds`. In this tutorial, `useCurveds=F`. The case `useCurveds=T` is the topic of the next tutorial which explains how to use mesh curving techniques to generate curved boundaries.
 
 All new parameters of the parameter file of this tutorial are explained below.
 
@@ -53,20 +53,21 @@ All new parameters of the parameter file of this tutorial are explained below.
 ---
 name: tab:External Mesh Parameters
 ---
-  | Parameters      |Setting                | Description | 
+  | Parameters      |Setting                | Description |
   | :------         | :----------:          | :---------------------------     |
-  | `filename`      | `spheremesh.cgns`     |  	The name of the external mesh file. The belonging files have to be available in the directory of the executed parameter file as CGNS files. |
-  | `meshscale`      | ` 	0.001`     |  	Scales all input meshes by a factor |
+  | `filename`      | `spheremesh.cgns`     |  	The name of the external mesh file. The necessary files have to be available in the directory of the executed parameter file as CGNS files. |
+  | `meshscale`      | ` 	0.001`     |  	Scales all input mesh coordinates by a fixed factor |
   | `SpaceQuandt`      | ` 	1000`     |  	Characteristic length of the mesh  |
   | `useCurveds`      | `T`     |  	 	T (True): If curved boundaries are defined<br>F (False): If no curved boundaries are defined . |
 ```
 
-A description of all parameters of the parameterfile can be found in {ref}`userguide/parameters:List of Parameters`.
+A description of all parameters of the parameter file can be found in {ref}`userguide/parameters:List of Parameters`.
 
 ## Output Visualization
 If there is a need for assistance of visualizing the HOPR output visit {ref}`tutorials/index_visualization:Visualization`.
 
-The figures below show the visualizations of the SPHERE_Debugmesh.vtu file. In Addition, a visualization of the surfaces the first boundary condition sphere was assigned to (the `curveIndex` of the `BoundaryType` parameter is set to 1) of the SPHERE_Debugmesh_BC.vtu file is shown for each external mesh (see <a class="reference internal" href="#fig-exmeshwo-spheremesh01-innerbc"><span class="std std-numref">Fig. 1.4</span></a>, <a class="reference internal" href="#fig-exmeshwo-spheremesh02-innerbc"><span class="std std-numref">Fig. 1.7</span></a>, <a class="reference internal" href="#fig-exmeshwo-spheremesh04-innerbc"><span class="std std-numref">Fig. 1.10</span></a>)
+The figures below show the visualizations of the SPHERE_Debugmesh.vtu file.
+In addition, a visualization of the surfaces the first boundary condition sphere was assigned to (the `curveIndex` of the `BoundaryType` parameter is set to 1) of the SPHERE_Debugmesh_BC.vtu file is shown for each external mesh (see <a class="reference internal" href="#fig-exmeshwo-spheremesh01-innerbc"><span class="std std-numref">Fig. 1.4</span></a>, <a class="reference internal" href="#fig-exmeshwo-spheremesh02-innerbc"><span class="std std-numref">Fig. 1.7</span></a>, <a class="reference internal" href="#fig-exmeshwo-spheremesh04-innerbc"><span class="std std-numref">Fig. 1.10</span></a>).
 
 <h4>spheremesh01<a class="headerlink" href="#spheremesh01" title="Permalink to this heading"></a></h4>
 

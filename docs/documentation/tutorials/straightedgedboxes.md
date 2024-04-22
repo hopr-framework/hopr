@@ -15,7 +15,7 @@ This tutorial shows how to generate a simple mesh of a cubical box and the defin
 See {ref}`tutorials/straightedgedboxes:Cartesian Box: Exemplary Variations of Boundary Conditions` for cases with different boundary conditions.
 
 ### Cartesian Box: Description of Parameters
-The following table describes all parameters present in the parameter file. Therefore, it is limited to the parameters needed to generate a Cartesian box mesh. A description of all parameters can be found in {ref}`userguide/parameters:List of Parameters`. 
+The following table describes all parameters present in the parameter file. Therefore, it is limited to the parameters needed to generate a Cartesian box mesh. A description of all parameters can be found in {ref}`userguide/parameters:List of Parameters`.
 
 ```{table} Parameters Cartesian Box.
 ---
@@ -35,7 +35,7 @@ name: tab:Parameters Cartesian Box
   | `BoundaryType` | `(/4,0,0,0/)`                                                                                | Type of each boundary condition, provided with the components `(/ Type, curveIndex, State, alpha /)`.For a single Cartesian box, only the component `Type` has to be set.<br>The other components are set to the default value `0`. Further description of the components can be found in the next tutorials or in the {ref}`userguide/parameters:List of Parameters`.                                                                                                 |
 ```
 ### Cartesian Box: Boundary Conditions and Sketch
-<a class="reference internal" href="#fig-cartbox-sketch"><span class="std std-numref">Fig. 1.2</span></a> shows the sketch of the current flow setup. <a class="reference internal" href="#fig-cartbox-sketch"><span class="std std-numref">Fig. 1.3</span></a> gives the corresponding excerpt of the parameter file containing the boundary conditions. Entries are colored to highlight the connection between the `BCIndex` and the boundary conditions. The same colors are used for the visualization below. 
+<a class="reference internal" href="#fig-cartbox-sketch"><span class="std std-numref">Fig. 1.2</span></a> shows the sketch of the current flow setup. <a class="reference internal" href="#fig-cartbox-sketch"><span class="std std-numref">Fig. 1.3</span></a> gives the corresponding excerpt of the parameter file containing the boundary conditions. Entries are colored to highlight the connection between the `BCIndex` and the boundary conditions. The same colors are used for the visualization below.
 
 <table align="center">
   <tr>
@@ -58,10 +58,10 @@ name: tab:Parameters Cartesian Box
   </tr>
 </table>
 
-The index of the first component of the `BCIndex` vector `1` assigns the boundary condition on position one, `BC_zminus`, to the first surface. Consequently, the index of the second component of the `BCIndex` vector `2` assigns the second boundary condition `BC_yminus` to the second surface of the Cartesian box and so on. More examples are given in {ref}`tutorials/straightedgedboxes:Cartesian Box: Exemplary Variations of Boundary Conditions`. 
+The index of the first component of the `BCIndex` vector `1` assigns the boundary condition on position one, `BC_zminus`, to the first surface. Consequently, the index of the second component of the `BCIndex` vector `2` assigns the second boundary condition `BC_yminus` to the second surface of the Cartesian box and so on. More examples are given in {ref}`tutorials/straightedgedboxes:Cartesian Box: Exemplary Variations of Boundary Conditions`.
 
 ### Cartesian Box: Output Visualization
-The following section highlights the visualization of the above setup. For more details on the HOPR visualization output, see {ref}`tutorials/index_visualization:Visualization`. 
+The following section highlights the visualization of the above setup. For more details on the HOPR visualization output, see {ref}`tutorials/index_visualization:Visualization`.
 
 <h4>Mesh<a class="headerlink" href="#mesh-unlisted" title="Permalink to this heading"></a></h4>
 
@@ -142,13 +142,13 @@ For a better understanding of the interaction between the parameter `BCIndex` an
 
 <h4>Parameters and Sketch<a class="headerlink" href="#parameters-unlisted" title="Permalink to this heading"></a></h4>
 
-The parameterfile of this example can be found in 
+The parameterfile of this example can be found in
 
     /tutorials/1-01-cartbox/parameter_ex1.ini
 
 <a class="reference internal" href="#fig-cartbox-ex1-sketch"><span class="std std-numref">Fig. 1.11</span></a> shows the sketch of the current problem and <a class="reference internal" href="#fig-cartbox-ex1-ini"><span class="std std-numref">Fig. 1.12</span></a> shows an excerpt of the parameter file which deals with the boundary conditions. In this code's excerpt some text elements are colored to show the connection between the surfaces and their assigned boundary conditions. The same colors are used for the visualization below.
 
-The first four components of the `BCIndex` vector are equal. The index of these components `1` says that the boundary condition on position one, `BC_wall`, is assigned to the surfaces one to four. Furthermore, the fifth component of the `BCIndex` vector with the index `2` means that the second boundary condition `BC_inflow` is assigned to the fifth surface of the cartesian box. At least the third boundary condition `BC_outflow` is assigned to the the sixth surface. Therefore, the last or the sixth component of the `BCIndex` vector is set to `3`. 
+The first four components of the `BCIndex` vector are equal. The index of these components `1` says that the boundary condition on position one, `BC_wall`, is assigned to the surfaces one to four. Furthermore, the fifth component of the `BCIndex` vector with the index `2` means that the second boundary condition `BC_inflow` is assigned to the fifth surface of the cartesian box. At least the third boundary condition `BC_outflow` is assigned to the the sixth surface. Therefore, the last or the sixth component of the `BCIndex` vector is set to `3`.
 
 <table align="center">
   <tr>
@@ -173,7 +173,7 @@ The first four components of the `BCIndex` vector are equal. The index of these 
 
 <h4>Output Vizualisation<a class="headerlink" href="#output-and-vizualisation-unlisted" title="Permalink to this heading"></a></h4>
 
-If there is a need for assistance of visualizing the HOPR output visit {ref}`tutorials/index_visualization:Visualization`. 
+If there is a need for assistance of visualizing the HOPR output visit {ref}`tutorials/index_visualization:Visualization`.
 
 <h4>Mesh<a class="headerlink" href="#mesh-unlisted" title="Permalink to this heading"></a></h4>
 
@@ -187,7 +187,7 @@ This is a visualization of the cartbox_ex1_Debugmesh.dat file.
 
 <h4>Boundary Conditions<a class="headerlink" href="#boundary-conditions-unlisted" title="Permalink to this heading"></a></h4>
 
-This is a visualization of the cartbox_ex1_Debugmesh_BC.dat file. The colors of the surfaces represent the boundary conditions and are the same as in the excerpt of the parameter file. 
+This is a visualization of the cartbox_ex1_Debugmesh_BC.dat file. The colors of the surfaces represent the boundary conditions and are the same as in the excerpt of the parameter file.
 
 <table align="center" style="width:100%">
   <tr>
@@ -220,13 +220,13 @@ This is a visualization of the cartbox_ex1_Debugmesh_BC.dat file. The colors of 
 
 #### Example 2
 
-The parameterfile of this example can be found in 
+The parameterfile of this example can be found in
 
     /tutorials/1-01-cartbox/parameter_ex2.ini
 
-<a class="reference internal" href="#fig-cartbox-ex2-sketch"><span class="std std-numref">Fig. 1.17</span></a> shows the sketch of the current problem and <a class="reference internal" href="#fig-cartbox-ex2-ini"><span class="std std-numref">Fig. 1.18</span></a> shows an excerpt of the parameter file which deals with the boundary conditions. In this code's excerpt some text elements are colored to show the connection between the surfaces and their assigned boundary conditions. The same colors are used for the visualization below. 
+<a class="reference internal" href="#fig-cartbox-ex2-sketch"><span class="std std-numref">Fig. 1.17</span></a> shows the sketch of the current problem and <a class="reference internal" href="#fig-cartbox-ex2-ini"><span class="std std-numref">Fig. 1.18</span></a> shows an excerpt of the parameter file which deals with the boundary conditions. In this code's excerpt some text elements are colored to show the connection between the surfaces and their assigned boundary conditions. The same colors are used for the visualization below.
 
-In this example the first, the third and the sixth component of the `BCIndex` vector are equal. The index of these components `1` says that the boundary condition on position one, `BC_wall`, is assigned to the surfaces one, three and six. Furthermore, the fifth component of the `BCIndex` vector with the index `2` means that the second boundary condition `BC_inflow` is assigned to the fifth surface of the cartesian box. At least the third boundary condition `BC_outflow` is assigned to the second and the forth surface. Therefore, the second and the fourth component of the `BCIndex` vector is set to `3`. 
+In this example the first, the third and the sixth component of the `BCIndex` vector are equal. The index of these components `1` says that the boundary condition on position one, `BC_wall`, is assigned to the surfaces one, three and six. Furthermore, the fifth component of the `BCIndex` vector with the index `2` means that the second boundary condition `BC_inflow` is assigned to the fifth surface of the cartesian box. At least the third boundary condition `BC_outflow` is assigned to the second and the forth surface. Therefore, the second and the fourth component of the `BCIndex` vector is set to `3`.
 
 <h4>Parameters and Sketch<a class="headerlink" href="#parameteres-and-sketch-unlisted" title="Permalink to this heading"></a></h4>
 
@@ -253,11 +253,11 @@ In this example the first, the third and the sixth component of the `BCIndex` ve
 
 <h4>Output Vizualisation<a class="headerlink" href="#output-visualization-unlisted" title="Permalink to this heading"></a></h4>
 
-If there is a need for assistance of visualizing the HOPR output visit {ref}`tutorials/index_visualization:Visualization`. 
+If there is a need for assistance of visualizing the HOPR output visit {ref}`tutorials/index_visualization:Visualization`.
 
 <h4>Mesh<a class="headerlink" href="#mesh-unlisted" title="Permalink to this heading"></a></h4>
 
-This is a visualization of the cartbox_ex2_Debugmesh.dat file. 
+This is a visualization of the cartbox_ex2_Debugmesh.dat file.
 
 <figure class="align-center" id="fig-ex2_cartbox_mesh">
   <a class="reference internal image-reference" href="../../../tutorials/figures/Ex2_cartbox_mesh.jpg"><img alt="../../../tutorials/figures/Ex2_cartbox_mesh.jpg" src="../../../tutorials/figures/Ex2_cartbox_mesh.jpg" style="width: 400px;" /></a>
@@ -269,7 +269,7 @@ This is a visualization of the cartbox_ex2_Debugmesh.dat file.
 
 <h4>Boundary Conditions<a class="headerlink" href="#boundary-conditions-unlisted" title="Permalink to this heading"></a></h4>
 
-This is a visualization of the cartbox_ex2_Debugmesh_BC.dat file. The colors of the surfaces represent the boundary conditions and are the same as in the excerpt of the parameter file. 
+This is a visualization of the cartbox_ex2_Debugmesh_BC.dat file. The colors of the surfaces represent the boundary conditions and are the same as in the excerpt of the parameter file.
 
 <table align="center" style="width:100%">
   <tr>
@@ -306,7 +306,7 @@ This is a visualization of the cartbox_ex2_Debugmesh_BC.dat file. The colors of 
 
 ## Periodic Boundary Conditions
 This tutorial shows how to define periodic boundary conditions, only slightly changing the definitions from the tutorial Cartesian Box.
-The parameter file can be found in 
+The parameter file can be found in
 
     tutorials/1-02-cartbox_periodic/parameter.ini
 
@@ -317,14 +317,14 @@ In the following parameters of the parameter file are explained. This descriptio
 ---
 name: tab:Parameters Periodic Boundary Conditions
 ---
-  | Parameters      |Setting                | Description | 
+  | Parameters      |Setting                | Description |
   | :------         | :----------:          | :---------------------------     |
   | `BoundaryName`   | `BC_zminus`         |   	Name of the boundary condition                   |
   | `BoundaryType`     | ` 	(/1,0,0,-1/)`   | For each periodic boundary condition three parameters are mandatory, the `BoundaryName`, the `BoundaryType` and the displacement vector `vv`. The Type parameter consists of four<br>components to set: `(/ Type, curveIndex, State, alpha /)`. For a periodic boundary condition the component Type has always to set to "1". The fourth component `alpha` assigns a<br>displacement vector `vv` and its direction (-/+) to the periodic boundary. An `alpha` of "-1" means that the first ("1") defined displacement vector is assigned to this surface in the opposite<br>direction ("-1") as he was defined. For a simple cartesian box the other components `curveIndex` and `State` have to be set 0.<br>The further description of the components can be found in the next tutorials or in the {ref}`userguide/parameters:List of Parameters`.                   |
   | `vv`          | `(/0.,0.,1./)`          |The displacement vector has to specify in the three-dimensional cartesian coordinate system, has to be normal to a surface the vector was assigned to. In addition the displacement vector has<br>to show to the inside of the cartesian box. In case of two parallel surface-planes, both with periodic boundary conditions, just one displacement vector has to be defined. Therefore the<br>different directions of the vectors can be compensated by switching the sign of `alpha`, the fourth component of the `BoundaryType` vector.<br>It has to be taken into account that the displacement vector has to be as long as the distance between the surfaces the vector was assigned to. Also the index of a displacement vector is<br>defined by the position of its definition like the parameter `BCIndex`. Several definitions of boundary conditions between two definitions of displacement vectors will not affect the index of<br>the displacement vectors.                  |
 ```
 ### Periodic Boundary Conditions: Boundary Conditions and Sketch
-<a class="reference internal" href="#fig-cartbox-periodic-sketch"><span class="std std-numref">Fig. 1.23</span></a> shows the sketch of the current problem. It is similar to the problem in the tutorial Cartesian Box but instead of Dirichlet periodic boundary conditions are assigned to the surfaces one, two, four and six. Further below one can see an excerpt of the parameter file which deals with the periodic boundary conditions. In this code's excerpt some text elements are colored to show the connection between boundary conditions and their related displacement vectors. The same colors are used for the visualization in <a class="reference internal" href="#fig-cartbox-periodic-sketch"><span class="std std-numref">Fig. 1.17</span></a>. 
+<a class="reference internal" href="#fig-cartbox-periodic-sketch"><span class="std std-numref">Fig. 1.23</span></a> shows the sketch of the current problem. It is similar to the problem in the tutorial Cartesian Box but instead of Dirichlet periodic boundary conditions are assigned to the surfaces one, two, four and six. Further below one can see an excerpt of the parameter file which deals with the periodic boundary conditions. In this code's excerpt some text elements are colored to show the connection between boundary conditions and their related displacement vectors. The same colors are used for the visualization in <a class="reference internal" href="#fig-cartbox-periodic-sketch"><span class="std std-numref">Fig. 1.17</span></a>.
 <figure class="align-center" id="fig-cartbox-periodic-sketch">
     <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_periodic_sketch.jpg"><img alt="../../../tutorials/figures/Cartbox_periodic_sketch.jpg" src="../../../tutorials/figures/Cartbox_periodic_sketch.jpg" style="width: 50%;" /></a>
     <figcaption>
@@ -346,25 +346,25 @@ For the other two periodic boundary conditions of the surfaces two and four the 
 
 ## Multiple Cartesian Boxes
 This tutorial shows how to generate a mesh consisting of mutliple cartesian boxes and how to link them via boundary conditions.
-The parameter file can be found in 
+The parameter file can be found in
 
     tutorials/1-03-cartbox_multiple/parameter.ini
 
 ### Multiple Cartesian Boxes: Definition of Multiple Cartesian Boxes
-A general excerpt of the parameter file below shows how multiple cartesian boxes have to be defined in the parameter file. 
+A general excerpt of the parameter file below shows how multiple cartesian boxes have to be defined in the parameter file.
 
     !====================================================================== !
     ! MESH
     !====================================================================== !
       Mode         =1                       ! Mode for Cartesian boxes
       nZones       =n                       ! number of boxes
-  
+
     ! ===  zone 1 ===
-      ...      
- 
+      ...
+
     ! ===  zone 2  ===
       ...
- 
+
       .
       .
       .
@@ -374,21 +374,21 @@ A general excerpt of the parameter file below shows how multiple cartesian boxes
 
 At first the parameter `nZones` has to be adapted to the number of cartesian boxes one going to define. The cartesian boxes can defined simply by writing them and their specifications `(Corner, nElems, BCIndex, elemtype, ...)` among themselves. Furthermore it is important that the boxes are defined correctly to each other. If there shall be a contact between two boxes, it is mandatory that the corresponding surfaces will coincide. That means that also the surfaces' corner nodes have to coincide.
 
-However, a correct defining of the corner nodes is not sufficient for the functionality. Therefore, the parameter `BCIndex` which assigns boundary conditions to box's surfaces has to be adapted. 
+However, a correct defining of the corner nodes is not sufficient for the functionality. Therefore, the parameter `BCIndex` which assigns boundary conditions to box's surfaces has to be adapted.
 
 ```{table} Multiple Cartesian Boxes.
 ---
 name: tab:Multiple Cartesian Boxes
 ---
-  | Parameters      |Setting                | Description | 
+  | Parameters      |Setting                | Description |
   | :------         | :----------:          | :---------------------------     |
   | `BCIndex`       | `(/0,0,0,0,0,0/)`     | The `BCIndex` parameter assigns a bondary condition to each surface of the cartesian box in order of the surfaces. The number of a vector's component represents the nth boundary<br>condition in order of its position in the file. Hence, each position refers to the six box sides `(/z-,y-,x+,y+,x-,z+/)`.<br>In case of multiple cartesian boxes there are surfaces which coincide with other ones. To such surfaces no boundary condition can assign. Therefore, The number of the corresponding<br>vector's component is set to 0. Here, all components of the parameter `BCIndex` are set to 0 (`(/0,0,0,0,0,0/)`).<br>That means that the this box is surounded completely by six other boxes so that no boundary condition can assign to a single surface.                    |
 ```
 
-A description of all parameters of the parameterfile can be found in {ref}`userguide/parameters:List of Parameters`. 
+A description of all parameters of the parameterfile can be found in {ref}`userguide/parameters:List of Parameters`.
 
 ### Multiple Cartesian Boxes: Sketch
-<a class="reference internal" href="#fig-Cartbox-multiple-sketch"><span class="std std-numref">Fig. 1.25</span></a> shows the sketch of the current problem. As on can see the generated mesh shall consist of three cartesian boxes. These zones are thereby defined in the following order in the parameter file: 
+<a class="reference internal" href="#fig-Cartbox-multiple-sketch"><span class="std std-numref">Fig. 1.25</span></a> shows the sketch of the current problem. As on can see the generated mesh shall consist of three cartesian boxes. These zones are thereby defined in the following order in the parameter file:
 
     1st zone: lower left zone
 
@@ -416,7 +416,7 @@ If there is a need for assistance of visualizing the HOPR output visit {ref}`tut
 
 <h4>Mesh<a class="headerlink" href="#mesh-unlisted" title="Permalink to this heading"></a></h4>
 
-This is a visualization of the `cartbox_multiple_Debugmesh.dat` file. 
+This is a visualization of the `cartbox_multiple_Debugmesh.dat` file.
 
 <figure class="align-center" id="fig-Cartbox-multiple-mesh">
     <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_multiple_mesh.jpg"><img alt="../../../tutorials/figures/Cartbox_multiple_mesh.jpg" src="../../../tutorials/figures/Cartbox_multiple_mesh.jpg" style="width: 30%;" /></a>
@@ -427,7 +427,7 @@ This is a visualization of the `cartbox_multiple_Debugmesh.dat` file.
 
 <h4>Boundary Conditions<a class="headerlink" href="#boundary-conditions-unlisted" title="Permalink to this heading"></a></h4>
 
-This is a visualization of the `cartbox_multiple_Debugmesh_BC.dat` file. The colors of the surfaces represent the boundary conditions and are the same as in the excerpt of the parameter file. 
+This is a visualization of the `cartbox_multiple_Debugmesh_BC.dat` file. The colors of the surfaces represent the boundary conditions and are the same as in the excerpt of the parameter file.
 
 <table align="center" style="width:100%">
   <tr>
@@ -499,7 +499,7 @@ This is a visualization of the `cartbox_multiple_Debugmesh_BC.dat` file. The col
 
 ## Stretching Functions
 This tutorial shows how to generate a mesh consisting of a boxes with a stretched element arrangement.
-The parameter file can be found in 
+The parameter file can be found in
 
     tutorials/1-04-cartbox_multiple_stretch/parameter.ini
 
@@ -518,7 +518,7 @@ With stretching functions one can generate a mesh consisting of a boxes with a s
   type="text/javascript">
 </script>
 
-In case of a stretched element arrangement the next element of a box is always stretched by a factor \\(f\\) in the direction of the coordinate axis. Thereby the value of factor \\(f\\) can have a positive or a negative sign. Here \\(f\\) has either a negative and an absolute value >1 or a positive sign and an abolute value <1. The length of the first element is called \\(l_{0}\\). All streched \\(N\\) elements together has the length \\(l_{ges}\\). 
+In case of a stretched element arrangement the next element of a box is always stretched by a factor \\(f\\) in the direction of the coordinate axis. Thereby the value of factor \\(f\\) can have a positive or a negative sign. Here \\(f\\) has either a negative and an absolute value >1 or a positive sign and an abolute value <1. The length of the first element is called \\(l_{0}\\). All streched \\(N\\) elements together has the length \\(l_{ges}\\).
 
 ### Stretching Functions: Building a Cartesian Box with Stretched Elements
 To get a single cartesian box with a stretched element arrangement it is important to know that the parameters \\(l_{0}\\) and \\(N\\) are defined even before one define the stretching parameters `factor` and `l0`. The length \\(l_{ges}\\) is defined by the boundarys of the cartesian box and the number of elements per box in the direction of the cartesian coordinate axes, called \\(N\\) in the following, was defined with the parameter `nElems`.
@@ -527,13 +527,13 @@ For a stretched element arrangement either the parameter `factor` or the paramet
 
 $$ \frac{l_{ges}}{l_{0}} = \sum_{i=1}^{N} f^{i-1} = \frac{1 - f^{N}}{1 - f } $$
 
-The structure of both parameters are explained below. A description of all parameters of the parameterfile can be found in {ref}`userguide/parameters:List of Parameters`. 
+The structure of both parameters are explained below. A description of all parameters of the parameterfile can be found in {ref}`userguide/parameters:List of Parameters`.
 
 ```{table} Stretching Functions.
 ---
 name: tab:Stretching Functions
 ---
-  | Parameters      |Setting                | Description | 
+  | Parameters      |Setting                | Description |
   | :------         | :----------:          | :---------------------------     |
   | `factor`       | ` 	(/-1.75,1,-1.5/)`   | Stretching factor of the elements in the direction of the cartesian coordinate axes. A value >1 means an increase of the element size in the direction of the coordinate axis, however, a value of the<br>intervall (0,1) means a decrease. The Value 1 does not affect the element sizes just as the value 0 which means an deactivation of the stretching function for this axis. Furthermore the stretching<br>behaviour can be mirrored by adding a negative sign to the values. A combination with the parameter `l0` ignores the element number of the defined box.<br>In case of `(/-1.75,1,-1.5/)` each following element in the direction of the x-axis is compressed by the factor -1.75 and in the direction of the z-axis by the factor -1.5. The element arrangement<br>in the direction of the y-axis was not changed.  |
   | `l0`             | `(/0,1,5,0/)`   |  The length of the first element of a stretched element arrangement of a cartesian box. Each component of the vector stands for an axis of the cartesian coordinate system. The value 0 means an<br>deactivation of the stretching function for this axis. A negative sign defines the length of the first element of the other side of the box. A combination with the parameter `factor` ignores the<br>element number of the defined box. Here the stretching function is deactivated for the x- and z-axis, whereas the first element in the direction of the y-axis has a size of 1.5. |
@@ -599,10 +599,10 @@ These three different cases are presented below with a small cube with an edge l
 <br>
 
 ### Stretching Functions: Building Multiple Cartesian Boxes with Stretched Elements
-For building a mesh consisting of multiple cartesian boxes with a stretched element arrangement at least one of the parameters `factor` and `l0` has to be defined for each cartesian box. The reason for this is that if there shall be a contact between two boxes the surfaces' corner nodes have to coincide. This means that defining a stretch function to a cartesian box leads to a need of a stretch function of the adjacent cartesian box. A visualization of this issue one can see in the sketch of the tutorial's problem. 
+For building a mesh consisting of multiple cartesian boxes with a stretched element arrangement at least one of the parameters `factor` and `l0` has to be defined for each cartesian box. The reason for this is that if there shall be a contact between two boxes the surfaces' corner nodes have to coincide. This means that defining a stretch function to a cartesian box leads to a need of a stretch function of the adjacent cartesian box. A visualization of this issue one can see in the sketch of the tutorial's problem.
 
 ### Stretching Functions: Sketch
-In the following an exemplary mesh of multiple cartesian boxes with a stretched element arrangement is presented. The belonging parameter file can be found in Parameterfile Stretching Functions. The arrangement of the cartesian boxes corresponds to the one of the tutorial Multiple Cartesian Boxes but instead of equidistant elements a stretched element arrangement is produced by inserting the parameters `factor` and `l0`. Furthermore the number of elements of each box were increased by changing the parameter `nElems` for a better visualization of the stretched element arrangement. The figure below shows the way the elements will be stretched. 
+In the following an exemplary mesh of multiple cartesian boxes with a stretched element arrangement is presented. The belonging parameter file can be found in Parameterfile Stretching Functions. The arrangement of the cartesian boxes corresponds to the one of the tutorial Multiple Cartesian Boxes but instead of equidistant elements a stretched element arrangement is produced by inserting the parameters `factor` and `l0`. Furthermore the number of elements of each box were increased by changing the parameter `nElems` for a better visualization of the stretched element arrangement. The figure below shows the way the elements will be stretched.
 
 
 <figure id="fig-cartbox-multiple-stretch-sketch">
@@ -613,11 +613,11 @@ In the following an exemplary mesh of multiple cartesian boxes with a stretched 
 </figure>
 
 
-It has to be taken into account that the figure above just demonstrates in which directions the elements are stretched respectively compressed. Wether the number of elements per box nor the cartesian boxes'sizes represented here corresponds to the parameters of the Parameterfile Stretching Functions. 
+It has to be taken into account that the figure above just demonstrates in which directions the elements are stretched respectively compressed. Wether the number of elements per box nor the cartesian boxes'sizes represented here corresponds to the parameters of the Parameterfile Stretching Functions.
 
 ### Stretching Functions: Output Visualization
-If there is a need for assistance of visualizing the HOPR output visit {ref}`tutorials/index_visualization:Visualization`. 
-These are visualizations of the cartbox_multiple_stretch_mesh.h5 file. 
+If there is a need for assistance of visualizing the HOPR output visit {ref}`tutorials/index_visualization:Visualization`.
+These are visualizations of the cartbox_multiple_stretch_mesh.h5 file.
 
 <figure id="fig-cartbox-multiple-stretch-side">
         <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_multiple_stretch_side.png"><img alt="../../../tutorials/figures/Cartbox_multiple_stretch_side.png" src="../../../tutorials/figures/Cartbox_multiple_stretch_side.png" style="width: 30%;" /></a>
