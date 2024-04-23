@@ -1,7 +1,7 @@
 # Straight-Edged Boxes
 HOPR has several simple built-in mesh generators.
 <figure class="align-center" id="fig-cartbox-multiple-stretch-mesh">
-    <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_multiple_stretch_mesh.png"><img alt="../../../tutorials/figures/Cartbox_multiple_stretch_mesh.png" src="../../../tutorials/figures/Cartbox_multiple_stretch_mesh.png" style="width: 700px;" /></a>
+    <a class="reference internal image-reference" href="../Cartbox_multiple_stretch_mesh.png"><img alt="../Cartbox_multiple_stretch_mesh.png" src="../Cartbox_multiple_stretch_mesh.png" style="width: 700px;" /></a>
     <figcaption>
     <p><span class="caption-number">Fig. 1.1 </span><span class="caption-text">HOPR output: Mesh of multiple cartesian boxes with a stretched element arrangement.</span><a class="headerlink" href="#fig-cartbox-multiple-stretch-mesh" title="Permalink to this image"></a></p>
     </figcaption>
@@ -41,7 +41,7 @@ name: tab:Parameters Cartesian Box
   <tr>
     <td>
         <figure id="fig-cartbox-sketch">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_sketch.jpg"><img alt="../../../tutorials/figures/Cartbox_sketch.jpg" src="../../../tutorials/figures/Cartbox_sketch.jpg" style="height: 300px;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_sketch.jpg"><img alt="../Cartbox_sketch.jpg" src="../Cartbox_sketch.jpg" style="height: 300px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.2 </span><span class="caption-text">Sketch of the current flow setup</span><a class="headerlink" href="#fig-cartbox-sketch" title="Permalink to this image"></a></p>
         </figcaption>
@@ -49,7 +49,7 @@ name: tab:Parameters Cartesian Box
     </td>
     <td>
         <figure class id="fig-cartbox-ini">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_ini.jpg"><img alt="../../../tutorials/figures/Cartbox_ini.jpg" src="../../../tutorials/figures/Cartbox_ini.jpg" style="height: 300px;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_ini.jpg"><img alt="../Cartbox_ini.jpg" src="../Cartbox_ini.jpg" style="height: 300px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.3 </span><span class="caption-text">Cartesian Box Boundary Conditions ini-File</span><a class="headerlink" href="#fig-cartbox-ini" title="Permalink to this image"></a></p>
         </figcaption>
@@ -67,7 +67,7 @@ The following section highlights the visualization of the above setup. For more 
 
 This is a visualization of the cartbox_Debugmesh.dat file.
 <figure class="align-center" id="fig-cartbox-mesh">
-<a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_mesh.jpg"><img alt="../../../tutorials/figures/Cartbox_mesh.jpg" src="../../../tutorials/figures/Cartbox_mesh.jpg" style="width: 25%;" /></a>
+<a class="reference internal image-reference" href="../Cartbox_mesh.jpg"><img alt="../Cartbox_mesh.jpg" src="../Cartbox_mesh.jpg" style="width: 25%;" /></a>
 <figcaption>
 <p><span class="caption-number">Fig. 1.4 </span><span class="caption-text">Mesh of the cartesian box</span><a class="headerlink" href="#fig-cartbox-mesh" title="Permalink to this image"></a></p>
 </figcaption>
@@ -81,7 +81,7 @@ This is a visualization of the `cartbox_Debugmesh_BC.dat` file. The colors of th
   <tr>
     <td style="width:33%">
         <figure id="fig-cartbox-bc1">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_BC1.jpg"><img alt="../../../tutorials/figures/Cartbox_BC1.jpg" src="../../../tutorials/figures/Cartbox_BC1.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_BC1.jpg"><img alt="../Cartbox_BC1.jpg" src="../Cartbox_BC1.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.5 </span><span class="caption-text">Boundary condition 1 (<code class="docutils literal notranslate"><span class="pre">BC_wall</span></code>) is assigned to surface 1</span><a class="headerlink" href="#fig-cartbox-bc1" title="Permalink to this image"></a></p>
         </figcaption>
@@ -89,7 +89,7 @@ This is a visualization of the `cartbox_Debugmesh_BC.dat` file. The colors of th
     </td>
     <td style="width:33%">
         <figure id="fig-cartbox-bc2">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_BC2.jpg"><img alt="../../../tutorials/figures/Cartbox_BC2.jpg" src="../../../tutorials/figures/Cartbox_BC2.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_BC2.jpg"><img alt="../Cartbox_BC2.jpg" src="../Cartbox_BC2.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.6 </span><span class="caption-text">Boundary condition 2 (<code class="docutils literal notranslate"><span class="pre">BC_inflow</span></code>) is assigned to surface 2</span><a class="headerlink" href="#fig-cartbox-bc2" title="Permalink to this image"></a></p>
         </figcaption>
@@ -97,7 +97,7 @@ This is a visualization of the `cartbox_Debugmesh_BC.dat` file. The colors of th
     </td>
     <td style="width:33%">
         <figure id="fig-cartbox-bc3">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_BC3.jpg"><img alt="../../../tutorials/figures/Cartbox_BC3.jpg" src="../../../tutorials/figures/Cartbox_BC3.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_BC3.jpg"><img alt="../Cartbox_BC3.jpg" src="../Cartbox_BC3.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.7 </span><span class="caption-text">Boundary condition 3 (<code class="docutils literal notranslate"><span class="pre">BC_outflow</span></code>) is assigned to surface 3</span><a class="headerlink" href="#fig-cartbox-bc3" title="Permalink to this image"></a></p>
         </figcaption>
@@ -110,7 +110,7 @@ This is a visualization of the `cartbox_Debugmesh_BC.dat` file. The colors of th
   <tr>
     <td style="width:33%">
         <figure id="fig-cartbox-bc4">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_BC4.jpg"><img alt="../../../tutorials/figures/Cartbox_BC4.jpg" src="../../../tutorials/figures/Cartbox_BC4.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_BC4.jpg"><img alt="../Cartbox_BC4.jpg" src="../Cartbox_BC4.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.8 </span><span class="caption-text">Boundary condition 4 (<code class="docutils literal notranslate"><span class="pre">BC_yplus</span></code>) is assigned to surface 4</span><a class="headerlink" href="#fig-cartbox-bc4" title="Permalink to this image"></a></p>
         </figcaption>
@@ -118,7 +118,7 @@ This is a visualization of the `cartbox_Debugmesh_BC.dat` file. The colors of th
     </td>
     <td style="width:33%">
         <figure id="fig-cartbox-bc5">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_BC5.jpg"><img alt="../../../tutorials/figures/Cartbox_BC5.jpg" src="../../../tutorials/figures/Cartbox_BC5.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_BC5.jpg"><img alt="../Cartbox_BC5.jpg" src="../Cartbox_BC5.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.9 </span><span class="caption-text">Boundary condition 5 (<code class="docutils literal notranslate"><span class="pre">BC_xminus</span></code>) is assigned to surface 5</span><a class="headerlink" href="#fig-cartbox-bc5" title="Permalink to this image"></a></p>
         </figcaption>
@@ -126,7 +126,7 @@ This is a visualization of the `cartbox_Debugmesh_BC.dat` file. The colors of th
     </td>
     <td style="width:33%">
         <figure id="fig-cartbox-bc6">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_BC6.jpg"><img alt="../../../tutorials/figures/Cartbox_BC6.jpg" src="../../../tutorials/figures/Cartbox_BC6.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_BC6.jpg"><img alt="../Cartbox_BC6.jpg" src="../Cartbox_BC6.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.10 </span><span class="caption-text">Boundary condition 6 (<code class="docutils literal notranslate"><span class="pre">BC_zplus</span></code>) is assigned to surface 6</span><a class="headerlink" href="#fig-cartbox-bc6" title="Permalink to this image"></a></p>
         </figcaption>
@@ -154,7 +154,7 @@ The first four components of the `BCIndex` vector are equal. The index of these 
   <tr>
     <td>
         <figure id="fig-cartbox-ex1-sketch">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_ex1_sketch.jpg"><img alt="../../../tutorials/figures/Cartbox_ex1_sketch.jpg" src="../../../tutorials/figures/Cartbox_ex1_sketch.jpg" style="height: 300px;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_ex1_sketch.jpg"><img alt="../Cartbox_ex1_sketch.jpg" src="../Cartbox_ex1_sketch.jpg" style="height: 300px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.11 </span><span class="caption-text">Sketch of Example 1</span><a class="headerlink" href="#fig-cartbox-ex1-sketch" title="Permalink to this image"></a></p>
         </figcaption>
@@ -162,7 +162,7 @@ The first four components of the `BCIndex` vector are equal. The index of these 
     </td>
     <td>
         <figure class id="fig-cartbox-ex1-ini">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_ex1_ini.jpg"><img alt="../../../tutorials/figures/Cartbox_ex1_ini.jpg" src="../../../tutorials/figures/Cartbox_ex1_ini.jpg" style="height: 300px;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_ex1_ini.jpg"><img alt="../Cartbox_ex1_ini.jpg" src="../Cartbox_ex1_ini.jpg" style="height: 300px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.12 </span><span class="caption-text">Cartesian Box example 1 Boundary Conditions ini-File</span><a class="headerlink" href="#fig-cartbox-ex1-ini" title="Permalink to this image"></a></p>
         </figcaption>
@@ -179,7 +179,7 @@ If there is a need for assistance of visualizing the HOPR output visit {ref}`tut
 
 This is a visualization of the cartbox_ex1_Debugmesh.dat file.
 <figure class="align-center" id="fig-cartesianboxsketchex1mesh">
-  <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_ex1_mesh.jpg"><img alt="../../../tutorials/figures/Cartbox_ex1_mesh.jpg" src="../../../tutorials/figures/Cartbox_ex1_mesh.jpg" style="width: 400px;" /></a>
+  <a class="reference internal image-reference" href="../Cartbox_ex1_mesh.jpg"><img alt="../Cartbox_ex1_mesh.jpg" src="../Cartbox_ex1_mesh.jpg" style="width: 400px;" /></a>
   <figcaption>
   <p><span class="caption-number">Fig. 1.13 </span><span class="caption-text">Mesh of the cartesian box</span><a class="headerlink" href="#fig-cartesianboxsketchex1mesh" title="Permalink to this image"></a></p>
   </figcaption>
@@ -193,7 +193,7 @@ This is a visualization of the cartbox_ex1_Debugmesh_BC.dat file. The colors of 
   <tr>
     <td style="width:33%">
         <figure id="fig-cartbox-ex1-bc1">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_ex1_BC1.jpg"><img alt="../../../tutorials/figures/Cartbox_ex1_BC1.jpg" src="../../../tutorials/figures/Cartbox_ex1_BC1.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_ex1_BC1.jpg"><img alt="../Cartbox_ex1_BC1.jpg" src="../Cartbox_ex1_BC1.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.14 </span><span class="caption-text">Boundary condition 1 (<code class="docutils literal notranslate"><span class="pre">BC_wall</span></code>) is assigned to surface 1-4</span><a class="headerlink" href="#fig-cartbox-ex1-bc1" title="Permalink to this image"></a></p>
         </figcaption>
@@ -201,7 +201,7 @@ This is a visualization of the cartbox_ex1_Debugmesh_BC.dat file. The colors of 
     </td>
     <td style="width:33%">
         <figure id="fig-cartbox-ex1_bc2">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_ex1_BC2.jpg"><img alt="../../../tutorials/figures/Cartbox_ex1_BC2.jpg" src="../../../tutorials/figures/Cartbox_ex1_BC2.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_ex1_BC2.jpg"><img alt="../Cartbox_ex1_BC2.jpg" src="../Cartbox_ex1_BC2.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.15 </span><span class="caption-text">Boundary condition 2 (<code class="docutils literal notranslate"><span class="pre">BC_inflow</span></code>) is assigned to surface 5</span><a class="headerlink" href="#fig-cartbox-ex1-bc2" title="Permalink to this image"></a></p>
         </figcaption>
@@ -209,7 +209,7 @@ This is a visualization of the cartbox_ex1_Debugmesh_BC.dat file. The colors of 
     </td>
     <td style="width:33%">
         <figure id="fig-cartbox-ex1-bc3">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_ex1_BC3.jpg"><img alt="../../../tutorials/figures/Cartbox_ex1_BC3.jpg" src="../../../tutorials/figures/Cartbox_ex1_BC3.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_ex1_BC3.jpg"><img alt="../Cartbox_ex1_BC3.jpg" src="../Cartbox_ex1_BC3.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.16 </span><span class="caption-text">Boundary condition 3 (<code class="docutils literal notranslate"><span class="pre">BC_outflow</span></code>) is assigned to surface 6</span><a class="headerlink" href="#fig-cartbox-ex1-bc3" title="Permalink to this image"></a></p>
         </figcaption>
@@ -234,7 +234,7 @@ In this example the first, the third and the sixth component of the `BCIndex` ve
   <tr>
     <td>
         <figure id="fig-cartbox-ex2-sketch">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_ex1-sketch.jpg"><img alt="../../../tutorials/figures/Cartbox_ex1-sketch.jpg" src="../../../tutorials/figures/Cartbox_ex1-sketch.jpg" style="height: 300px;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_ex1-sketch.jpg"><img alt="../Cartbox_ex1-sketch.jpg" src="../Cartbox_ex1-sketch.jpg" style="height: 300px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.17 </span><span class="caption-text">Sketch of Example 2</span><a class="headerlink" href="#fig-cartbox-ex1-sketch" title="Permalink to this image"></a></p>
         </figcaption>
@@ -242,7 +242,7 @@ In this example the first, the third and the sixth component of the `BCIndex` ve
     </td>
     <td>
         <figure class id="fig-cartbox-ex2-ini">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_ex2_ini.jpg"><img alt="../../../tutorials/figures/Cartbox_ex2_ini.jpg" src="../../../tutorials/figures/Cartbox_ex2_ini.jpg" style="height: 300px;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_ex2_ini.jpg"><img alt="../Cartbox_ex2_ini.jpg" src="../Cartbox_ex2_ini.jpg" style="height: 300px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.18 </span><span class="caption-text">Cartesian Box example 2 Boundary Conditions ini-File</span><a class="headerlink" href="#fig-cartbox-ex1-ini" title="Permalink to this image"></a></p>
         </figcaption>
@@ -260,7 +260,7 @@ If there is a need for assistance of visualizing the HOPR output visit {ref}`tut
 This is a visualization of the cartbox_ex2_Debugmesh.dat file.
 
 <figure class="align-center" id="fig-ex2_cartbox_mesh">
-  <a class="reference internal image-reference" href="../../../tutorials/figures/Ex2_cartbox_mesh.jpg"><img alt="../../../tutorials/figures/Ex2_cartbox_mesh.jpg" src="../../../tutorials/figures/Ex2_cartbox_mesh.jpg" style="width: 400px;" /></a>
+  <a class="reference internal image-reference" href="../Ex2_cartbox_mesh.jpg"><img alt="../Ex2_cartbox_mesh.jpg" src="../Ex2_cartbox_mesh.jpg" style="width: 400px;" /></a>
   <figcaption>
   <p><span class="caption-number">Fig. 1.19 </span><span class="caption-text">Mesh of the cartesian box</span><a class="headerlink" href="#fig-cartbox-ex2-mesh" title="Permalink to this image"></a></p>
   </figcaption>
@@ -275,7 +275,7 @@ This is a visualization of the cartbox_ex2_Debugmesh_BC.dat file. The colors of 
   <tr>
     <td style="width:33%">
         <figure id="fig-cartbox_ex2_bc1">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_ex2_BC1.jpg"><img alt="../../../tutorials/figures/Cartbox_ex2_BC1.jpg" src="../../../tutorials/figures/Cartbox_ex2_BC1.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_ex2_BC1.jpg"><img alt="../Cartbox_ex2_BC1.jpg" src="../Cartbox_ex2_BC1.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.20 </span><span class="caption-text">Boundary condition 1 (<code class="docutils literal notranslate"><span class="pre">BC_wall</span></code>) is assigned to surfaces 1, 3 and 6</span><a class="headerlink" href="#fig-cartbox-ex2-bc1" title="Permalink to this image"></a></p>
         </figcaption>
@@ -283,7 +283,7 @@ This is a visualization of the cartbox_ex2_Debugmesh_BC.dat file. The colors of 
     </td>
     <td style="width:33%">
         <figure id="fig-cartbox_ex2_bc2">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_ex2_BC2.jpg"><img alt="../../../tutorials/figures/Cartbox_ex2_BC2.jpg" src="../../../tutorials/figures/Cartbox_ex2_BC2.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_ex2_BC2.jpg"><img alt="../Cartbox_ex2_BC2.jpg" src="../Cartbox_ex2_BC2.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.21 </span><span class="caption-text"> Boundary condition 2 (<code class="docutils literal notranslate"><span class="pre">BC_inflow</span></code>) is assigned to surface 5</span><a class="headerlink" href="#fig-cartbox-ex2-bc2" title="Permalink to this image"></a></p>
         </figcaption>
@@ -291,7 +291,7 @@ This is a visualization of the cartbox_ex2_Debugmesh_BC.dat file. The colors of 
     </td>
     <td style="width:33%">
         <figure id="fig-cartbox-ex2-bc3">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_ex2_BC3.jpg"><img alt="../../../tutorials/figures/Cartbox_ex2_BC3.jpg" src="../../../tutorials/figures/Cartbox_ex2_BC3.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_ex2_BC3.jpg"><img alt="../Cartbox_ex2_BC3.jpg" src="../Cartbox_ex2_BC3.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.22 </span><span class="caption-text">Boundary condition 3 (<code class="docutils literal notranslate"><span class="pre">BC_outflow</span></code>) is assigned to surface 2 and 4</span><a class="headerlink" href="#fig-cartbox-ex2-bc3" title="Permalink to this image"></a></p>
         </figcaption>
@@ -326,7 +326,7 @@ name: tab:Parameters Periodic Boundary Conditions
 ### Periodic Boundary Conditions: Boundary Conditions and Sketch
 <a class="reference internal" href="#fig-cartbox-periodic-sketch"><span class="std std-numref">Fig. 1.23</span></a> shows the sketch of the current problem. It is similar to the problem in the tutorial Cartesian Box but instead of Dirichlet periodic boundary conditions are assigned to the surfaces one, two, four and six. Further below one can see an excerpt of the parameter file which deals with the periodic boundary conditions. In this code's excerpt some text elements are colored to show the connection between boundary conditions and their related displacement vectors. The same colors are used for the visualization in <a class="reference internal" href="#fig-cartbox-periodic-sketch"><span class="std std-numref">Fig. 1.17</span></a>.
 <figure class="align-center" id="fig-cartbox-periodic-sketch">
-    <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_periodic_sketch.jpg"><img alt="../../../tutorials/figures/Cartbox_periodic_sketch.jpg" src="../../../tutorials/figures/Cartbox_periodic_sketch.jpg" style="width: 50%;" /></a>
+    <a class="reference internal image-reference" href="../Cartbox_periodic_sketch.jpg"><img alt="../Cartbox_periodic_sketch.jpg" src="../Cartbox_periodic_sketch.jpg" style="width: 50%;" /></a>
     <figcaption>
     <p><span class="caption-number">Fig. 1.23 </span><span class="caption-text">Sketch of the current problem; For a greater clarity in this figure the displacement vectors are shown shorter than they are. In truth the vector arrows are as long as the side length of the cartesian box.</span><a class="headerlink" href="#fig-cartbox-periodic-sketch" title="Permalink to this image"></a></p>
     </figcaption>
@@ -337,7 +337,7 @@ As one can see the first four boundary conditions are periodic because the last 
 For the other two periodic boundary conditions of the surfaces two and four the second defined displacement vector is consulted (see `alpha` value of the `BoundaryType` parameters). The components of the displacement vector `(/0.,1.,0./)` results from the necessary perpendicularity to the surfaces and the side length of the cartesian box.
 
 <figure class="align-center" id="fig-cartbox-periodic-ini">
-    <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_periodic_ini.jpg"><img alt="../../../tutorials/figures/Cartbox_periodic_ini.jpg" src="../../../tutorials/figures/Cartbox_periodic_ini.jpg" style="width: 60%;" /></a>
+    <a class="reference internal image-reference" href="../Cartbox_periodic_ini.jpg"><img alt="../Cartbox_periodic_ini.jpg" src="../Cartbox_periodic_ini.jpg" style="width: 60%;" /></a>
     <figcaption>
     <p><span class="caption-number">Fig. 1.24 </span><span class="caption-text">Cartbox periodic ini-File.</span><a class="headerlink" href="#fig-cartbox-periodic-ini" title="Permalink to this image"></a></p>
     </figcaption>
@@ -405,7 +405,7 @@ A description of all parameters of the parameterfile can be found in {ref}`userg
 For a better understanding the different settings of the parameter `BCIndex` are also given. The given settings just consider the components which are set to 0 because of coinciding surfaces are given.
 
 <figure class="align-center" id="fig-Cartbox-multiple-sketch">
-    <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_multiple_sketch.jpg"><img alt="../../../tutorials/figures/Cartbox_multiple_sketch.jpg" src="../../../tutorials/figures/Cartbox_multiple_sketch.jpg" style="width: 60%;" /></a>
+    <a class="reference internal image-reference" href="../Cartbox_multiple_sketch.jpg"><img alt="../Cartbox_multiple_sketch.jpg" src="../Cartbox_multiple_sketch.jpg" style="width: 60%;" /></a>
     <figcaption>
     <p><span class="caption-number">Fig. 1.25 </span><span class="caption-text">Sketch of the current problem; For a greater clarity in this figure the displacement vectors are shown shorter than they are. In truth the vector arrows are as long as the side length of the cartesian box.</span><a class="headerlink" href="#fig-Cartbox-multiple-sketch" title="Permalink to this image"></a></p>
     </figcaption>
@@ -419,7 +419,7 @@ If there is a need for assistance of visualizing the HOPR output visit {ref}`tut
 This is a visualization of the `cartbox_multiple_Debugmesh.dat` file.
 
 <figure class="align-center" id="fig-Cartbox-multiple-mesh">
-    <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_multiple_mesh.jpg"><img alt="../../../tutorials/figures/Cartbox_multiple_mesh.jpg" src="../../../tutorials/figures/Cartbox_multiple_mesh.jpg" style="width: 30%;" /></a>
+    <a class="reference internal image-reference" href="../Cartbox_multiple_mesh.jpg"><img alt="../Cartbox_multiple_mesh.jpg" src="../Cartbox_multiple_mesh.jpg" style="width: 30%;" /></a>
     <figcaption>
     <p><span class="caption-number">Fig. 1.26 </span><span class="caption-text">Mesh of the multiple cartesian boxes.</span><a class="headerlink" href="#fig-Cartbox-multiple-mesh" title="Permalink to this image"></a></p>
     </figcaption>
@@ -433,7 +433,7 @@ This is a visualization of the `cartbox_multiple_Debugmesh_BC.dat` file. The col
   <tr>
     <td style="width:33%">
         <figure id="fig-cartbox-multiple-bc1">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_multiple_BC1.jpg"><img alt="../../../tutorials/figures/Cartbox_multiple_BC1.jpg" src="../../../tutorials/figures/Cartbox_multiple_BC1.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_multiple_BC1.jpg"><img alt="../Cartbox_multiple_BC1.jpg" src="../Cartbox_multiple_BC1.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.27 </span><span class="caption-text">Boundary condition 1 (<code class="docutils literal notranslate"><span class="pre">BC_slipwall</span></code>) is assigned to surface 1 of the first box</span><a class="headerlink" href="#fig-cartbox-multiple-bc1" title="Permalink to this image"></a></p>
         </figcaption>
@@ -441,7 +441,7 @@ This is a visualization of the `cartbox_multiple_Debugmesh_BC.dat` file. The col
     </td>
     <td style="width:33%">
         <figure id="fig-cartbox-multiple-bc2">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_multiple_BC2.jpg"><img alt="../../../tutorials/figures/Cartbox_multiple_BC2.jpg" src="../../../tutorials/figures/Cartbox_multiple_BC2.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_multiple_BC2.jpg"><img alt="../Cartbox_multiple_BC2.jpg" src="../Cartbox_multiple_BC2.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.28 </span><span class="caption-text">Boundary condition 2 (<code class="docutils literal notranslate"><span class="pre">BC_upperwall</span></code>) is assigned to surface 6 of the second and the third box</span><a class="headerlink" href="#fig-cartbox-multiple-bc2" title="Permalink to this image"></a></p>
         </figcaption>
@@ -449,7 +449,7 @@ This is a visualization of the `cartbox_multiple_Debugmesh_BC.dat` file. The col
     </td>
     <td style="width:33%">
         <figure id="fig-cartbox-multiple-bc3">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_multiple_BC3.jpg"><img alt="../../../tutorials/figures/Cartbox_multiple_BC3.jpg" src="../../../tutorials/figures/Cartbox_multiple_BC3.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_multiple_BC3.jpg"><img alt="../Cartbox_multiple_BC3.jpg" src="../Cartbox_multiple_BC3.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.29 </span><span class="caption-text">Boundary condition 3 (<code class="docutils literal notranslate"><span class="pre">BC_lowerwall</span></code>) is assigned to surface 3 of the first box and to surface 1 of the third box</span><a class="headerlink" href="#fig-cartbox-multiple-bc3" title="Permalink to this image"></a></p>
         </figcaption>
@@ -459,7 +459,7 @@ This is a visualization of the `cartbox_multiple_Debugmesh_BC.dat` file. The col
   <tr>
     <td style="width:33%">
         <figure id="fig-cartbox-multiple-bc4">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_multiple_BC4.jpg"><img alt="../../../tutorials/figures/Cartbox_multiple_BC4.jpg" src="../../../tutorials/figures/Cartbox_multiple_BC4.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_multiple_BC4.jpg"><img alt="../Cartbox_multiple_BC4.jpg" src="../Cartbox_multiple_BC4.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.30 </span><span class="caption-text">Boundary condition 4 (<code class="docutils literal notranslate"><span class="pre">BC_inflow</span></code>) is assigned to surface 5 of the first and the second box</span><a class="headerlink" href="#fig-cartbox-multiple-bc4" title="Permalink to this image"></a></p>
         </figcaption>
@@ -467,7 +467,7 @@ This is a visualization of the `cartbox_multiple_Debugmesh_BC.dat` file. The col
     </td>
     <td style="width:33%">
         <figure id="fig-cartbox-multiple-bc5">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_multiple_BC5.jpg"><img alt="../../../tutorials/figures/Cartbox_multiple_BC5.jpg" src="../../../tutorials/figures/Cartbox_multiple_BC5.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_multiple_BC5.jpg"><img alt="../Cartbox_multiple_BC5.jpg" src="../Cartbox_multiple_BC5.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.31 </span><span class="caption-text">Boundary condition 5 (<code class="docutils literal notranslate"><span class="pre">BC_outflow</span></code>) is assigned to surface 3 of the third box</span><a class="headerlink" href="#fig-cartbox-multiple-bc5" title="Permalink to this image"></a></p>
         </figcaption>
@@ -475,7 +475,7 @@ This is a visualization of the `cartbox_multiple_Debugmesh_BC.dat` file. The col
     </td>
     <td style="width:33%">
         <figure id="fig-cartbox-multiple-bc6">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_multiple_BC6.jpg"><img alt="../../../tutorials/figures/Cartbox_multiple_BC6.jpg" src="../../../tutorials/figures/Cartbox_multiple_BC6.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_multiple_BC6.jpg"><img alt="../Cartbox_multiple_BC6.jpg" src="../Cartbox_multiple_BC6.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.32 </span><span class="caption-text">Periodic boundary condition 6 (<code class="docutils literal notranslate"><span class="pre">BC_yminus</span></code>) is assigned to surface 2 of the first, the second and the third box</span><a class="headerlink" href="#fig-cartbox-multiple-bc6" title="Permalink to this image"></a></p>
         </figcaption>
@@ -485,7 +485,7 @@ This is a visualization of the `cartbox_multiple_Debugmesh_BC.dat` file. The col
   <tr>
     <td style="width:33%">
         <figure id="fig-cartbox-multiple-bc7">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_multiple_BC7.jpg"><img alt="../../../tutorials/figures/Cartbox_multiple_BC7.jpg" src="../../../tutorials/figures/Cartbox_multiple_BC7.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_multiple_BC7.jpg"><img alt="../Cartbox_multiple_BC7.jpg" src="../Cartbox_multiple_BC7.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.33 </span><span class="caption-text">Periodic boundary condition 7 (<code class="docutils literal notranslate"><span class="pre">BC_yplus</span></code>) is assigned to surface 4 of the first, the second and the third box</span><a class="headerlink" href="#fig-cartbox-multiple-bc7" title="Permalink to this image"></a></p>
         </figcaption>
@@ -506,7 +506,7 @@ The parameter file can be found in
 ### Stretching Functions: Definition of Stretching Functions
 With stretching functions one can generate a mesh consisting of a boxes with a stretched element arrangement. Therefore two new parameters can be defined in the parameter file: `factor` and `l0`. Each one can used to stretch the elements of a box. Their meaning and connection is shown as one-dimensional case in <a class="reference internal" href="#fig-stretch-functions"><span class="std std-numref">Fig. 1.28</span></a>.
 <figure id="fig-stretch-functions">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Stretch_functions.jpg"><img alt="../../../tutorials/figures/Stretch_functions.jpg" src="../../../tutorials/figures/Stretch_functions.jpg" style="width: 25%;" /></a>
+        <a class="reference internal image-reference" href="../Stretch_functions.jpg"><img alt="../Stretch_functions.jpg" src="../Stretch_functions.jpg" style="width: 25%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.34 </span><span class="caption-text">"Stretch parameters" <code class="docutils literal notranslate"><span class="pre">factor</span></code> and <code class="docutils literal notranslate"><span class="pre">l0</span></code></span><a class="headerlink" href="#fig-stretch-functions" title="Permalink to this image"></a></p>
         </figcaption>
@@ -555,7 +555,7 @@ These three different cases are presented below with a small cube with an edge l
   <tr>
     <td style="width:25%">
         <figure id="fig-stretch-example">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Stretch_example.png"><img alt="../../../tutorials/figures/Stretch_example.png" src="../../../tutorials/figures/Stretch_example.png" style="height: 200px;" /></a>
+        <a class="reference internal image-reference" href="../Stretch_example.png"><img alt="../Stretch_example.png" src="../Stretch_example.png" style="height: 200px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.35 </span><span class="caption-text">Non-stretched element arrangement <br><code class="docutils literal notranslate"><span class="pre">nElems   =(/4,4,4/)</span></code><br>
         <code class="docutils literal notranslate"><span class="pre">factor   =(/0,0,0/)</span></code><br>
@@ -565,7 +565,7 @@ These three different cases are presented below with a small cube with an edge l
     </td>
     <td style="width:25%">
         <figure id="fig-stretch-example-f">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Stretch_example_f.png"><img alt="../../../tutorials/figures/Stretch_example_f.png" src="../../../tutorials/figures/Stretch_example_f.png" style="height: 200px;" /></a>
+        <a class="reference internal image-reference" href="../Stretch_example_f.png"><img alt="../Stretch_example_f.png" src="../Stretch_example_f.png" style="height: 200px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.36 </span><span class="caption-text">Stretched element arrangement. The element size in the direction of the x-axis increases by a factor of 1.5. In the direction of the y-axis it decreases by the factor of -1.2.<br><code class="docutils literal notranslate"><span class="pre">nElems   =(/4,4,4/)</span></code><br>
         <code class="docutils literal notranslate"><span class="pre">factor   =(/1.5,-1.2,0/)</span></code><br>
@@ -575,7 +575,7 @@ These three different cases are presented below with a small cube with an edge l
     </td>
     <td style="width:25%">
         <figure id="fig-stretch-example-l0">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Stretch_example_l0.png"><img alt="../../../tutorials/figures/Stretch_example_l0.png" src="../../../tutorials/figures/Stretch_example_l0.png" style="height: 200px;" /></a>
+        <a class="reference internal image-reference" href="../Stretch_example_l0.png"><img alt="../Stretch_example_l0.png" src="../Stretch_example_l0.png" style="height: 200px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.37 </span><span class="caption-text">Stretched element arrangement. The first element in the direction of the x-axis has a length of 0.5 and a length of 0.2 in the direction of the y-axis. The parameter <code class="docutils literal notranslate"><span class="pre">factor</span></code> is adjusted.<br><code class="docutils literal notranslate"><span class="pre">nElems   =(/4,4,4/)</span></code><br>
         <code class="docutils literal notranslate"><span class="pre">factor   =(/0,0,0/)</span></code><br>
@@ -585,7 +585,7 @@ These three different cases are presented below with a small cube with an edge l
     </td>
     <td style="width:25%">
         <figure id="fig-stretch-example-fl0">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Stretch_example_fl0.png"><img alt="../../../tutorials/figures/Stretch_example_fl0.png" src="../../../tutorials/figures/Stretch_example_fl0.png" style="height: 200px;" /></a>
+        <a class="reference internal image-reference" href="../Stretch_example_fl0.png"><img alt="../Stretch_example_fl0.png" src="../Stretch_example_fl0.png" style="height: 200px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.38 </span><span class="caption-text">Stretched element arrangement with a combination of <code class="docutils literal notranslate"><span class="pre">factor</span></code> and <code class="docutils literal notranslate"><span class="pre">l0</span></code>. The parameter <code class="docutils literal notranslate"><span class="pre">l0</span></code> defines the side lengths of the first element. The following element sizes are multiplied by the compontens of the parameter <code class="docutils literal notranslate"><span class="pre">factor</span></code>. The number of elements \(N\) which is defined by the parameter <code class="docutils literal notranslate"><span class="pre">nElems</span></code> is not retained.<br><code class="docutils literal notranslate"><span class="pre">nElems   =(/4,4,4/)</span></code><br>
         <code class="docutils literal notranslate"><span class="pre">factor   =(/1.5,-1.2,0/)</span></code><br>
@@ -606,7 +606,7 @@ In the following an exemplary mesh of multiple cartesian boxes with a stretched 
 
 
 <figure id="fig-cartbox-multiple-stretch-sketch">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_multiple_stretch_sketch.jpg"><img alt="../../../tutorials/figures/Cartbox_multiple_stretch_sketch.jpg" src="../../../tutorials/figures/Cartbox_multiple_stretch_sketch.jpg" style="width: 30%;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_multiple_stretch_sketch.jpg"><img alt="../Cartbox_multiple_stretch_sketch.jpg" src="../Cartbox_multiple_stretch_sketch.jpg" style="width: 30%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.39 </span><span class="caption-text">Sketch of a mesh with multiple cartesian boxes with a stretched element arrangement. The arrows show in which direction the elements are compressed. The elements are getting smaller the closer the elements get to the cartesian x-y-plane and y-z-plane. The elements in the direction of the cartesian y-axis remain equidistant.</span><a class="headerlink" href="#fig-cartbox-multiple-stretch-sketch" title="Permalink to this image"></a></p>
         </figcaption>
@@ -620,13 +620,13 @@ If there is a need for assistance of visualizing the HOPR output visit {ref}`tut
 These are visualizations of the cartbox_multiple_stretch_mesh.h5 file.
 
 <figure id="fig-cartbox-multiple-stretch-side">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_multiple_stretch_side.png"><img alt="../../../tutorials/figures/Cartbox_multiple_stretch_side.png" src="../../../tutorials/figures/Cartbox_multiple_stretch_side.png" style="width: 30%;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_multiple_stretch_side.png"><img alt="../Cartbox_multiple_stretch_side.png" src="../Cartbox_multiple_stretch_side.png" style="width: 30%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.40 </span><span class="caption-text">Side view of the mesh of the multiple cartesian boxes with a stretched element arrangement.</span><a class="headerlink" href="#fig-cartbox-multiple-stretch-side" title="Permalink to this image"></a></p>
         </figcaption>
 </figure>
 <figure id="fig-cartbox-multiple-stretch-mesh">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Cartbox_multiple_stretch_mesh.png"><img alt="../../../tutorials/figures/Cartbox_multiple_stretch_mesh.png" src="../../../tutorials/figures/Cartbox_multiple_stretch_mesh.png" style="width: 30%;" /></a>
+        <a class="reference internal image-reference" href="../Cartbox_multiple_stretch_mesh.png"><img alt="../Cartbox_multiple_stretch_mesh.png" src="../Cartbox_multiple_stretch_mesh.png" style="width: 30%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.41 </span><span class="caption-text">Mesh of the multiple cartesian boxes with a stretched element arrangement.</span><a class="headerlink" href="#fig-cartbox-multiple-stretch-mesh" title="Permalink to this image"></a></p>
         </figcaption>

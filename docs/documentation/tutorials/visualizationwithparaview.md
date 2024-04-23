@@ -1,7 +1,7 @@
 # Visualization with Paraview
 
 <figure class="align-center" id="fig-paraview-logo">
-    <a class="reference internal image-reference" href="../../../tutorials/figures/Paraview-logo.png"><img alt="../../../tutorials/figures/Paraview-logo.png" src="../../../tutorials/figures/Paraview-logo.png" style="width: 30%;" /></a>
+    <a class="reference internal image-reference" href="../Paraview-logo.png"><img alt="../Paraview-logo.png" src="../Paraview-logo.png" style="width: 30%;" /></a>
     <figcaption>
     <p><span class="caption-number">Fig. 1.1 </span><span class="caption-text"></span><a class="headerlink" href="#fig-paraview-logo" title="Permalink to this image"></a></p>
     </figcaption>
@@ -20,7 +20,7 @@ ParaView is susceptible for defective output visualizations in cases of using hi
   <tr>
     <td>
         <figure id="fig-pw-viewsettings">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/PW-viewsettings.jpg"><img alt="../../../tutorials/figures/PW-viewsettings.jpg" src="../../../tutorials/figures/PW-viewsettings.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../PW-viewsettings.jpg"><img alt="../PW-viewsettings.jpg" src="../PW-viewsettings.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.2 </span><span class="caption-text"></span><a class="headerlink" href="#fig-pw-viewsettings" title="Permalink to this image"></a></p>
         </figcaption>
@@ -28,7 +28,7 @@ ParaView is susceptible for defective output visualizations in cases of using hi
     </td>
     <td>
         <figure id="fig-pw-parallel">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/PW-parallel.jpg"><img alt="../../../tutorials/figures/PW-parallel.jpg" src="../../../tutorials/figures/PW-parallel.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../PW-parallel.jpg"><img alt="../PW-parallel.jpg" src="../PW-parallel.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.3 </span><span class="caption-text"></span><a class="headerlink" href="#fig-pw-parallel" title="Permalink to this image"></a></p>
         </figcaption>
@@ -43,7 +43,7 @@ If the polynomial degree of supersampling is higher than 1 the mesh elements wil
   <tr>
     <td>
         <figure id="fig-pw-extractsurface">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/PW-extractsurface.jpg"><img alt="../../../tutorials/figures/PW-extractsurface.jpg" src="../../../tutorials/figures/PW-extractsurface.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../PW-extractsurface.jpg"><img alt="../PW-extractsurface.jpg" src="../PW-extractsurface.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.4 </span><span class="caption-text"></span><a class="headerlink" href="#fig-pw-extractsurface" title="Permalink to this image"></a></p>
         </figcaption>
@@ -51,7 +51,7 @@ If the polynomial degree of supersampling is higher than 1 the mesh elements wil
     </td>
     <td>
         <figure id="fig-pw-featureedges">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/PW-featureedges.jpg"><img alt="../../../tutorials/figures/PW-featureedges.jpg" src="../../../tutorials/figures/PW-featureedges.jpg" style="width: 80%;" /></a>
+        <a class="reference internal image-reference" href="../PW-featureedges.jpg"><img alt="../PW-featureedges.jpg" src="../PW-featureedges.jpg" style="width: 80%;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 1.5 </span><span class="caption-text"></span><a class="headerlink" href="#fig-pw-featureedges" title="Permalink to this image"></a></p>
         </figcaption>

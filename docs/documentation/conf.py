@@ -96,3 +96,5 @@ autosectionlabel_prefix_document = True
 # -- Table and Figure labelling ----------------------------------------------
 # Activate using: {numref}`tab:some-name` -> Table 1
 numfig = True
+
+html_extra_path = ['tutorials/figures/']
