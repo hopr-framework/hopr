@@ -37,7 +37,7 @@ ParaView is susceptible for defective output visualizations in cases of using hi
   </tr>
 </table>
 
-If the polynomial degree of supersampling is higher than 1 the mesh elements will be subdivided depending of the polynomial degree. As a result, it is not apparent anymore where the elements begin and where they end. Because of that two filters have to be applied which make the actual elements visible again in high resolution.
+If the polynomial degree of supersampling is higher than 1 the mesh elements will be subdivided depending of the polynomial degree. As a result, it is not apparent anymore where the elements begin and where they end. Because of that the two filters "Extract Surfaces" and "Extract Edges" have to be applied which make the actual elements visible again in high resolution. They can be found under Filters > Alphabetical.
 
 <table align="center">
   <tr>
@@ -60,44 +60,3 @@ If the polynomial degree of supersampling is higher than 1 the mesh elements wil
   </tr>
 </table>
 
-## Custom Filter HO-visualization
-For simplifing and accelerating this visualization prozess of the HOPR output a custom filter named HO-visualization is provided. This custom filter converts the steps of filter selection to a single step prozedure. After the custom filter was created it has to be imported into ParaView. Therefore, go to Tools > Manage Custom Filters ... (<a class="reference internal" href="#fig-pw-custom"><span class="std std-numref">Fig. 1.6</span></a>), click on Import and add the custom filter HO-visualization (<a class="reference internal" href="#fig-pw-custommanager"><span class="std std-numref">Fig. 1.7</span></a>).
-
-<table align="center">
-  <tr>
-    <td>
-        <figure id="fig-pw-custom">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/PW-custom.jpg"><img alt="../../../tutorials/figures/PW-custom.jpg" src="../../../tutorials/figures/PW-custom.jpg" style="width: 80%;" /></a>
-        <figcaption>
-        <p><span class="caption-number">Fig. 1.6 </span><span class="caption-text"></span><a class="headerlink" href="#fig-pw-custom" title="Permalink to this image"></a></p>
-        </figcaption>
-        </figure>
-    </td>
-    <td>
-        <figure id="fig-pw-custommanager">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/PW-custommanager.jpg"><img alt="../../../tutorials/figures/PW-custommanager.jpg" src="../../../tutorials/figures/PW-custommanager.jpg" style="width: 80%;" /></a>
-        <figcaption>
-        <p><span class="caption-number">Fig. 1.7 </span><span class="caption-text"></span><a class="headerlink" href="#fig-pw-custommanager" title="Permalink to this image"></a></p>
-        </figcaption>
-        </figure>
-    </td>
-  </tr>
-</table>
-
-Once the filter is imported it appears in the alphabetically sorted list of the filters (<a class="reference internal" href="#fig-pw-ho"><span class="std std-numref">Fig. 1.8</span></a>) 
-
-<figure class="align-center" id="fig-ho">
-    <a class="reference internal image-reference" href="../../../tutorials/figures/PW-ho.jpg"><img alt="../../../tutorials/figures/PW-ho.jpg" src="../../../tutorials/figures/PW-ho.jpg" style="width: 30%;" /></a>
-    <figcaption>
-    <p><span class="caption-number">Fig. 1.8 </span><span class="caption-text"></span><a class="headerlink" href="#fig-ho" title="Permalink to this image"></a></p>
-    </figcaption>
-</figure>
-
-and can be selected (<a class="reference internal" href="#fig-pw-final"><span class="std std-numref">Fig. 1.9</span></a>).
-
-<figure class="align-center" id="fig-final">
-    <a class="reference internal image-reference" href="../../../tutorials/figures/PW-final.jpg"><img alt="../../../tutorials/figures/PW-final.jpg" src="../../../tutorials/figures/PW-final.jpg" style="width: 30%;" /></a>
-    <figcaption>
-    <p><span class="caption-number">Fig. 1.9 </span><span class="caption-text"></span><a class="headerlink" href="#fig-final" title="Permalink to this image"></a></p>
-    </figcaption>
-</figure>
