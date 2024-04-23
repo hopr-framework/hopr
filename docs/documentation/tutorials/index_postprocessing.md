@@ -1,6 +1,6 @@
 # Post-processing Meshes
 
-Once a mesh is built there are several options to apply post-process meshes. 
+Once a mesh is built there are several post-processing options available.
 
 ```{toctree}
 ---
