@@ -9,7 +9,7 @@ The feature is controlled by the flag `nFineHexa=x`, where x specifies the numbe
   <tr>
     <td style="width:50%">
         <figure id="fig-hopr-nfine1">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Hopr_nfine1.png"><img alt="../../../tutorials/figures/Hopr_nfine1.png" src="../../../tutorials/figures/Hopr_nfine1.png" style="height: 350px;" /></a>
+        <a class="reference internal image-reference" href="../Hopr_nfine1.png"><img alt="../Hopr_nfine1.png" src="../Hopr_nfine1.png" style="height: 350px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 2.1 </span><span class="caption-text">Standard mesh</span><a class="headerlink" href="#fig-hopr-nfine1" title="Permalink to this image"></a></p>
         </figcaption>
@@ -17,7 +17,7 @@ The feature is controlled by the flag `nFineHexa=x`, where x specifies the numbe
     </td>
     <td style="width:50%">
         <figure id="fig-Hopr-nfine2">
-        <a class="reference internal image-reference" href="../../../tutorials/figures/Hopr_nfine2.png"><img alt="../../../tutorials/figures/Hopr_nfine2.png" src="../../../tutorials/figures/Hopr_nfine2.png" style="height: 350px;" /></a>
+        <a class="reference internal image-reference" href="../Hopr_nfine2.png"><img alt="../Hopr_nfine2.png" src="../Hopr_nfine2.png" style="height: 350px;" /></a>
         <figcaption>
         <p><span class="caption-number">Fig. 2.2 </span><span class="caption-text">All elements refined by a factor of 2</span><a class="headerlink" href="#fig-Hopr-nfine2" title="Permalink to this image"></a></p>
         </figcaption>
