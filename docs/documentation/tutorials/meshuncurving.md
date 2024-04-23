@@ -1,12 +1,12 @@
 # Mesh uncurving
 
-As high-order numerical methods require a high-order representation of the boundary several methods have been developed to provide that accuracy. For some curving techniques, as for agglomerated meshes, not only the boundary is curved but the whole volume mesh consists of curved cells. However it is for numerical reasons advantageous to use linear cells, if the cell is not adjacent to curved boundaries. HOPR thus provides a feature to uncurve curved meshes in a distance from the boundary. The parameter `nCurvedBoundaryLayers` specifies the number of cells from a curved boundary (i.e. boundaries with `curveIndex>0`) stay curved, for the rest of the mesh a (tri-)linear mapping using only the corner nodes is applied.
+As high order numerical methods require a high order representation of the boundary, a number of methods have been developed to provide this level of accuracy. In some curving techniques, such as agglomerated meshes, it is not just the boundary that is curved, but the entire volume of the mesh is made up of curved cells. However, if the cell is not adjacent to curved boundaries, it is numerically preferable to use linear cells. Thus, HOPR provides a function for uncurving curved meshes, optionally at a given distance to the boundary. The parameter `nCurvedBoundaryLayers` specifies the number of cells from a curved boundary (i.e. boundaries with `curveIndex>0`) that stay curved. For the remaining mesh, a (tri-)linear mapping using only the corner nodes is applied.
 
-- For `nCurvedBoundaryLayers=-1` the whole mesh stays curved (default)
-- For `nCurvedBoundaryLayers=0` in the first cell only the boundary itself remains curved, all other faces and cells in the mesh will be linear
+- For `nCurvedBoundaryLayers=-1` the whole mesh stays curved (default).
+- For `nCurvedBoundaryLayers=0` in the first cell only the boundary itself remains curved, all other faces and cells in the mesh will be linear.
 - For `nCurvedBoundaryLayers=1-n` the first n cells away from the boundary remain curved.
 
-These choices are depicted in the figures bellow, the table lists the scaled Jacobian ranges for the elements. The mesh becomes significantly less distorted if only the first cell is curved Note that it is often required to curve more than the first cell, especially for fine curved boundary layer meshes.
+These choices are depicted in the figures bellow, and the table lists the scaled Jacobian ranges for the elements. The mesh becomes significantly less distorted if only the first cell is curved. Note that it is often required to curve more than the first cell, especially for fine curved boundary layer meshes.
 
 <table align="center" style="width:100%">
   <tr>
