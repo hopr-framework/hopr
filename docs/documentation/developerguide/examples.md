@@ -33,6 +33,7 @@ Hindenlang [bibcite key=Hindenlang2015], Gassner [bibcite key=gassner2011disp]
 
 ## section references
 ## Figures, caption
+![This is the caption\label{mylabel}](https://github.com/hopr-framework/hopr/blob/master/docs/doxygen/HOPR.png?raw=true)
 
 ```{figure} https://github.com/piclas-framework/piclas/blob/master/docs/logo.png?raw=true
 ---

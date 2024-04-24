@@ -85,6 +85,9 @@ html_theme_options = {
 # of the sidebar.
 html_logo = '../HOPR.png'
 
+# Extra path to copy
+html_extra_path = ['tutorials/figures/']
+
 # -- Bibliography ------------------------------------------------------------
 
 bibtex_bibfiles = ['references.bib']
@@ -97,4 +100,13 @@ autosectionlabel_prefix_document = True
 # Activate using: {numref}`tab:some-name` -> Table 1
 numfig = True
 
-html_extra_path = ['tutorials/figures/']
+# -- MyST-Parser Syntax Extensions -------------------------------------------
+# https://myst-parser.readthedocs.io/en/latest/syntax/optional.html#math-shortcuts
+#
+#   "dollarmath" for parsing of dollar $ and $$ encapsulated math.
+#   "amsmath" for direct parsing of amsmath LaTeX environments.
+#
+myst_enable_extensions = [
+    "amsmath",
+    "dollarmath",
+]
