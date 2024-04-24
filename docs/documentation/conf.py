@@ -85,6 +85,9 @@ html_theme_options = {
 # of the sidebar.
 html_logo = '../HOPR.png'
 
+# Extra path to copy
+html_extra_path = ['tutorials/figures/']
+
 # -- Bibliography ------------------------------------------------------------
 
 bibtex_bibfiles = ['references.bib']

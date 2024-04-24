@@ -35,8 +35,16 @@ Hindenlang [bibcite key=Hindenlang2015], Gassner [bibcite key=gassner2011disp]
 ## Figures, caption
 ![This is the caption\label{mylabel}](https://github.com/hopr-framework/hopr/blob/master/docs/doxygen/HOPR.png?raw=true)
 
-See figure \ref{mylabel}.
+```{figure} https://github.com/piclas-framework/piclas/blob/master/docs/logo.png?raw=true
+---
+name: fig:mylabel
+width: 400px
+align: center
+---
 
+This is an example caption.
+```
+See {numref}`fig:mylabel` for an image from the web embedded in this documentation.
 
 ```{figure} figures/HOPR.png
 ---
@@ -47,7 +55,7 @@ align: center
 
 This is an example caption.
 ```
-See {numref}`fig:example`.
+See {numref}`fig:example` for embedding a local file.
 
 ## tables
 ## unnumbered section headings
