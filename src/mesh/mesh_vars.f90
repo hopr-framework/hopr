@@ -220,9 +220,11 @@ LOGICAL                        :: generateFEMconnectivity! Flag for generating a
 TYPE(tElem) ,POINTER           :: firstElem              ! pointer to first element in order to start a loop
 TYPE(tElem) ,POINTER           :: firstSplitElem         ! pointer to first element in splitted elem list for curveds
 LOGICAL                        :: doScale                ! scaling factor gt realtolerance
-LOGICAL                        :: preScale               ! apply scaling after readin or before output
 LOGICAL                        :: postScale              ! apply scaling after readin or before output
 REAL                           :: MeshScale              ! scaling factor applied to Node Coordinates during read in
+LOGICAL                        :: doShift                ! scaling factor gt realtolerance
+LOGICAL                        :: postShift              ! apply scaling after readin or before output
+REAL                           :: MeshShift(3)           ! shifting vector applied to Node Coordinates during read in
 REAL                           :: SpaceQuandt            ! Characteristic length in the mesh. Used as tolerance
 REAL                           :: minDX                  ! smallest edge length
 REAL                           :: maxDX(3)               ! Used for search mesh
