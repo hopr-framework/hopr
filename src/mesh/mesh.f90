@@ -204,6 +204,11 @@ MeshScale   = GETREAL('meshScale','1.0')            ! scaling factor applied to 
 doScale     = (ABS(MeshScale-1.).GT.PP_RealTolerance)
 SpaceQuandt = GETREAL('SpaceQuandt','0.1')
 
+! ATTENTION: Scaling is always applied first, then shifting! So `MeshShift` should always be given in scaled coordinates!
+postShift   = GETLOGICAL('postShiftMesh','.TRUE.')      ! apply shifting either after readin or before output
+MeshShift   = GETREALARRAY('meshShift',3,'0.,0.,0.')    ! shifting vector applied to node coordinates during read in
+doShift     = (NORM2(MeshShift).GT.PP_RealTolerance)
+
 ! Curved
 IF(useCurveds) THEN
   ! If curved mesh is read in (e.g. CGNS/GMSH/HDF5) curved boundaries can be rebuilt using the linear mesh
@@ -574,8 +579,10 @@ SELECT CASE (MeshMode)
     CALL abort(__STAMP__,'Not known how to construct mesh')
 END SELECT
 
-! apply meshscale after readin
-IF(doScale.AND..NOT.postScale) CALL ApplyMeshScale(FirstElem)
+! apply meshscale and meshshift after readin
+IF( (doShift.AND..NOT.postShift) .OR. (doScale.AND..NOT.postScale) ) THEN
+  CALL ApplyMeshScale(FirstElem, doMeshScale=(doScale.AND..NOT.postScale), doMeshShift=(doShift.AND..NOT.postShift))
+END IF
 
 ! get element trafo and ensure right-handed coordinate system
 Elem=>FirstElem
@@ -689,7 +696,9 @@ IF(useCurveds)THEN
         CALL abort(__STAMP__,'Splitted meshes can only be read in star cd format or cgns!')
       END SELECT
       CALL Connect2DMesh(FirstSplitElem)
-      IF(doScale.AND..NOT.postScale) CALL ApplyMeshScale(FirstSplitElem)
+      IF( (doShift.AND..NOT.postShift) .OR. (doScale.AND..NOT.postScale) ) THEN
+        CALL ApplyMeshScale(FirstSplitElem, doMeshScale=(doScale.AND..NOT.postScale), doMeshShift=(doShift.AND..NOT.postShift))
+      END IF
       CALL splitToSpline()
       CALL curvedEdgesToSurf(keepExistingCurveds=.FALSE.)
     CASE(4) !!!only in combination with icem cgns meshes!!!!
@@ -781,6 +790,9 @@ END IF !mortarFound
 
 ! apply meshscale before output (default)
 IF(doScale.AND.postScale) CALL ApplyMeshScale(FirstElem)
+IF( (doShift.AND.postShift) .OR. (doScale.AND.postScale) ) THEN
+  CALL ApplyMeshScale(FirstElem, doMeshScale=(doScale.AND.postScale), doMeshShift=(doShift.AND.postShift))
+END IF
 IF(DebugVisu) THEN
   CALL netVisu()  ! visualize mesh
   CALL BCVisu()   ! visualize BC
@@ -1090,18 +1102,21 @@ DO WHILE(ASSOCIATED(Elem))
 END DO
 END SUBROUTINE CheckNodeConnectivity
 
-SUBROUTINE ApplyMeshScale(StartElem)
+SUBROUTINE ApplyMeshScale(StartElem,doMeshScale,doMeshShift)
 !===================================================================================================================================
-! Apply meshscale to existing mesh (called either directly after readin or before output)
+! Apply mesh scaling factor and shift to existing mesh (called either directly after readin or before output)
+! ATTENTION: Scaling is always applied first, then shifting! So `MeshShift` should always be given in scaled coordinates!
 !===================================================================================================================================
 ! MODULES
 USE MOD_Mesh_Vars, ONLY:tElem,tSide,tEdge
-USE MOD_Mesh_Vars, ONLY:N,MeshScale
+USE MOD_Mesh_Vars, ONLY:N,MeshScale,MeshShift
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT VARIABLES
 TYPE(tElem),POINTER,INTENT(IN) :: StartElem  ! ?
+LOGICAL,OPTIONAL,INTENT(IN)    :: doMeshScale ! Flag to indicate whether `MeshScale` should be applied
+LOGICAL,OPTIONAL,INTENT(IN)    :: doMeshShift ! Flag to indicate whether `MeshShift` should be applied
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -1110,21 +1125,34 @@ TYPE(tElem),POINTER       :: Elem  ! ?
 TYPE(tSide),POINTER       :: Side  ! ?
 TYPE(tEdge),POINTER       :: Edge  ! ?
 INTEGER                   :: iNode,iEdge  ! ?
+LOGICAL                   :: doScale,doShift ! local flags for optionals
+REAL                      :: MeshScale_loc   ! Contains either MeshScale or Identity operation (*1.)
+REAL                      :: MeshShift_loc(3)! Contains either MeshShift or Identity operation (+0.)
 !===================================================================================================================================
+! Set MeshScale_loc=MeshScale only if doScale=.TRUE., else use identity operation (*1.)
+doScale = .FALSE.
+IF (PRESENT(doMeshScale)) doScale = doMeshScale
+MeshScale_loc = MERGE(MeshScale,1.,doScale)
+
+! Set MeshShift_loc=MeshShift only if doShift=.TRUE., else use identity operation (+0.)
+doShift = .FALSE.
+IF (PRESENT(doMeshShift)) doShift = doMeshShift
+MeshShift_loc(:) = MERGE(MeshShift(:),0.,doShift)
+
 ! make all nodes unique
 Elem=>StartElem
 DO WHILE(ASSOCIATED(Elem))
   ! elem nodes
   DO iNode=1,Elem%nNodes
     IF(Elem%node(iNode)%np%tmp.NE.-11)THEN
-      Elem%node(iNode)%np%x=Elem%node(iNode)%np%x*MeshScale
+      Elem%node(iNode)%np%x=(Elem%node(iNode)%np%x*MeshScale_loc)+MeshShift_loc
       Elem%node(iNode)%np%tmp=-11
     END IF
   END DO
   ! curved elem nodes
   DO iNode=1,Elem%nCurvedNodes
     IF(Elem%curvedNode(iNode)%np%tmp.NE.-11)THEN
-      Elem%curvedNode(iNode)%np%x=Elem%curvedNode(iNode)%np%x*MeshScale
+      Elem%curvedNode(iNode)%np%x=(Elem%curvedNode(iNode)%np%x*MeshScale_loc)+MeshShift_loc
       Elem%curvedNode(iNode)%np%tmp=-11
     END IF
   END DO
@@ -1134,14 +1162,14 @@ DO WHILE(ASSOCIATED(Elem))
     ! side nodes
     DO iNode=1,Side%nNodes
       IF(side%node(iNode)%np%tmp.NE.-11)THEN
-        side%node(iNode)%np%x=side%node(iNode)%np%x*MeshScale
+        side%node(iNode)%np%x=(side%node(iNode)%np%x*MeshScale_loc)+MeshShift_loc
         side%node(iNode)%np%tmp=-11
       END IF
     END DO
     ! curved side nodes
     DO iNode=1,Side%nCurvedNodes
       IF(side%curvedNode(iNode)%np%tmp.NE.-11)THEN
-        side%curvedNode(iNode)%np%x=side%curvedNode(iNode)%np%x*MeshScale
+        side%curvedNode(iNode)%np%x=(side%curvedNode(iNode)%np%x*MeshScale_loc)+MeshShift_loc
         side%curvedNode(iNode)%np%tmp=-11
       END IF
     END DO
@@ -1153,7 +1181,7 @@ DO WHILE(ASSOCIATED(Elem))
       DO iNode=1,2
         IF(.NOT.ASSOCIATED(edge%node(iNode)%np)) CYCLE
         IF(edge%Node(iNode)%np%tmp.NE.-11)THEN
-          edge%node(iNode)%np%x=edge%node(iNode)%np%x*MeshScale
+          edge%node(iNode)%np%x=(edge%node(iNode)%np%x*MeshScale_loc)+MeshShift_loc
           edge%node(iNode)%np%tmp=-11
         END IF
       END DO
@@ -1161,7 +1189,7 @@ DO WHILE(ASSOCIATED(Elem))
       IF(ASSOCIATED(edge%curvedNode))THEN
         DO iNode=1,N+1
           IF(edge%curvedNode(iNode)%np%tmp.NE.-11)THEN
-            edge%curvedNode(iNode)%np%x=edge%curvedNode(iNode)%np%x*MeshScale
+            edge%curvedNode(iNode)%np%x=(edge%curvedNode(iNode)%np%x*MeshScale_loc)+MeshShift_loc
             edge%curvedNode(iNode)%np%tmp=-11
           END IF
         END DO
