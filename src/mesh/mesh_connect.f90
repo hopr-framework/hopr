@@ -13,7 +13,7 @@
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -32,12 +32,12 @@ USE MOD_Globals
 IMPLICIT NONE
 PRIVATE
 !-----------------------------------------------------------------------------------------------------------------------------------
-! GLOBAL VARIABLES 
+! GLOBAL VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! Private Part ---------------------------------------------------------------------------------------------------------------------
 ! Public Part ----------------------------------------------------------------------------------------------------------------------
 INTERFACE Connect
-  MODULE PROCEDURE Connect 
+  MODULE PROCEDURE Connect
 END INTERFACE
 
 INTERFACE Connect2DMesh
@@ -81,7 +81,7 @@ LOGICAL,INTENT(IN)        :: deletePeriodic
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tElem),POINTER       :: Elem                                                       ! Local element pointers
 TYPE(tSide),POINTER       :: Side                                                       ! Local side pointers
 TYPE(tSide),POINTER       :: pSide  ! ?
@@ -154,16 +154,16 @@ DO WHILE(ASSOCIATED(Elem))
         !build a dummy side as connection
         Side%tmp2=Side%BC%BCalphaInd  ! vv +/-1 as info and marker for dummy side
         IF(Side%tmp2.GT.0)THEN ! side with positive vv is the master and gets the dummy side
-          CALL getNewSide(pSide,Side%nNodes)  
+          CALL getNewSide(pSide,Side%nNodes)
           DO iNode=1,Side%nNodes
             CALL getNewNode(pSide%Node(iNode)%np)
-            pSide%Node(iNode)%np%x  =Side%Node(iNode)%np%x + VV(:,ABS(Side%tmp2)) 
+            pSide%Node(iNode)%np%x  =Side%Node(iNode)%np%x + VV(:,ABS(Side%tmp2))
             ! Ind of dummy node MUST be negative or zero:
             ! these nodes are duplicate and globaluniquenode uses biggest ind for duplicates
             pSide%Node(iNode)%np%ind=-Side%Node(iNode)%np%ind
           END DO
           pSide%elem=>side%elem
-          side%connection=>pSide 
+          side%connection=>pSide
         END IF
       END IF
     END IF
@@ -262,11 +262,11 @@ END SUBROUTINE Connect
 
 SUBROUTINE ConnectMesh()
 !===================================================================================================================================
-! Connect all sides which can be found by node association. Uses Quicksort 
+! Connect all sides which can be found by node association. Uses Quicksort
 !===================================================================================================================================
 ! MODULES
-USE MOD_Mesh_Vars, ONLY:tElem,tSide,tSidePtr,FirstElem,nInnerSides,nConformingSides
-USE MOD_Mesh_Vars, ONLY:deleteNode
+USE MOD_Mesh_Vars, ONLY:tElem,tSide,tSidePtr,FirstElem,nInnerSides,nConformingSides,MeshMode
+USE MOD_Mesh_Vars, ONLY:deleteNode,copyBC
 USE MOD_SortingTools,ONLY:Qsort1Int,Qsort4Int,MSortNInt
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
@@ -275,7 +275,7 @@ IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tElem),POINTER       :: Elem                                                       ! Local element pointers
 TYPE(tSide),POINTER       :: Side,nSide                                               ! Local side pointers
 TYPE(tSidePtr),POINTER    :: InnerSides(:)   ! ?
@@ -304,7 +304,7 @@ DO WHILE(ASSOCIATED(Elem))
       nInnerSides=nInnerSides+1
       Side%tmp=nInnerSides  !"SideID"
       DO iNode=1,Side%nNodes
-        Side%Node(iNode)%np%tmp=0 
+        Side%Node(iNode)%np%tmp=0
       END DO
     ELSE
       !adjust oriented nodes for BCs
@@ -317,7 +317,7 @@ DO WHILE(ASSOCIATED(Elem))
       nInnerSides=nInnerSides+1
       Side%tmp=nInnerSides  !"SideID"
       DO iNode=1,Side%nNodes
-        Side%connection%Node(iNode)%np%tmp=0 !use dummy nodes! 
+        Side%connection%Node(iNode)%np%tmp=0 !use dummy nodes!
       END DO
     END IF
     Side=>Side%nextElemSide
@@ -329,7 +329,7 @@ ALLOCATE(InnerSides(nInnerSides))
 DO iSide=1,nInnerSides
   NULLIFY(InnerSides(iSide)%sp)
 END DO
-ALLOCATE(SideConnect(5,nInnerSides)) 
+ALLOCATE(SideConnect(5,nInnerSides))
 SideConnect=0
 ! make a list of innersides and set unique node IDs (%np%tmp)
 ! and make a list of side node ids (SideConnect(iSide,:)1:4 --> nodeids, 5: SideID
@@ -369,7 +369,7 @@ DO WHILE(ASSOCIATED(Elem))
       iSide=Side%tmp
       !put into side list
       InnerSides(iSide)%sp=>Side
-      !Set Unique node IDs of periodic side dummy !! 
+      !Set Unique node IDs of periodic side dummy !!
       DO iNode=1,Side%nNodes
         IF(Side%connection%Node(iNode)%np%tmp.EQ.0)THEN
           NodeID=NodeID+1
@@ -396,7 +396,7 @@ DO iSide=1,nInnerSides-1
   IF(ASSOCIATED(Side%Connection).AND.(Side%tmp2.EQ.0)) CYCLE ! already connected side
   ! now compare Side Node IDs
   IF(SUM(ABS(SideConnect(1:4,iSide+1)-SideConnect(1:4,iSide))).EQ.0)THEN
-    ! Side connection found 
+    ! Side connection found
     counter=counter+2
     nSide=>InnerSides(SideConnect(5,iSide+1))%sp
 
@@ -407,7 +407,7 @@ DO iSide=1,nInnerSides-1
       END DO
       IF(fNode.EQ.0)CALL abort(__STAMP__,'Problem with OrientedNode !')
     ELSEIF(Side%tmp2.LT.0) THEN !only connect from periodic slave side to master side (->nSide has a dummy connection side)
-      ! for adjustorientednodes by pointer association (no tolerance gedoens!) 
+      ! for adjustorientednodes by pointer association (no tolerance gedoens!)
       fNode=0
       DO iNode=1,Side%nNodes
         IF(ASSOCIATED(Side%Node(1)%np,nSide%connection%Node(iNode)%np)) fNode=iNode
@@ -437,7 +437,33 @@ DO iSide=1,nInnerSides-1
     !set connection
     nSide%connection=>Side
     Side%connection=>nSide
-    !adjustorientednodes 
+    ! Inner BC: Sanity check for internal meshes and fix for cubit meshes
+    IF(ASSOCIATED(Side%BC)) THEN
+      ! Check if the current side is an inner BC
+      IF(Side%BC%BCType.EQ.100) THEN
+        ! Check if the connected side has a BC
+        IF(.NOT.ASSOCIATED(nSide%BC)) THEN
+          ! In case of a gambit import (currently used for cubit meshes), copy the BC to the connected side
+          IF(MeshMode.EQ.2) THEN
+            CALL copyBC(Side,nSide)
+          ELSE
+            CALL abort(__STAMP__,' Internal mesh: Error in boundary condition definition, inner BC points to an inner side! BC Index: ', IntInfoOpt=Side%BC%BCIndex)
+          END IF
+        ELSE IF(nSide%BC%BCType.NE.100) THEN
+          CALL abort(__STAMP__,' Error in boundary condition definition, inner BC is connected to another BC!', IntInfoOpt=nSide%BC%BCIndex)
+        END IF
+      END IF
+    ELSE IF(ASSOCIATED(nSide%BC)) THEN
+      ! Same check for the connected side, since it will be cycled after the connection is set
+      IF(nSide%BC%BCType.EQ.100) THEN
+        IF(MeshMode.EQ.2) THEN
+          CALL copyBC(nSide,Side)
+        ELSE
+          CALL abort(__STAMP__,' Internal mesh: Error in boundary condition definition, inner BC points to an inner side! BC Index: ', IntInfoOpt=nSide%BC%BCIndex)
+        END IF
+      END IF
+    END IF
+    !adjustorientednodes
     dominant=(Side%Elem%ind .LT. nSide%Elem%ind)
     IF(dominant) THEN
       DO iNode=1,nSide%nNodes
@@ -468,7 +494,7 @@ END SUBROUTINE ConnectMesh
 
 SUBROUTINE NonconformConnectMesh(reconnect)
 !===================================================================================================================================
-! Connect all non-conforming sides. 
+! Connect all non-conforming sides.
 ! This routine assumes that all conforming sides have already been connected and that all nodes in the mesh are unique.
 !===================================================================================================================================
 ! MODULES
@@ -484,7 +510,7 @@ LOGICAL,INTENT(IN)        :: reconnect
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tElem),POINTER       :: Elem                                                       ! Local element pointers
 TYPE(tSide),POINTER       :: Side,dummySide
 TYPE(tSide),POINTER       :: aSide,bSide,smallSide1,smallSide2,bigSide,tmpSide
@@ -510,7 +536,7 @@ LOGICAL                   :: aFoundEdge(4),bFoundEdge(4),aFoundNode(4)
 ! first count and collect all unconnected sides
 CGNSToCart=(/1,2,4,3/)
 
-! count number of unconnected (potetially non-conforming) sides
+! count number of unconnected (potentially non-conforming) sides
 nNonConformingSides=0
 Elem=>FirstElem
 DO WHILE(ASSOCIATED(Elem))
@@ -695,7 +721,7 @@ DO iSide=1,nNonConformingSides-2
           ind=MAXLOC(edgeLen,1)
           bigSide=>trio(ind)%sp; smallSide1=>trio(next1(ind,3))%sp; smallSide2=>trio(next2(ind,3))%sp
         END IF
-        
+
         ! check which edges of big and small side are identical to determine the mortar type (wheter mortar is in
         !  xi or eta direction), then set the connection
         CALL CommonEdge(bigSide,smallSide1,aFoundEdge)
@@ -728,7 +754,7 @@ DO iSide=1,nNonConformingSides-2
         smallSide2%connection=>bigSide
         smallSide1%MortarType=-bigSide%MortarType
         smallSide2%MortarType=-bigSide%MortarType
-        
+
         SideDone(bigSide%tmp)=.TRUE.
         SideDone(smallSide1%tmp)=.TRUE.
         SideDone(smallSide2%tmp)=.TRUE.
@@ -738,7 +764,7 @@ DO iSide=1,nNonConformingSides-2
   END DO
 END DO
 
-! Find 4->1 interfaces: 
+! Find 4->1 interfaces:
 ! We assume that only sides belonging to a 4-> mortar interface are left in the sidelist
 ! At 4->1 interfaces the center node has exactly 4 neighbour sides, while all other nodes have
 ! more neighbour sides. We want to find the nodes with exactly 4 neighbour sides
@@ -772,7 +798,7 @@ DO iSide=1,nNonConformingSides
   IF(ANY(nFound.EQ.0)) CYCLE
 
   DO kSide=1,nFound(1)
-    checkInd=foundSides(2,kSide,1) 
+    checkInd=foundSides(2,kSide,1)
     bigCorner(1)=foundSides(1,kSide,1)
     bigCorner(2:4)=0
     DO iNode=2,4
@@ -935,7 +961,7 @@ TYPE(tSide),POINTER,INTENT(IN) :: aSide
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tSide),POINTER       :: bSide
 INTEGER                   :: iNode,jNode,jSide  ! ?
 INTEGER                   :: masterNode,slaveNode
@@ -948,7 +974,7 @@ DO iNode=1,aSide%nNodes
 END DO
 ! small sides
 DO jSide=1,aSide%nMortars
-  bSide=>aSide%MortarSide(jSide)%sp 
+  bSide=>aSide%MortarSide(jSide)%sp
   commonNode=.FALSE.
   DO iNode=1,aSide%nNodes
     DO jNode=1,bSide%nNodes
@@ -987,7 +1013,7 @@ INTEGER,INTENT(IN)                   :: nA,nB
 LOGICAL,INTENT(OUT)                  :: aFoundEdge(4)
 LOGICAL,INTENT(OUT),OPTIONAL         :: aFoundNode(4)
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 LOGICAL                              :: tmp(4)
 INTEGER                              :: iNode,jNode  ! ?
 !===================================================================================================================================
@@ -1023,7 +1049,7 @@ TYPE(tSide),POINTER,INTENT(IN)       :: aSide,bSide
 ! OUTPUT VARIABLES
 LOGICAL,INTENT(OUT)                  :: aFoundEdge(4)
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 LOGICAL                              :: aFoundNode(4)
 INTEGER                              :: iNode,jNode  ! ?
 !===================================================================================================================================
@@ -1059,13 +1085,13 @@ TYPE(tElem),POINTER,INTENT(IN)       :: aElem,bElem
 ! OUTPUT VARIABLES
 INTEGER,INTENT(OUT)                  :: aLocSide,bLocSide
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tSide),POINTER                  :: aSide,bSide
 !===================================================================================================================================
 aLocSide=0
 aSide=>aElem%firstSide
 DO WHILE(ASSOCIATED(aSide))
-  aLocSide=aLocSide+1 
+  aLocSide=aLocSide+1
   bLocSide=0
   bSide=>bElem%firstSide
   DO WHILE(ASSOCIATED(bSide))
@@ -1098,7 +1124,7 @@ END SUBROUTINE CommonElementSide
 
 SUBROUTINE Connect2DMesh(firstElem_in)
 !===================================================================================================================================
-! Connect all side edges (2D) which can be found by node association. Uses Quicksort 
+! Connect all side edges (2D) which can be found by node association. Uses Quicksort
 !===================================================================================================================================
 ! MODULES
 USE MOD_Mesh_Vars, ONLY:tElem,tSide,tSidePtr
@@ -1111,7 +1137,7 @@ TYPE(tElem),POINTER,INTENT(IN)       :: FirstElem_in   ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 INTEGER                :: i,iSide,nEdges  ! ?
 TYPE(tElem),POINTER    :: aElem   ! ?
 TYPE(tSide),POINTER    :: aSide   ! ?
@@ -1123,7 +1149,7 @@ aElem=>firstElem_in
 DO WHILE(ASSOCIATED(aElem))
   nEdges=nEdges+aElem%nNodes
   aElem=>aElem%nextElem
-END DO  
+END DO
 
 !build up connect, new style!!
 ALLOCATE(Edges(nEdges),EdgeConnect(nEdges,3))
@@ -1144,7 +1170,7 @@ DO WHILE(ASSOCIATED(aElem))
     aSide=>aSide%nextElemSide
   END DO
   aElem=>aElem%nextElem
-END DO  
+END DO
 CALL Qsort2Int(EdgeConnect)
 ! only local 2D connect is needed
 DO iSide=2,nEdges
