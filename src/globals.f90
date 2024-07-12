@@ -132,8 +132,19 @@ REAL,OPTIONAL,INTENT(IN)                     :: RealInfoOpt     ! Error info (re
 INTEGER                           :: IntInfo         ! Error info (integer)
 REAL                              :: RealInfo        ! Error info (real)
 !===================================================================================================================================
-IntInfo  = MERGE(IntInfoOpt ,999 ,PRESENT(IntInfoOpt) )
-RealInfo = MERGE(RealInfoOpt,999.,PRESENT(RealInfoOpt))
+
+IF(PRESENT(IntInfoOpt))THEN
+  IntInfo=IntInfoOpt
+ELSE
+  IntInfo=999
+END IF
+
+IF(PRESENT(RealInfoOpt))THEN
+  RealInfo=RealInfoOpt
+ELSE
+  RealInfo=999.
+END IF
+
 WRITE(UNIT_stdOut,*)
 WRITE(UNIT_stdOut,*)'_____________________________________________________________________________'
 WRITE(UNIT_stdOut,*)'Program abort caused in File : ',TRIM(SourceFile),' Line ',SourceLine

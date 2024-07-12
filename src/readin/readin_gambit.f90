@@ -12,7 +12,7 @@
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -31,7 +31,7 @@ USE MOD_Globals
 IMPLICIT NONE
 PRIVATE
 !-----------------------------------------------------------------------------------------------------------------------------------
-! GLOBAL VARIABLES 
+! GLOBAL VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! Private Part ---------------------------------------------------------------------------------------------------------------------
 ! Public Part ----------------------------------------------------------------------------------------------------------------------
@@ -66,7 +66,7 @@ IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tNode),POINTER    :: actualNode   ! ?
 TYPE(tElem),POINTER    :: actualElem  ! ?
 TYPE(tSide),POINTER    :: aSide   ! ?
@@ -138,7 +138,7 @@ DO iFile=1,nMeshFiles
       READ(104,*)dummy1,nodeCoords(1:meshDim,iNode)
     END DO
     DO i = 1, 2                                                               ! Header weglesen
-      READ(104,*)                                                             
+      READ(104,*)
     END DO
   END IF ! useBinary
   ! Read elements
@@ -152,7 +152,7 @@ DO iFile=1,nMeshFiles
   END IF
   ! Read element connectivity
   ALLOCATE(iDummyArray2(nElems,10),iDummyArray3(nElems))
-  IF(useBinary)THEN 
+  IF(useBinary)THEN
     READ(104)iDummyArray2
     READ(104)iDummyArray3
   ELSE
@@ -202,8 +202,8 @@ DO iFile=1,nMeshFiles
   END DO
   actualElem=>firstElem
   DO WHILE(ASSOCIATED(actualElem))
-    IF (actualElem%ind .GT.0) THEN 
-      elems(actualElem%ind)%ep=>actualElem 
+    IF (actualElem%ind .GT.0) THEN
+      elems(actualElem%ind)%ep=>actualElem
     END IF
     actualElem=>actualElem%nextElem
   END DO
@@ -211,7 +211,7 @@ DO iFile=1,nMeshFiles
   DO iZone = 1, nZones
     iGlZone=iGlZone+1
     IF (iGlZone .GT. nZones) &
-      CALL abort(__STAMP__,'inconsistent numer of Zones in readGambit',999,999.)
+      CALL abort(__STAMP__,'inconsistent number of Zones in readGambit',999,999.)
     IF(useBinary)THEN
       READ(104) dummy1
     ELSE
@@ -252,7 +252,7 @@ DO iFile=1,nMeshFiles
       DO i = 1, 2                                                                        ! Header weglesen
         READ(104,*)
       END DO
-      READ(104,'(A255)') strBC                                                         ! Read line    
+      READ(104,'(A255)') strBC                                                         ! Read line
     END IF ! useBinary
     foundBC=.FALSE.
     DO i=1,nUserDefinedBoundaries
@@ -261,7 +261,7 @@ DO iFile=1,nMeshFiles
         strBCName=TRIM(ADJUSTL(strBC(1:dummy1+LEN(TRIM(BoundaryName(i))))))  ! Get the boundary name
         ! Check if it is really the same BC and not a partial match
         IF(TRIM(strBCName).NE.TRIM(BoundaryName(i))) CYCLE
-        foundBC=.TRUE. 
+        foundBC=.TRUE.
         BCType     = BoundaryType(i,1)
         curveIndex = BoundaryType(i,2)
         BCState    = BoundaryType(i,3)
