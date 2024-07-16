@@ -395,7 +395,7 @@ END IF !PostDeform
 ConformConnect=GETLOGICAL('ConformConnect','.TRUE.') ! Fast connect for conform mesh
 
 ! build connect of edges and vertices:
-generateFEMconnectivity=GETLOGICAL('generateFEMconnectivity','.FALSE.') 
+generateFEMconnectivity=GETLOGICAL('generateFEMconnectivity','.FALSE.')
 ! Elem Check
 checkElemJacobians=GETLOGICAL('checkElemJacobians','.TRUE.')
 jacobianTolerance=GETREAL('jacobianTolerance','1.E-16')
@@ -789,7 +789,6 @@ IF(mortarFound) THEN
 END IF !mortarFound
 
 ! apply meshscale before output (default)
-IF(doScale.AND.postScale) CALL ApplyMeshScale(FirstElem)
 IF( (doShift.AND.postShift) .OR. (doScale.AND.postScale) ) THEN
   CALL ApplyMeshScale(FirstElem, doMeshScale=(doScale.AND.postScale), doMeshShift=(doShift.AND.postShift))
 END IF

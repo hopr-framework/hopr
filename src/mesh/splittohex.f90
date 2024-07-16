@@ -13,7 +13,7 @@
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -32,7 +32,7 @@ USE MOD_Globals
 IMPLICIT NONE
 PRIVATE
 !-----------------------------------------------------------------------------------------------------------------------------------
-! GLOBAL VARIABLES 
+! GLOBAL VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! Private Part ---------------------------------------------------------------------------------------------------------------------
 ! Public Part ----------------------------------------------------------------------------------------------------------------------
@@ -60,7 +60,6 @@ SUBROUTINE SplitAllHexa(nFine)
 USE MOD_Globals
 USE MOD_Mesh_Vars, ONLY:tElem,FirstElem
 USE MOD_Mesh_Vars, ONLY:useCurveds
-USE MOD_Mesh_Basis,ONLY:ElemGeometry
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -69,7 +68,7 @@ INTEGER,INTENT(IN)            :: nFine  ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tElem),POINTER           :: Elem  ! ?
 INTEGER                       :: maxInd,ii  ! ?
 !===================================================================================================================================
@@ -93,7 +92,7 @@ maxInd=0
 Elem=>firstElem      !get maxInd of nodes
 DO WHILE(ASSOCIATED(Elem))
   DO ii=1,Elem%nNodes
-    IF(Elem%node(ii)%np%ind.GT.maxInd) maxInd=Elem%node(ii)%np%ind 
+    IF(Elem%node(ii)%np%ind.GT.maxInd) maxInd=Elem%node(ii)%np%ind
   END DO
   Elem=>Elem%nextElem
 ENDDO
@@ -114,7 +113,6 @@ USE MOD_Globals
 USE MOD_Mesh_Vars, ONLY:tElem,FirstElem
 USE MOD_Mesh_Vars, ONLY:useCurveds
 USE MOD_Mesh_Vars, ONLY:nSplitBoxes,SplitBoxes
-USE MOD_Mesh_Basis,ONLY:ElemGeometry
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -122,9 +120,9 @@ IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
-TYPE(tElem),POINTER           :: Elem  
-INTEGER                       :: maxInd,ii,iBox 
+! LOCAL VARIABLES
+TYPE(tElem),POINTER           :: Elem
+INTEGER                       :: maxInd,ii,iBox
 REAL                          :: xBary(3)
 !===================================================================================================================================
 CALL Timer(.TRUE.)
@@ -149,7 +147,7 @@ DO iBox=1,nSplitBoxes
   Elem=>firstElem      !get maxInd of nodes
   DO WHILE(ASSOCIATED(Elem))
     DO ii=1,Elem%nNodes
-      IF(Elem%node(ii)%np%ind.GT.maxInd) maxInd=Elem%node(ii)%np%ind 
+      IF(Elem%node(ii)%np%ind.GT.maxInd) maxInd=Elem%node(ii)%np%ind
     END DO
     Elem=>Elem%nextElem
   ENDDO
@@ -174,13 +172,12 @@ END SUBROUTINE SplitHexaByBoxes
 
 SUBROUTINE SplitElementsToHex()
 !===================================================================================================================================
-! call routines to split tetra, prism and hexa to hexas. no pyramids allowed!! 
+! call routines to split tetra, prism and hexa to hexas. no pyramids allowed!!
 !===================================================================================================================================
 ! MODULES
 USE MOD_Globals
 USE MOD_Mesh_Vars, ONLY:tElem,FirstElem
 USE MOD_Mesh_Vars, ONLY:useCurveds
-USE MOD_Mesh_Basis,ONLY:ElemGeometry
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -188,7 +185,7 @@ IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tElem),POINTER           :: Elem  ! ?
 INTEGER                       :: maxInd,ii,counter(3)  ! ?
 !===================================================================================================================================
@@ -201,7 +198,7 @@ IF(useCurveds) CALL abort(__STAMP__,'SplitToHex cannot be used with curved eleme
 Elem=>firstElem      !get maxInd of nodes
 DO WHILE(ASSOCIATED(Elem))
   DO ii=1,Elem%nNodes
-    IF(Elem%node(ii)%np%ind.GT.maxInd) maxInd=Elem%node(ii)%np%ind 
+    IF(Elem%node(ii)%np%ind.GT.maxInd) maxInd=Elem%node(ii)%np%ind
   END DO
   Elem=>Elem%nextElem
 ENDDO
@@ -249,7 +246,7 @@ INTEGER, INTENT(IN)            :: M    ! number of elements to refine
 ! OUTPUT VARIABLES
 INTEGER,INTENT(INOUT)          :: maxInd  ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tElem),POINTER       :: aElem,nextElem,prevElem  ! ?
 TYPE(tSide),POINTER       :: Side
 TYPE(tElemPtr)            :: NewElems(0:M-1,0:M-1,0:M-1)  ! ?
@@ -274,23 +271,23 @@ DO i=0,M,M ; DO j=0,M,M; DO l=1,M-1
   CALL GetNewNode(NewNodes(l,i,j)%np,ind=maxInd)
   CALL GetNewNode(NewNodes(i,l,j)%np,ind=maxInd)
   CALL GetNewNode(NewNodes(i,j,l)%np,ind=maxInd)
-  NewNodes(l,i,j)%np%x=sM*(REAL(M-l)*NewNodes(0,i,j)%np%x + REAL(l)*NewNodes(M,i,j)%np%x) 
-  NewNodes(i,l,j)%np%x=sM*(REAL(M-l)*NewNodes(i,0,j)%np%x + REAL(l)*NewNodes(i,M,j)%np%x) 
-  NewNodes(i,j,l)%np%x=sM*(REAL(M-l)*NewNodes(i,j,0)%np%x + REAL(l)*NewNodes(i,j,M)%np%x) 
+  NewNodes(l,i,j)%np%x=sM*(REAL(M-l)*NewNodes(0,i,j)%np%x + REAL(l)*NewNodes(M,i,j)%np%x)
+  NewNodes(i,l,j)%np%x=sM*(REAL(M-l)*NewNodes(i,0,j)%np%x + REAL(l)*NewNodes(i,M,j)%np%x)
+  NewNodes(i,j,l)%np%x=sM*(REAL(M-l)*NewNodes(i,j,0)%np%x + REAL(l)*NewNodes(i,j,M)%np%x)
 END DO; END DO; END DO
 ! midnodes at faces
-DO i=0,M,M; DO k=1,M-1; DO l=1,M-1 
+DO i=0,M,M; DO k=1,M-1; DO l=1,M-1
   CALL GetNewNode(NewNodes(i,k,l)%np,ind=maxInd)
   CALL GetNewNode(NewNodes(k,i,l)%np,ind=maxInd)
   CALL GetNewNode(NewNodes(k,l,i)%np,ind=maxInd)
-  NewNodes(i,k,l)%np%x=sM*(REAL(M-k)*NewNodes(i,0,l)%np%x + REAL(k)*NewNodes(i,M,l)%np%x) 
-  NewNodes(k,i,l)%np%x=sM*(REAL(M-k)*NewNodes(0,i,l)%np%x + REAL(k)*NewNodes(M,i,l)%np%x) 
-  NewNodes(k,l,i)%np%x=sM*(REAL(M-k)*NewNodes(0,l,i)%np%x + REAL(k)*NewNodes(M,l,i)%np%x) 
+  NewNodes(i,k,l)%np%x=sM*(REAL(M-k)*NewNodes(i,0,l)%np%x + REAL(k)*NewNodes(i,M,l)%np%x)
+  NewNodes(k,i,l)%np%x=sM*(REAL(M-k)*NewNodes(0,i,l)%np%x + REAL(k)*NewNodes(M,i,l)%np%x)
+  NewNodes(k,l,i)%np%x=sM*(REAL(M-k)*NewNodes(0,l,i)%np%x + REAL(k)*NewNodes(M,l,i)%np%x)
 END DO; END DO; END DO
 ! inner element nodes
-DO i=1,M-1; DO j=1,M-1; DO k=1,M-1 
+DO i=1,M-1; DO j=1,M-1; DO k=1,M-1
   CALL GetNewNode(NewNodes(i,j,k)%np,ind=maxInd)
-  NewNodes(i,j,k)%np%x=sM*(REAL(M-i)*NewNodes(0,j,k)%np%x + REAL(i)*NewNodes(M,j,k)%np%x) 
+  NewNodes(i,j,k)%np%x=sM*(REAL(M-i)*NewNodes(0,j,k)%np%x + REAL(i)*NewNodes(M,j,k)%np%x)
 END DO; END DO; END DO;
 
 !build new elements
@@ -377,7 +374,7 @@ TYPE(tElem),POINTER,INTENT(INOUT)            :: Elem  ! ?
 ! OUTPUT VARIABLES
 INTEGER,INTENT(INOUT)          :: maxInd  ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tElem),POINTER       :: aElem,nextElem,prevElem  ! ?
 TYPE(tSide),POINTER       :: Side  ! ?
 TYPE(tSidePtr)            :: NewSides(4,6)  ! ?
@@ -517,7 +514,7 @@ INTEGER, INTENT(IN)            :: M    ! number of elements to refine zeta direc
 ! OUTPUT VARIABLES
 INTEGER,INTENT(INOUT)          :: maxInd  ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tElem),POINTER       :: aElem,nextElem,prevElem  ! ?
 TYPE(tSide),POINTER       :: Side  ! ?
 TYPE(tElemPtr)            :: NewElems(3,0:M-1)  ! ?
@@ -549,7 +546,7 @@ END DO
 DO l=1,M-1
   DO i=1,7
     CALL GetNewNode(NewNodes(i,l)%np,ind=maxInd)
-    NewNodes(i,l)%np%x=sM*(REAL(M-l)*NewNodes(i,0)%np%x + REAL(l)*NewNodes(i,M)%np%x) 
+    NewNodes(i,l)%np%x=sM*(REAL(M-l)*NewNodes(i,0)%np%x + REAL(l)*NewNodes(i,M)%np%x)
   END DO
 END DO
 
