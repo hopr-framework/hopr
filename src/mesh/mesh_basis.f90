@@ -121,7 +121,7 @@ SUBROUTINE ElemGeometry(Elem,TrafoOpt,TrafoInvOpt)
 !===================================================================================================================================
 ! Compute the (linear) transformation for each element to its reference element.
 ! This linear transformation starts always from the first element node x_1!!
-! Tranfsormation matrix (jacobi matrix)+Inverse of this mapping and Jacobi determinand of this mapping are computed.
+! Transformation matrix (jacobi matrix)+Inverse of this mapping and Jacobi determinand of this mapping are computed.
 !===================================================================================================================================
 ! MODULES
 USE MOD_Mesh_Vars,ONLY:tElem,tSide,tSidePtr,tBC,tNode,N,jacobianTolerance
@@ -190,7 +190,7 @@ IF(Elem%detT .LE. jacobianTolerance)THEN
   Trafo(:,2)=v1
   CALL INV33(Trafo,TrafoInv,Elem%detT)
   IF(Elem%detT .LE. jacobianTolerance)&
-    CALL abort(__STAMP__,'Element with null-negative detT found! Elem%ind: ',Elem%ind)
+    CALL abort(__STAMP__,'Element with null-negative detT found. Try changing the jacobianTolerance parameter!')
 
   ! Element has wrong orientation rotate it into right-handed system
   Side=>Elem%firstSide
@@ -801,19 +801,19 @@ SUBROUTINE buildFEMconnectivity()
 ! Fill the FEM edge and Vertex connectivity as a pointer datastructure:
 ! We already have unique pointers for geometric "nodes" and geometric "edges" (buildEdges needed before calling this routine!)
 ! If periodic BCs are present, its important that a "FEM vertex" and a "FEM edge"=`LocalEdge` are unique in a topological sense,
-! which is different to the geometrical uniqueness. 
-! For example, a 1 element fully periodic domain has 8 unique nodes, but only one FEM vertex, 
-! and it has 12 unique edges geometrically, but only 3 FEM edges (3 x (4 geometric edges)). 
+! which is different to the geometrical uniqueness.
+! For example, a 1 element fully periodic domain has 8 unique nodes, but only one FEM vertex,
+! and it has 12 unique edges geometrically, but only 3 FEM edges (3 x (4 geometric edges)).
 !
-! FEM  connectivity means that each geometric entity (vertex/edge) of an element needs to have a list of all elements 
+! FEM  connectivity means that each geometric entity (vertex/edge) of an element needs to have a list of all elements
 ! which are connected via that entity. There is only one geometric entity  that "owns" this list (=master edge/vertex),
 ! which is then accessed via the `FirstLocalEdge`/`FirstVertex` pointer (not associated for "slave" entities).
-! In this list, there is then a `nextEdge`/`nextVertex` pointer, 
+! In this list, there is then a `nextEdge`/`nextVertex` pointer,
 ! and the number of connections is counted in the `FirstLocalEdge%tmp`/`FirstVertex%tmp`.
 ! First we loop through all element sides which have a periodic neighbor, where we use
 ! the `orientedNodes` to access the neighbors edges and vertices, and add their connection to the pointer list.
 ! Then we loop through all sides again to fill the remaining edge and vertex connectivity into the pointer list.
-! The pointer datastructure will be translated into the hdf5 meshfile data in "WriteMeshToHDF5" routine. 
+! The pointer datastructure will be translated into the hdf5 meshfile data in "WriteMeshToHDF5" routine.
 !===================================================================================================================================
 ! MODULES
   USE MOD_Mesh_Vars,ONLY:tElem,tSide,tEdge,tNode,tEdgePtr,tLocalEdge,tVertex
