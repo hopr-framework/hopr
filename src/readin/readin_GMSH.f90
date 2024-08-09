@@ -13,7 +13,7 @@
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -33,7 +33,7 @@ USE MOD_Mesh_Vars,ONLY:tBC
 IMPLICIT NONE
 PRIVATE
 !-----------------------------------------------------------------------------------------------------------------------------------
-! GLOBAL VARIABLES 
+! GLOBAL VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! Private Part ---------------------------------------------------------------------------------------------------------------------
 ! Public Part ----------------------------------------------------------------------------------------------------------------------
@@ -55,7 +55,7 @@ CONTAINS
 
 FUNCTION GETNNODES(ElementType,bOrd)
 !===================================================================================================================================
-! Get nNodes from Element Type 
+! Get nNodes from Element Type
 !===================================================================================================================================
 ! MODULES
 ! IMPLICIT VARIABLE HANDLING
@@ -117,7 +117,7 @@ IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tNodePtr),POINTER :: Nodes(:)  ! ?
 TYPE(tElemPtr),POINTER :: Elems(:)  ! ?
 TYPE(tElem),POINTER    :: aElem  ! ?
@@ -138,6 +138,10 @@ INTEGER                 :: nPoints, nCurves, nSurf, nVolumes, dummy, nNodesInBlo
 INTEGER                 :: nBCs_Entity, iTag, nElemsPerTag, asciiBinary, BCDim
 INTEGER,ALLOCATABLE     :: MapBCToGmshTag(:)
 REAL                    :: dummy_array(1:100), version
+CHARACTER(LEN=1000)     :: line
+CHARACTER(LEN=255),ALLOCATABLE  :: line_values(:)
+INTEGER                 :: num_values, start_position, end_position
+CHARACTER(LEN=*), PARAMETER :: delim = ' '
 !===================================================================================================================================
 WRITE(UNIT_stdOut,'(132("~"))')
 CALL Timer(.TRUE.)
@@ -178,7 +182,7 @@ DO iFile=1,nMeshFiles
         found=.FALSE.
         DO i=1,nUserDefinedBoundaries
           IF(INDEX(TRIM(BCName),TRIM(BoundaryName(i))).NE.0) THEN
-            found=.TRUE. 
+            found=.TRUE.
             BCFound(i)=.TRUE.
             MapBC(iBC)=i
             WRITE(*,*)'BC found: ',TRIM(BCName),' -->  mapped to: ',TRIM(BoundaryName(i)), ' with index: ', i
@@ -247,7 +251,7 @@ DO iFile=1,nMeshFiles
         ! Mapping of gmsh boundary counter to boundary names given by user in hopr.ini
         DO i=1,nUserDefinedBoundaries
           IF(INDEX(TRIM(BCName),TRIM(BoundaryName(i))).NE.0) THEN
-            found=.TRUE. 
+            found=.TRUE.
             BCFound(i)=.TRUE.
             WRITE(*,*)'BC found: ',TRIM(BCName),' -->  mapped to: ',TRIM(BoundaryName(i)), ' with index: ', i
             ! Mapping of boundary counter to physical tag, defined (automatically) in gmsh
@@ -309,9 +313,37 @@ DO iFile=1,nMeshFiles
         ! Format: surfaceTag minX minY minZ maxX maxY maxZ numPhysicalTags physicalTag numBoundingCurves curveTag
         ! Skipping the surfaceTag (equivalent to the i-variable) and the bounding box; nBCs_Entity defines the number of physicalTag(s);
         ! skipping the following bounding curves
-        READ(104,*) dummy, dummy_array(1:6), nBCs_Entity, BCTag, dummy, dummy_array(1:dummy)
-        ! Currently a surface cannot belong to multiple BCs
-        IF(nBCs_Entity.GT.1) CALL abort(__STAMP__, 'ERROR: Surface is overdefined with more than one BC!')
+        ! Read-in of the whole line as a string to be able to support a zero number of physical tags (meaning that a surface does not have be a boundary)
+        READ(104,'(A)') line
+        ! Count the number of values in the string
+        start_position  = 1
+        num_values = 0
+        DO
+          ! Find the delimiter
+          end_position = INDEX(line(start_position:), delim)
+          num_values = num_values + 1
+          IF (end_position.EQ.0) THEN
+            EXIT
+          ELSE
+            start_position = start_position + end_position
+          END IF
+        END DO
+        ! Store each value as a separate string
+        ALLOCATE(line_values(num_values))
+        CALL SPLIT_STRING(line,delim,line_values(1:num_values),num_values)
+        ! Convert the number of physical tags (BCs per surface) to a real
+        READ(line_values(8),*) nBCs_Entity
+        ! Convert the corresponding BCTag to a real
+        IF(nBCs_Entity.EQ.1) THEN
+          READ(line_values(9),*) BCTag
+        ELSEIF(nBCs_Entity.EQ.0) THEN
+          BCTag = 0
+          MapEntityToBC(i) = 0
+        ELSE
+          ! Currently a surface cannot belong to multiple BCs
+          CALL abort(__STAMP__, 'ERROR: Surface is overdefined with more than one BC!')
+        END IF
+        DEALLOCATE(line_values)
         ! Compare the BCTag of the surface with the BCTag of the BC and map surface index to BC index
         DO iBC=1,nBCs_GMSH
           IF(MapBCToGmshTag(iBC).EQ.BCTag) THEN
@@ -319,7 +351,7 @@ DO iFile=1,nMeshFiles
           END IF
         END DO
       END DO
-      ! Every surface has to be associated with a BC
+      ! Every surface has to be associated with a BC or at least set to zero
       IF(ANY(MapEntityToBC.EQ.-1)) CALL abort(__STAMP__, 'ERROR: Surface is not associated with a BC!')
     END IF
     ! Skip volume definitions
@@ -431,7 +463,7 @@ DO iFile=1,nMeshFiles
       aSide=>aSide%nextElemSide
     END DO
   END DO
-  
+
   ! Build Pointer list from elements
   aElem=>Elems(1)%ep
   firstElem=>aElem
@@ -442,7 +474,7 @@ DO iFile=1,nMeshFiles
   END DO
   CLOSE(104)
 ! remember to delete all stuff (BCList etc.
-  DO iNode=1,nNodes !throw away  
+  DO iNode=1,nNodes !throw away
     IF (Nodes(iNode)%np%refCount.EQ.0) DEALLOCATE(Nodes(iNode)%np)
     DO WHILE(ASSOCIATED(BCList(iNode)%bp))
       aBCTemp=>BCList(iNode)%bp
@@ -485,12 +517,12 @@ INTEGER,INTENT(IN)         :: tags(nTags)  ! ?
 ! OUTPUT VARIABLES
 TYPE(tBCTempPtr),POINTER,INTENT(INOUT) :: BCList(:)  ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 INTEGER                    :: i,iBC,minInd  ! ?
 TYPE(tBCTemp),POINTER      :: aBCTemp  ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
 
-IF(GMSH_TYPES(1,gmshElemType).LE.2) RETURN ! filter out lines 
+IF(GMSH_TYPES(1,gmshElemType).LE.2) RETURN ! filter out lines
 ! GMSH Tags: 1=physical group (aka BoundaryCondition), 2=geometric entitry(edge,face,vol) element belongs to, 3=mesh partition
 ! element belongs to, 4+=partition ids (negative partition = ghost cells)
 
@@ -551,12 +583,15 @@ INTEGER,INTENT(IN)         :: nodeInds(GMSH_TYPES(1,gmshElemType))  !> only take
 ! OUTPUT VARIABLES
 TYPE(tBCTempPtr),POINTER,INTENT(INOUT) :: BCList(:)  !> Pointer structure, associating nodes with a boundary
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 INTEGER                    :: i,iBC,minInd
 TYPE(tBCTemp),POINTER      :: aBCTemp
 !-----------------------------------------------------------------------------------------------------------------------------------
 
 iBC = MapEntityToBC(iTag)
+
+! Skip surfaces without a BC
+IF(iBC.EQ.0) RETURN
 
 ALLOCATE(aBCTemp)
 DO i=1,GMSH_TYPES(1,gmshElemType) !primary nodes
@@ -611,13 +646,13 @@ INTEGER,INTENT(IN)                  :: nodeInds(GMSH_TYPES(3,gmshElemType))
 TYPE(tElemPtr),INTENT(OUT) :: elem
 INTEGER, INTENT(INOUT)     :: elemCount
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 INTEGER                    :: i
 !-----------------------------------------------------------------------------------------------------------------------------------
 
 IF (bOrd .EQ.0) THEN
   bOrd = GMSH_TYPES(4,gmshElemType)+1
-  IF ((bOrd .NE. N+1).AND.useCurveds.AND..NOT.rebuildCurveds) & 
+  IF ((bOrd .NE. N+1).AND.useCurveds.AND..NOT.rebuildCurveds) &
     CALL abort(__STAMP__,'Mesh boundary order not equal to boundary order from ini file! Mesh order: ',N+1)
   CALL getGMSHVolumeMapping()
 ELSE
@@ -639,7 +674,7 @@ DO i=1,elem%ep%nNodes
 CASE(3)
     IF(MeshDim.EQ.2) THEN
       elem%ep%node(i)%np => Nodes(nodeInds(i))%NP
-    ELSE 
+    ELSE
       CALL abort(__STAMP__,'Unknown element type, 3D element with 3 nodes...!')
     END IF
 CASE(4)
@@ -687,5 +722,40 @@ IF(useCurveds .AND. (bOrd.GT.2) .AND.(.NOT.rebuildCurveds))THEN
 END IF
 END SUBROUTINE buildElem
 
+
+!==================================================================================================================================
+!> Splits the supplied string along a delimiter.
+!> This function is copied from the fortran output library (foul). For the full version of this library see:
+!>   http://foul.sourceforge.net
+!> License: GNU General Public License version 3.0 (GPLv3)
+!==================================================================================================================================
+SUBROUTINE split_string(string, delimiter, substrings, substring_count)
+! MODULES
+IMPLICIT NONE
+! INPUT / OUTPUT VARIABLES
+CHARACTER (LEN = *), INTENT(IN)  :: string          !< Variable-length character string that is to be split
+CHARACTER,           INTENT(IN)  :: delimiter       !< Character along which to split
+CHARACTER (LEN = *), INTENT(OUT) :: substrings(*)   !< Array of substrings generated by split operation
+INTEGER,             INTENT(OUT) :: substring_count !< Number of substrings generated
+!----------------------------------------------------------------------------------------------------------------------------------
+! LOCAL VARIABLES
+INTEGER :: start_position, end_position
+!==================================================================================================================================
+start_position  = 1
+substring_count = 0
+
+DO
+  end_position = INDEX(string(start_position:), delimiter)
+  substring_count = substring_count + 1
+
+  IF (end_position == 0) THEN
+    substrings(substring_count) = string(start_position:)
+    EXIT
+  ELSE
+    substrings(substring_count) = string(start_position : start_position + end_position - 2)
+    start_position = start_position + end_position
+  END IF
+END DO
+END SUBROUTINE split_string
 
 END MODULE MOD_Readin_GMSH
