@@ -51,6 +51,8 @@ jobs:
         rpm -U --quiet p7zip-16.02-20.el8.x86_64.rpm
         rpm -U --quiet p7zip-plugins-16.02-20.el8.x86_64.rpm
         yum install -y epel-release
+        yum install -y 'dnf-command(config-manager)'
+        yum config-manager --set-enabled powertools
         yum install -y make libasan gcc-gfortran gcc-c++ unzip openblas-devel lapack-devel zlib-devel tree fuse-sshfs fuse-libs file
         groupadd fuse
         user="$(whoami)"
