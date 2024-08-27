@@ -12,7 +12,7 @@
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -31,7 +31,7 @@ USE MOD_Globals
 IMPLICIT NONE
 PRIVATE
 !-----------------------------------------------------------------------------------------------------------------------------------
-! GLOBAL VARIABLES 
+! GLOBAL VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! Private Part ---------------------------------------------------------------------------------------------------------------------
 TYPE tCartesianMesh ! provides data structure for Cartesian mesh
@@ -497,7 +497,7 @@ IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tCartesianMesh),POINTER :: CartMesh  ! ?
 TYPE(tNodePtr)               :: CornerNode(8)   ! ?
 TYPE(tNodePtr),POINTER       :: Mnodes(:,:,:)   ! ?
@@ -533,9 +533,9 @@ DO iZone=1,nZones
     END SELECT
     IF(ABS(CartMesh%l0(i_Dim)) .LT. PP_RealTolerance ) THEN !l0 = 0 = inactive
       IF(ABS(CartMesh%factor(i_Dim)) .LT. PP_RealTolerance ) THEN !fac= 0 = equidistant
-        fac(i_Dim)=1.       
+        fac(i_Dim)=1.
       ELSE ! stretched, (nElem,f) given
-        fac(i_Dim)=(ABS(CartMesh%factor(i_Dim)))**(SIGN(1.,CartMesh%factor(i_Dim))) ! sign for direction 
+        fac(i_Dim)=(ABS(CartMesh%factor(i_Dim)))**(SIGN(1.,CartMesh%factor(i_Dim))) ! sign for direction
       END IF
     ELSE !l0 active
       dx(i_Dim)=e1(i_Dim)/ABS(cartMesh%l0(i_Dim)) ! l/l0
@@ -543,22 +543,22 @@ DO iZone=1,nZones
          CALL abort(__STAMP__,'Stretching error, length l0 longer than grid region, in direction')
       END IF
       IF(ABS(CartMesh%factor(i_Dim)) .LT. PP_RealTolerance ) THEN ! fac=0 , (nElem,l0) given, fac calculated
-        ! 
+        !
       ELSE ! (factor, l0) given, change nElems
-        fac(i_Dim)=(ABS(CartMesh%factor(i_Dim)))**(SIGN(1.,CartMesh%factor(i_Dim)*CartMesh%l0(i_Dim))) ! sign for direction 
+        fac(i_Dim)=(ABS(CartMesh%factor(i_Dim)))**(SIGN(1.,CartMesh%factor(i_Dim)*CartMesh%l0(i_Dim))) ! sign for direction
         IF(fac(i_Dim) .NE. 1.) THEN
-          CartMesh%nElems(i_Dim)=NINT(LOG(1.-dx(i_Dim)*(1.-fac(i_Dim))) / LOG(fac(i_Dim))) !nearest Integer 
+          CartMesh%nElems(i_Dim)=NINT(LOG(1.-dx(i_Dim)*(1.-fac(i_Dim))) / LOG(fac(i_Dim))) !nearest Integer
         ELSE
           CartMesh%nElems(i_Dim)=NINT(dx(i_Dim))
         END IF
         IF (CartMesh%nElems(i_Dim) .LT. 1) CartMesh%nElems(i_Dim)=1
         WRITE(UNIT_stdOut,*)'   -Element number in dir',i_Dim,'changed from', &
-                              nElems(i_Dim),'to',CartMesh%nElems(i_Dim) 
-        nElems(i_Dim)=CartMesh%nElems(i_Dim) 
+                              nElems(i_Dim),'to',CartMesh%nElems(i_Dim)
+        nElems(i_Dim)=CartMesh%nElems(i_Dim)
       END IF
-      IF(nElems(i_Dim).EQ. 1) THEN 
-        fac(i_Dim)=1.0          
-      ELSEIF(nElems(i_Dim).EQ. 2) THEN 
+      IF(nElems(i_Dim).EQ. 1) THEN
+        fac(i_Dim)=1.0
+      ELSEIF(nElems(i_Dim).EQ. 2) THEN
         fac(i_Dim)=dx(i_Dim)-1.
       ELSE !nElems > 2
         fac(i_Dim)=dx(i_Dim)/nElems(i_Dim) !start value for Newton iteration
@@ -576,7 +576,7 @@ DO iZone=1,nZones
           fac(i_Dim)=fac(i_Dim)**SIGN(1.,CartMesh%l0(i_Dim)) ! sign for direction
         END IF
       END IF
-      WRITE(UNIT_stdOut,*)'   -stretching factor in dir',i_Dim,'is now', fac(i_Dim)  
+      WRITE(UNIT_stdOut,*)'   -stretching factor in dir',i_Dim,'is now', fac(i_Dim)
     END IF
 
     IF( ABS((nElems(i_Dim)-1.)*LOG(fac(i_Dim))/LOG(10.)) .GE. 4. )CALL abort(__STAMP__,'Stretching error, length ratio > 1.0E4 in direction')
@@ -624,7 +624,7 @@ DO iZone=1,nZones
   DO l=0,ne(1)
 !    x1(1)=REAL(l)/REAL(nSplit(1))
     x1(2)=x2(2)
-    dx(2)=e1(2) 
+    dx(2)=e1(2)
     DO m=0,ne(2)
 !      x1(2)=REAL(m)/REAL(nSplit(2))
       x1(3)=x2(3)
@@ -668,9 +668,9 @@ DO iZone=1,nZones
           IF(InnerElemStretch)THEN
             DO i=0,Ngeo; DO j=0,Ngeo; DO k=0,Ngeo
               CurvedNode(i,j,k)%np=>Mnodes(l+i,m+j,n+k)%np
-            END DO; END DO; END DO; 
+            END DO; END DO; END DO;
             CALL GetNewCurvedHexahedron(CurvedNode,Ngeo,iZone)
-          ELSE 
+          ELSE
             CALL GetNewHexahedron(CornerNode)
           END IF
         CASE DEFAULT
@@ -683,7 +683,7 @@ DO iZone=1,nZones
   DO l=0,ne(1),Ngeo
     DO m=0,ne(2),Ngeo
       DO n=0,ne(3),Ngeo
-        Mnodes(l,m,n)%np%tmp=0 
+        Mnodes(l,m,n)%np%tmp=0
         IF(n.EQ.0) Mnodes(l,m,n)%np%tmp=Mnodes(l,m,n)%np%tmp+1 !zeta minus
         IF(m.EQ.0) Mnodes(l,m,n)%np%tmp=Mnodes(l,m,n)%np%tmp+20 !eta minus
         IF(l.EQ.ne(1) ) Mnodes(l,m,n)%np%tmp=Mnodes(l,m,n)%np%tmp+300 !xi plus
