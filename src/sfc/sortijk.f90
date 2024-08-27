@@ -13,7 +13,7 @@
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -32,7 +32,7 @@ MODULE MOD_SortIJK
 IMPLICIT NONE
 PRIVATE
 !-----------------------------------------------------------------------------------------------------------------------------------
-! GLOBAL VARIABLES 
+! GLOBAL VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! Private Part ---------------------------------------------------------------------------------------------------------------------
 TYPE tBox
@@ -53,10 +53,10 @@ PUBLIC::SortElemsByCoords
 CONTAINS
 SUBROUTINE SortElemsByCoords(nElems,ElemBary,nElems_IJK,Elem_IJK)
 !===================================================================================================================================
-! The Element barycenters are sorted in x,y,z directions, to find out about structured cartesian parts of the mesh 
-! (for example extrusion in z direction...), Element indices /i,j,k) for each element are set, 
+! The Element barycenters are sorted in x,y,z directions, to find out about structured cartesian parts of the mesh
+! (for example extrusion in z direction...), Element indices /i,j,k) for each element are set,
 !  where unstructured 3D meshes have indices (1:nElems,1,1)
-! and 2.5D unstructured mesh for example (1:nElems/nz,1,1:nz) and fully structured domains have (1:nElems/ny/nz,1:ny,1:nz) 
+! and 2.5D unstructured mesh for example (1:nElems/nz,1,1:nz) and fully structured domains have (1:nElems/ny/nz,1:ny,1:nz)
 !===================================================================================================================================
 ! MODULES
 USE MOD_globals,ONLY:UNIT_stdOut,Timer
@@ -173,7 +173,7 @@ CASE(1)
     nElems_IJK(3)=nElems/nElems_IJK(3)
     nElems_IJK(1)=nElems/nElems_IJK(3)
     nElems_IJK(2)=1
-  END SELECT !dir 
+  END SELECT !dir
 CASE(2) ! checked
   ! in this case, one direction has only one element
   DO dir=1,3
@@ -189,15 +189,15 @@ CASE(2) ! checked
   CASE(3)
     nElems_IJK(3)=1
     nElems_IJK(1:2)=(/nElems_IJK(2),nElems_IJK(1)/)
-  END SELECT !dir 
-CASE(3)  
+  END SELECT !dir
+CASE(3)
   !nx'=ny*nz
   !ny'=nx*nz
   !nz'=nx*ny
   !nx=sqrt(ny'/nx'*nz') =sqrt(nx*nz*nx*ny/(ny*nz))
   !ny=nz'/nx
   !nz=ny'/nx
-  nElems_IJK(1)=NINT(SQRT(REAL(nElems_IJK(2)*nElems_IJK(3)/nElems_IJK(1))))
+  nElems_IJK(1)=NINT(SQRT(REAL(nElems_IJK(2)*REAL(nElems_IJK(3))/REAL(nElems_IJK(1)))))
   nElems_IJK(2:3)=(/nElems_IJK(3),nElems_IJK(2)/)/nElems_IJK(1)
 END SELECT !nstructdirs
 
@@ -225,7 +225,7 @@ DO kk=1,nElems_IJK(3)
   DO jj=1,nElems_IJK(2)
     DO ii=1,nElems_IJK(1)
       iElem=iElem+1
-      Elem_IJK(IDlist(iElem),:)=(/ii,jj,kk/) 
+      Elem_IJK(IDlist(iElem),:)=(/ii,jj,kk/)
     END DO
   END DO
 END DO
@@ -270,7 +270,7 @@ INTEGER           :: nBits  ! ?
 !===================================================================================================================================
 box%mini = mini
 blen = maxi - mini
-nbits = (bit_size(box%intfact)-1)/3 
+nbits = (bit_size(box%intfact)-1)/3
 box%intfact = 2**nbits-1
 box%spacing = REAL(box%intfact)/blen
 END SUBROUTINE setBoundingBox2
