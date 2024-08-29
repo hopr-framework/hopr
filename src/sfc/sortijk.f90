@@ -197,7 +197,7 @@ CASE(3)
   !nx=sqrt(ny'/nx'*nz') =sqrt(nx*nz*nx*ny/(ny*nz))
   !ny=nz'/nx
   !nz=ny'/nx
-  nElems_IJK(1)=NINT(SQRT(REAL(nElems_IJK(2)*REAL(nElems_IJK(3))/REAL(nElems_IJK(1)))))
+  nElems_IJK(1)=NINT(SQRT(REAL(nElems_IJK(2))*REAL(nElems_IJK(3))/REAL(nElems_IJK(1))))
   nElems_IJK(2:3)=(/nElems_IJK(3),nElems_IJK(2)/)/nElems_IJK(1)
 END SELECT !nstructdirs
 
