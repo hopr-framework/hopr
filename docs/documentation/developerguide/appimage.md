@@ -35,7 +35,7 @@ Next, download the AppImage executable and run
 
     ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage --desktop-file=../hopr.desktop
 
-If an error is encountered, see the Section {ref}`developerguide/appimage:Troubleshooting` section for a possible solution.
+If an error is encountered, see the Section {ref}`developerguide/appimage:Troubleshooting` for a possible solution.
 The executable should be created in the top-level directory, e.g.,
 
     hopr-2de94ad-x86_64.AppImage

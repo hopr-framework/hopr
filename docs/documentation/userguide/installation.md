@@ -25,7 +25,7 @@ After downloading the binary file, it has to be made executable via
 
     chmod +x hopr-x86_64.AppImage
 
-before being used.
+before being used. If an error occurs when trying to execute the binary, check Section {ref}`developerguide/appimage:Troubleshooting` for a possible solution.
 
 The following table shows that there is no apparent drop in performance when using a pre-compiled executable:
 ```{table} Performance test with pre-compiled executable: Cart-2D 665600 #Elements
