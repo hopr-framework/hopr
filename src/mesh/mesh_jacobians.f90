@@ -60,6 +60,7 @@ USE MOD_Basis1D   ,ONLY: LegGaussLobNodesAndWeights
 USE MOD_Basis1D   ,ONLY: PolynomialDerivativeMatrix
 USE MOD_Basis1D   ,ONLY: BarycentricWeights
 USE MOD_Basis1D   ,ONLY: InitializeVandermonde
+USE MOD_Basis1D   ,ONLY: ALMOSTEQUAL
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
@@ -72,7 +73,7 @@ INTEGER              :: iElem,i,iNode  ! ?
 REAL                 :: maxJac,minJac  ! ?
 REAL                 :: xBary(3)
 REAL                 :: scaledJac(nMeshElems)  ! ?
-INTEGER              :: scaledJacStat(0:10)  ! ?
+INTEGER              :: scaledJacStat(0:11)
 TYPE(tElem),POINTER  :: aElem  ! ?
 REAL                 :: xEq(0:N),wBaryEq(0:N)
 REAL                 :: xGL(0:N),wBaryGL(0:N),DGL(0:N,0:N),VdmEqToGL(0:N,0:N),D_EqToGL(0:N,0:N)
@@ -168,15 +169,23 @@ END IF
 scaledJacStat(:)=0
 
 DO iElem=1,nMeshElems
-  i=CEILING(MAX(0.,scaledJac(iElem)*10))
-  scaledJacStat(i)=scaledJacStat(i)+1
+  IF(ALMOSTEQUAL(scaledJac(iElem),1.0))THEN
+    scaledJacStat(11)=scaledJacStat(11)+1
+  ELSE
+    i=CEILING(MAX(0.,scaledJac(iElem)*10))
+    scaledJacStat(i)=scaledJacStat(i)+1
+  END IF ! ALMOSTEQUAL(x,y)
 END DO
 WRITE(Unit_StdOut,'(A)') ' Number of element with scaled Jacobians ranging between:'
-WRITE(Unit_StdOut,'(A)') '   <  0.0  <  0.1  <  0.2  <  0.3  <  0.4  <  0.5  <  0.6  <  0.7  <  0.8  <  0.9  <  1.0 '
-DO i=0,10
-  WRITE(Unit_StdOut,'(I6,1X,A1)',ADVANCE='NO')scaledJacStat(i),'|'
+WRITE(UNIT_stdOut,'(169("─"))')
+WRITE(Unit_StdOut,'(A)')'|       < 0.0 | 0.0  <  0.1 | 0.1  <  0.2 | 0.2  <  0.3 | 0.3  <  0.4 | 0.4  <  0.5 | 0.5  <  0.6 | 0.6  <  0.7 | 0.7  <  0.8 | 0.8  <  0.9 | 0.9  <  1.0 |         1.0 |'
+
+WRITE(Unit_StdOut,'(A)',ADVANCE='NO') '|'
+DO i=0,11
+  WRITE(Unit_StdOut,'(I12,1X,A1)',ADVANCE='NO')scaledJacStat(i),'|'
 END DO
 WRITE(Unit_StdOut,'(A1)')' '
+WRITE(UNIT_stdOut,'(169("─"))')
 
 
 CALL Timer(.FALSE.)

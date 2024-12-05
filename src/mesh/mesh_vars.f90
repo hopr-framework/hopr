@@ -454,6 +454,7 @@ NULLIFY(Elem%Node,&
 NULLIFY(Elem%CurvedNode)
 NULLIFY(Elem%tree)
 NULLIFY(Elem%localEdge)
+NULLIFY(Elem%Vertex)
 Elem%nCurvedNodes  = 0
 Elem%ind           = 0
 Elem%detT          = 0.
