@@ -12,7 +12,7 @@
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -29,44 +29,47 @@ MODULE MOD_Basis_Vars
 IMPLICIT NONE
 PUBLIC
 !-----------------------------------------------------------------------------------------------------------------------------------
-! GLOBAL VARIABLES 
+! GLOBAL VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 
 ! Vandermande and D matrices
-REAL,ALLOCATABLE,TARGET        :: VdM_visu_Tria(:,:)          
-REAL,ALLOCATABLE,TARGET        :: D_visu_Tria(:,:,:)          
-REAL,ALLOCATABLE,TARGET        :: VdM_visu_Quad(:,:)          
-REAL,ALLOCATABLE,TARGET        :: D_visu_Quad(:,:,:)          
-REAL,ALLOCATABLE,TARGET        :: VdM_visu_Tetra(:,:)          
-REAL,ALLOCATABLE,TARGET        :: D_visu_Tetra(:,:,:)          
-REAL,ALLOCATABLE,TARGET        :: VdM_visu_Pyra(:,:)          
-REAL,ALLOCATABLE,TARGET        :: D_visu_Pyra(:,:,:)          
-REAL,ALLOCATABLE,TARGET        :: VdM_visu_Prism(:,:)          
-REAL,ALLOCATABLE,TARGET        :: D_visu_Prism(:,:,:)          
-REAL,ALLOCATABLE,TARGET        :: VdM_visu_Hexa(:,:)          
-REAL,ALLOCATABLE,TARGET        :: D_visu_Hexa(:,:,:)          
+REAL,ALLOCATABLE,TARGET        :: VdM_visu_Tria(:,:)
+REAL,ALLOCATABLE,TARGET        :: D_visu_Tria(:,:,:)
+REAL,ALLOCATABLE,TARGET        :: VdM_visu_Quad(:,:)
+REAL,ALLOCATABLE,TARGET        :: D_visu_Quad(:,:,:)
+REAL,ALLOCATABLE,TARGET        :: VdM_visu_Tetra(:,:)
+REAL,ALLOCATABLE,TARGET        :: D_visu_Tetra(:,:,:)
+REAL,ALLOCATABLE,TARGET        :: VdM_visu_Pyra(:,:)
+REAL,ALLOCATABLE,TARGET        :: D_visu_Pyra(:,:,:)
+REAL,ALLOCATABLE,TARGET        :: VdM_visu_Prism(:,:)
+REAL,ALLOCATABLE,TARGET        :: D_visu_Prism(:,:,:)
+REAL,ALLOCATABLE,TARGET        :: VdM_visu_Hexa(:,:)
+REAL,ALLOCATABLE,TARGET        :: D_visu_Hexa(:,:,:)
 
 ! Tensorproduct mappings + inverse mappings for all elements
-INTEGER,ALLOCATABLE,TARGET     :: TriaMap(:,:) 
+INTEGER,ALLOCATABLE,TARGET     :: TriaMap(:,:)
 INTEGER,ALLOCATABLE,TARGET     :: TriaMapInv(:,:)
-INTEGER,ALLOCATABLE,TARGET     :: QuadMap(:,:) 
+INTEGER,ALLOCATABLE,TARGET     :: QuadMap(:,:)
 INTEGER,ALLOCATABLE,TARGET     :: QuadMapInv(:,:)
-INTEGER,ALLOCATABLE,TARGET     :: TetraMap(:,:) 
+INTEGER,ALLOCATABLE,TARGET     :: TetraMap(:,:)
 INTEGER,ALLOCATABLE,TARGET     :: TetraMapInv(:,:,:)
-INTEGER,ALLOCATABLE,TARGET     :: PyraMap(:,:) 
+INTEGER,ALLOCATABLE,TARGET     :: PyraMap(:,:)
 INTEGER,ALLOCATABLE,TARGET     :: PyraMapInv(:,:,:)
-INTEGER,ALLOCATABLE,TARGET     :: PrismMap(:,:) 
+INTEGER,ALLOCATABLE,TARGET     :: PrismMap(:,:)
+INTEGER,ALLOCATABLE,TARGET     :: PrismMap2(:,:)
 INTEGER,ALLOCATABLE,TARGET     :: PrismMapInv(:,:,:)
-INTEGER,ALLOCATABLE,TARGET     :: HexaMap(:,:) 
+INTEGER,ALLOCATABLE,TARGET     :: HexaMap(:,:)
 INTEGER,ALLOCATABLE,TARGET     :: HexaMapInv(:,:,:)
 
 INTEGER                        :: nVisu                  ! number of 1D Points -1  for visualization
 INTEGER                        :: nAnalyze               ! number of 1D Points -1  for analysis (Jacobian...)
-INTEGER,ALLOCATABLE            :: VisuTriaMap(:,:) 
+INTEGER,ALLOCATABLE            :: VisuTriaMap(:,:)
 INTEGER,ALLOCATABLE            :: VisuTriaMapInv(:,:)
-INTEGER,ALLOCATABLE            :: VisuQuadMap(:,:) 
+INTEGER,ALLOCATABLE            :: VisuQuadMap(:,:)
 INTEGER,ALLOCATABLE            :: VisuQuadMapInv(:,:)
-INTEGER,ALLOCATABLE            :: VisuHexaMap(:,:) 
+INTEGER,ALLOCATABLE            :: VisuPrismMap(:,:)
+INTEGER,ALLOCATABLE            :: VisuPrismMapInv(:,:,:)
+INTEGER,ALLOCATABLE            :: VisuHexaMap(:,:)
 INTEGER,ALLOCATABLE            :: VisuHexaMapInv(:,:,:)
 
 INTEGER,ALLOCATABLE            :: edgeToTria(:,:)        ! mapping from edges of a triangle to surface

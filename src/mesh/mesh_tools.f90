@@ -12,7 +12,7 @@
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -30,7 +30,7 @@ MODULE MOD_Mesh_Tools
 IMPLICIT NONE
 PRIVATE
 !-----------------------------------------------------------------------------------------------------------------------------------
-! GLOBAL VARIABLES 
+! GLOBAL VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! Private Part ---------------------------------------------------------------------------------------------------------------------
 ! Public Part ----------------------------------------------------------------------------------------------------------------------
@@ -85,13 +85,13 @@ USE MOD_Mesh_Vars,ONLY:nBoundarySplines,nPeriodicSplines,nInnerSplines
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tElem),POINTER            :: Elem  ! ?
 TYPE(tSide),POINTER            :: Side  ! ?
-INTEGER                        :: splineCounter(3) ! 1: Boundary splines, 2: periodic splines, 3: 
+INTEGER                        :: splineCounter(3) ! 1: Boundary splines, 2: periodic splines, 3:
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! INPUT VARIABLES
-INTEGER, SAVE                  :: CallCount=0   ! Counter for calls of this subroutine, used for 
+INTEGER, SAVE                  :: CallCount=0   ! Counter for calls of this subroutine, used for
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 LOGICAL                        :: hasChanged  ! ?
@@ -161,7 +161,7 @@ IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tElem),POINTER             :: Elem  ! ?
 REAL                            :: BaryScale,BaryCoords(3)  ! ?
 INTEGER                         :: nVal,iNode,iElem,nElems  ! ?
@@ -241,10 +241,10 @@ SUBROUTINE FEMNetVisu()
   !-----------------------------------------------------------------------------------------------------------------------------------
   ! OUTPUT VARIABLES
   !-----------------------------------------------------------------------------------------------------------------------------------
-  ! LOCAL VARIABLES 
-  TYPE(tElem),POINTER             :: Elem 
+  ! LOCAL VARIABLES
+  TYPE(tElem),POINTER             :: Elem
   TYPE(tSide),POINTER             :: Side
-  TYPE(tLocalEdge),POINTER        :: lEdge 
+  TYPE(tLocalEdge),POINTER        :: lEdge
   TYPE(tNode),POINTER             :: aNode,bNode
   TYPE(tVertex),POINTER           :: avert,bVert
   INTEGER                         :: nVal,iNode,nElems,nSidesElem,nSides,nEdges,iSide,iElemSide,iEdge,iLocEdge  ! ?
@@ -274,19 +274,19 @@ SUBROUTINE FEMNetVisu()
   nVal=2
   VarNames(1)='elemind'
   VarNames(2)='UniqueFaceID'
-  
+
   NodeMap=0
   !mapping from Side nNodes to i,j [0;1]
   NodeMap(:,3)=(/1,2,3,3/) !tri
   NodeMap(:,4)=(/1,2,4,3/) !quad
-  
+
   ALLOCATE(Coord(3,1:4,nSides))
   ALLOCATE(Solution(nVal,1:4,nSides))
-  
+
   iSide=0
   Elem=>firstElem
   DO WHILE(ASSOCIATED(elem))
-    
+
     nSidesElem=nSides_from_nNodes(Elem%nNodes)
     Side=>Elem%firstSide
     DO iElemSide=1,nSidesElem
@@ -301,7 +301,7 @@ SUBROUTINE FEMNetVisu()
     Elem=>elem%nextElem
   END DO
   CALL Visualize(2,nVal,1,nSides,VarNames(1:nVal),Coord,Solution,FileString)
-  
+
   DEALLOCATE(Coord,Solution)
 
   filestring=TRIM(ProjectName)//'_'//'Debugmesh_Edges'
@@ -314,7 +314,7 @@ SUBROUTINE FEMNetVisu()
   VarNames(4)='EdgeIsMaster'
   VarNames(5)='VertexIsMaster'
 
-  
+
   iEdge=0
   Elem=>firstElem
   DO WHILE(ASSOCIATED(elem))
@@ -338,10 +338,10 @@ SUBROUTINE FEMNetVisu()
     Elem=>elem%nextElem
   END DO
   CALL Visualize(1,nVal,1,nEdges,VarNames(1:nVal),Coord,Solution,FileString)
-  
+
   DEALLOCATE(Coord,Solution)
   CALL Timer(.FALSE.)
-  
+
 END SUBROUTINE FEMnetVisu
 
 SUBROUTINE BCVisu()
@@ -360,7 +360,7 @@ IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! OUTPUT VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tElem),POINTER             :: Elem  ! ?
 TYPE(tSide),POINTER             :: Side   ! ?
 REAL                            :: BaryScale,BaryCoords(3)  ! ?
@@ -592,7 +592,8 @@ USE MOD_Mesh_Vars ,ONLY:tElem
 USE MOD_Mesh_Vars ,ONLY:FirstElem
 USE MOD_Mesh_Vars ,ONLY:N
 USE MOD_Basis_Vars,ONLY:Vdm_Visu_Hexa,D_Visu_Hexa
-USE MOD_Basis_Vars,ONLY:VisuHexaMapInv
+USE MOD_Basis_Vars,ONLY:VdM_visu_Prism,D_visu_Prism
+USE MOD_Basis_Vars,ONLY:VisuHexaMapInv,VisuPrismMapInv
 USE MOD_Basis_Vars,ONLY:nVisu
 USE MOD_Output    ,ONLY:Visualize
 USE MOD_Output_vars,ONLY:Visu_sJ_limit
@@ -640,14 +641,16 @@ FileString=TRIM(ProjectName)//'_'//'SplineVol'
 
 Nplot=nVisu !number of equidistant points for visualization mesh
 Nplot_p1=Nplot+1
-Nplot_p1_3=Nplot_p1*Nplot_p1*Nplot_p1
+!Nplot_p1_3=(Nplot_p1)**3
+Nplot_p1_3=NINT((Nplot_p1)**2*(Nplot_p1+1)/2.)
 
-ALLOCATE(xNode((N+1)**3,3))
-ALLOCATE(x(  Nplot_p1_3,3))
-ALLOCATE(xt1(Nplot_p1_3,3))
-ALLOCATE(xt2(Nplot_p1_3,3))
-ALLOCATE(xt3(Nplot_p1_3,3))
-ALLOCATE(Jac(Nplot_p1_3))
+!ALLOCATE(xNode((N+1)**3,3))
+ALLOCATE(xNode(NINT((N+1)**2*(N+2)/2.),3))
+ALLOCATE(x    (Nplot_p1_3,3))
+ALLOCATE(xt1  (Nplot_p1_3,3))
+ALLOCATE(xt2  (Nplot_p1_3,3))
+ALLOCATE(xt3  (Nplot_p1_3,3))
+ALLOCATE(Jac  (Nplot_p1_3))
 
 nVal=4
 ALLOCATE(VarNames(nVal))
@@ -664,6 +667,40 @@ Elem=>firstElem
 DO WHILE(ASSOCIATED(Elem))
   IF(ASSOCIATED(Elem%CurvedNode)) THEN
     SELECT CASE(Elem%nNodes)
+    CASE(6)
+      iElem=iElem+1
+      nNodes=Elem%nCurvedNodes
+      x=0.
+      xt1=0.
+      xt2=0.
+      xNode=0.
+      DO iNode=1,nNodes
+        IF(ASSOCIATED(Elem%curvedNode(iNode)%np))THEN
+          xNode(iNode,:)=Elem%curvedNode(iNode)%np%x
+        ELSE
+          CALL abort(__STAMP__,'Curved node array has not the right size.',999,999.) ! check required due to intel compiler error (02)
+        END IF
+      END DO
+      x  = MATMUL(Vdm_Visu_Prism,xNode(1:nNodes,:))
+      xt1= MATMUL(D_Visu_Prism(:,:,1),xNode(1:nNodes,:))
+      xt2= MATMUL(D_Visu_Prism(:,:,2),xNode(1:nNodes,:))
+      xt3= MATMUL(D_Visu_Prism(:,:,3),xNode(1:nNodes,:))
+      DO iNode=1,Nplot_p1_3
+        Jac(iNode)=SUM(xt1(iNode,:)*CROSS(xt2(iNode,:),xt3(iNode,:)))
+      END DO
+      sMaxJac=1./MAXVAL(Jac)
+      DO k=0,Nplot
+        DO j=0,Nplot
+          DO i=0,Nplot-j
+            l=VisuPrismMapInv(i,j,k)
+            Coord(:,l,iElem)=x(l,:)
+            Values(2,l,iElem)=Jac(l)
+            Values(3,l,iElem)=Jac(l)*sMaxJac
+          END DO
+        END DO
+      END DO
+      Values(1,:,iElem)=Elem%ind
+      Values(4,:,iElem)=MINVAL(Values(3,:,iElem))
     CASE(8)
       iElem=iElem+1
       nNodes=Elem%nCurvedNodes
@@ -745,7 +782,7 @@ USE MOD_Mesh_Vars,ONLY:tElem,tSide,tEdge,N
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 TYPE(tElem),POINTER,INTENT(IN) :: Elem  ! ?
 INTEGER,INTENT(IN)             :: value ! value to set tmp to
 LOGICAL,INTENT(IN),OPTIONAL    :: whichMarker(8) ! 1/2: elem corner/curved, 3/4: side corner/curved, 5/6: edge corner/curved
@@ -813,7 +850,7 @@ END SUBROUTINE SetTempMarker
 SUBROUTINE checkMortarWatertight()
 !===================================================================================================================================
 ! Checks if surface normals of mortars are defined such that the mesh is freestream preserving =^ watertight
-! builds a 1D basis to change equidistant -> gauss points (0:N_GP) and then use tensor-product gauss 
+! builds a 1D basis to change equidistant -> gauss points (0:N_GP) and then use tensor-product gauss
 ! for differentiation and integration. n_GP=N should be exact, since normal vector is of degree (2*N-1 ,2*N-1)
 ! since its a dot product of two polynomials of degree (N-1,N) * (N,N-1)
 !===================================================================================================================================
@@ -894,17 +931,17 @@ DO WHILE(ASSOCIATED(Elem))
 
       NsurfBig=EvalNsurf(XgeoSide)
       NsurfSmall=0.
-      DO p=1,Side%nMortars 
+      DO p=1,Side%nMortars
         CALL PackGeo(N,Side%MortarSide(p)%sp,XgeoSide)
         NsurfSmall(:,p)=EvalNsurf(XgeoSide)
-      END DO 
+      END DO
       NsurfErr= ABS(NsurfBig(1)-SUM(NsurfSmall(1,:))) &
                +ABS(NsurfBig(2)-SUM(NsurfSmall(2,:))) &
                +ABS(NsurfBig(3)-SUM(NsurfSmall(3,:)))
       IF(NsurfErr.GT.1.0E-12) THEN
         ERRWRITE(*,*) &
                  '================> Mortar is not watertight, ERROR=',NsurfErr,' >1.0E-12, big side corners:'
-        ERRWRITE(*,*)'Nsurf: ', NsurfBig 
+        ERRWRITE(*,*)'Nsurf: ', NsurfBig
         ERRWRITE(*,*)'   P1: ', Side%OrientedNode(1)%np%x
         ERRWRITE(*,*)'   P2: ', Side%OrientedNode(2)%np%x
         ERRWRITE(*,*)'   P3: ', Side%OrientedNode(3)%np%x
@@ -918,7 +955,7 @@ DO WHILE(ASSOCIATED(Elem))
           ERRWRITE(*,*)'    P2: ', Side%MortarSide(p)%sp%OrientedNode(2)%np%x
           ERRWRITE(*,*)'    P3: ', Side%MortarSide(p)%sp%OrientedNode(3)%np%x
           ERRWRITE(*,*)'    P4: ', Side%MortarSide(p)%sp%OrientedNode(4)%np%x
-        END DO 
+        END DO
         WaterTight=WaterTight+1
         maxNsurfErr=max(maxNsurfErr,NsurfErr)
       END IF ! diffsurf>0
@@ -960,7 +997,7 @@ DO WHILE(ASSOCIATED(Elem))
               pf=N-q; qf=N-p;
             CASE(4)
               pf=p; qf=N-q;
-            END SELECT  
+            END SELECT
 
             XCheck=XGeoSide(:,p,q) + vec
 
@@ -1036,8 +1073,8 @@ CONTAINS
         END DO
         nVec=CROSS(dXdxiGP(:),dXdetaGP(:))
         Nsurf(:)=Nsurf(:)+wGP(i)*wGP(j)*nVec(:)
-      END DO !i 
-    END DO !j 
+      END DO !i
+    END DO !j
   END FUNCTION EvalNsurf
 
 END SUBROUTINE checkMortarWaterTight

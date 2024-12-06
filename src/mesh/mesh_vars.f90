@@ -82,6 +82,7 @@ TYPE tElem ! provides data structure for local element
   INTEGER                             ::       nEdges                 ! total number of edges for one Elem
   INTEGER                             ::       nCurvedNodes           ! Used for writing curveds to hdf5 mesh format
   INTEGER                             ::       ind                    ! unique Element index for each element on all processors
+  INTEGER                             ::       splitind               ! unique Element index for each element on all processors
   INTEGER                             ::       tmp
   ! CHARACTER --------------------------------------------------------!
   ! LOGICAL ----------------------------------------------------------!

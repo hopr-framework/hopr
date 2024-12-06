@@ -650,7 +650,6 @@ IF(MeshMode .GT. 0)THEN
   IF(useCurveds.AND.Logging) CALL CountSplines()  ! In case of restart there can be splines
 END IF
 CALL buildEdges()
-IF(generateFEMconnectivity) CALL buildFEMconnectivity()
 
 ! check if sides to be curved exist
 curvedFound=.FALSE.
@@ -734,7 +733,7 @@ DO iElem=1,nMeshElems
   IF(mortarFound) EXIT !do loop
 END DO !iElem
 
-IF(mortarFound.AND.generateFEMconnectivity) CALL abort(__STAMP__,"generate FEM connectivity not yet implemented for mortar meshes!")
+! IF(mortarFound.AND.generateFEMconnectivity) CALL abort(__STAMP__,"generate FEM connectivity not yet implemented for mortar meshes!")
 
 IF(doExactSurfProjection) CALL ProjectToExactSurfaces()
 ! get element types
@@ -787,6 +786,7 @@ IF(mortarFound) THEN
   !after rebuild , mortars should be fine, but checking is better:
   CALL CheckMortarWaterTight()
 END IF !mortarFound
+IF(generateFEMconnectivity) CALL buildFEMconnectivity()
 
 ! apply meshscale before output (default)
 IF( (doShift.AND.postShift) .OR. (doScale.AND.postScale) ) THEN

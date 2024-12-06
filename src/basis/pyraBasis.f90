@@ -12,7 +12,7 @@
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -30,7 +30,7 @@ MODULE MOD_pyraBasis
 IMPLICIT NONE
 PRIVATE
 !-----------------------------------------------------------------------------------------------------------------------------------
-! GLOBAL VARIABLES 
+! GLOBAL VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! Private Part ---------------------------------------------------------------------------------------------------------------------
 ! Public Part ----------------------------------------------------------------------------------------------------------------------
@@ -48,7 +48,7 @@ PUBLIC::getPyraBasis,getBasisMappingPyra
 CONTAINS
 SUBROUTINE getPyraBasis(Deg,nNodes1D) !,Vdm,GradVdm)
 !===================================================================================================================================
-! given the degree of the orthogonal basis and the number of 1D nodes, equidistant nodes in the tetrahedron are generated and 
+! given the degree of the orthogonal basis and the number of 1D nodes, equidistant nodes in the tetrahedron are generated and
 ! we compute the Vadndermonde matrix and the Vandermondematrix of the gradient of the basis function
 !===================================================================================================================================
 ! MODULES
@@ -62,7 +62,7 @@ INTEGER, INTENT(IN) :: nNodes1D  ! ?
 ! OUTPUT VARIABLES
 REAL,ALLOCATABLE    :: Vdm(:,:),GradVdm(:,:,:)   ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 REAL,ALLOCATABLE        :: r(:),s(:),t(:)    ! coordinates in tetrahedra reference space  r,s,t in [-1,1]
 REAL                    :: r1D(0:nNodes1D-1) ! equidistant 1D Lobatto nodes in [-1,1]
 INTEGER,ALLOCATABLE     :: bMap(:,:)         ! basis mapping iAns=>i,j,k
@@ -78,7 +78,7 @@ ALLOCATE(r(nNodes),s(nNodes),t(nNodes))
 WRITE(*,*)'============================================'
 WRITE(*,*)'getPyraBasis for Degree', Deg
 WRITE(*,*)'============================================'
-!equidistant nodes 
+!equidistant nodes
 r1D=0.
 DO i=0,nNodes1D-1
   r1D(i)=-1.+2.*REAL(i)/REAL(nNodes1D-1)
@@ -135,13 +135,13 @@ DO iNode=1,nNodes
   END DO
   WRITE(*,*)' '
 END DO
-DEALLOCATE(bMap,nodeMap) 
+DEALLOCATE(bMap,nodeMap)
 END SUBROUTINE getPyraBasis
 
 
 SUBROUTINE getBasisMappingPyra(Deg,nAns,bMap,bMapInv)
 !===================================================================================================================================
-! mapping from iAns -> i,j  in [0,Deg], can be used for nodeMap too: CALL getBasisMapping(nNodes1D-1,nodeMap) 
+! mapping from iAns -> i,j  in [0,Deg], can be used for nodeMap too: CALL getBasisMapping(nNodes1D-1,nodeMap)
 !===================================================================================================================================
 ! MODULES
 ! IMPLICIT VARIABLE HANDLING
@@ -155,7 +155,7 @@ INTEGER,INTENT(OUT)         :: nAns  ! ?
 INTEGER,ALLOCATABLE,INTENT(OUT)         :: bMap(:,:)  ! ?
 INTEGER,ALLOCATABLE,OPTIONAL,INTENT(OUT):: bMapInv(:,:,:)  ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 INTEGER                     :: iAns,i,j,k  ! ?
 !===================================================================================================================================
 nAns=(Deg+1)*(Deg+2)*(2*Deg+3)/6
@@ -165,7 +165,7 @@ DO k=0,Deg
   DO j=0,Deg-k
     DO i=0,Deg-k
       iAns=iAns+1
-      bMap(iAns,:)=(/i,j,k/)
+      bMap(iAns,:)=(/k,j,i/)
     END DO
   END DO
 END DO
@@ -201,7 +201,7 @@ REAL,INTENT(IN)              :: r(nNodes),s(nNodes),t(nNodes)   ! ?
 ! OUTPUT VARIABLES
 REAL,INTENT(OUT)             :: a(nNodes),b(nNodes),c(nNodes)   ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 INTEGER                      :: iNode  ! ?
 !===================================================================================================================================
 WRITE(*,*)'entering rst_to_abc'
@@ -214,14 +214,14 @@ DO iNode=1,nNodes
     b(iNode) = 2.*(1.+s(iNode))/(1.-t(iNode))-1.
   END IF
 END DO !iNode
-c=t 
+c=t
 END SUBROUTINE rst2abcPyra
 
 
 SUBROUTINE VandermondePyra(nNodes,nAns,bMap,r,s,t,VdM)
 !===================================================================================================================================
-! For a given vector of nNodes in reference coordinates (r,s,t) of the pyramid, and nAns=(Deg+1)*(Deg+2)*(2*Deg+3)/6 
-! basis functions, we compute the 3D Vandermonde matrix. 
+! For a given vector of nNodes in reference coordinates (r,s,t) of the pyramid, and nAns=(Deg+1)*(Deg+2)*(2*Deg+3)/6
+! basis functions, we compute the 3D Vandermonde matrix.
 ! The polynomial basis is orthonormal with respect to the reference pyramid r,s,t>=-1, r+t<=1 ,s+t<=1
 !===================================================================================================================================
 ! MODULES
@@ -237,14 +237,14 @@ REAL,INTENT(IN)              :: r(nNodes),s(nNodes),t(nNodes)   ! ?
 ! OUTPUT VARIABLES
 REAL,INTENT(OUT)             :: VdM(nNodes,nAns)   ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 REAL,DIMENSION(nNodes)      :: a,b,c,Pa,Pb,Pc  ! ?
 INTEGER                     :: iAns,i,j,k,ij  ! ?
 REAL                        :: norm  ! ?
 !===================================================================================================================================
 norm=2.
 WRITE(*,*)'entering VandermondePyra'
-CALL rst2abcPyra(nNodes,r,s,t,a,b,c) 
+CALL rst2abcPyra(nNodes,r,s,t,a,b,c)
 DO iAns=1,nAns
   i=bMap(iAns,1)
   j=bMap(iAns,2)
@@ -259,14 +259,14 @@ DO iAns=1,nAns
   CALL JacobiP(nNodes,c, 2*ij+2, 0,k,Pc)
   VdM(:,iAns)=norm*(Pa*Pb*Pc) !orthonormal
   IF(ij.GT.0) VdM(:,iAns)=VdM(:,iAns)*((1.-c)**(ij))
-END DO 
+END DO
 END SUBROUTINE VandermondePyra
 
 
 SUBROUTINE GradVandermondePyra(nNodes,nAns,bMap,r,s,t,gradVdM)
 !===================================================================================================================================
-! For a given vector of nNodes in reference coordinates (r,s,t) of the pyramid, and nAns=(Deg+1)*(Deg+2)*(2*Deg+3)/6 
-! basis functions, we compute the 3D Gradient Vandermonde matrix. 
+! For a given vector of nNodes in reference coordinates (r,s,t) of the pyramid, and nAns=(Deg+1)*(Deg+2)*(2*Deg+3)/6
+! basis functions, we compute the 3D Gradient Vandermonde matrix.
 ! The polynomial basis is orthonormal with respect to the reference pyramid r,s,t>=-1, r+t<=1 ,s+t<=1
 !===================================================================================================================================
 ! MODULES
@@ -282,14 +282,14 @@ REAL,INTENT(IN)              :: r(nNodes),s(nNodes),t(nNodes)   ! ?
 ! OUTPUT VARIABLES
 REAL,INTENT(OUT)             :: gradVdM(nNodes,nAns,3)   ! ?
 !-----------------------------------------------------------------------------------------------------------------------------------
-! LOCAL VARIABLES 
+! LOCAL VARIABLES
 REAL,DIMENSION(nNodes)      :: a,b,c,Pa,Pb,Pc,dPa,dPb,dPc,dPhi_da,dPhi_db,dPhi_dc  ! ?
 INTEGER                     :: iAns,i,j,k,ij  ! ?
 REAL                        :: norm  ! ?
 !===================================================================================================================================
 norm=2.
 WRITE(*,*)'entering GradVandermondePyra'
-CALL rst2abcPyra(nNodes,r,s,t,a,b,c) 
+CALL rst2abcPyra(nNodes,r,s,t,a,b,c)
 DO iAns=1,nAns
   i=bMap(iAns,1)
   j=bMap(iAns,2)
@@ -298,7 +298,7 @@ DO iAns=1,nAns
   ! ij=max(i,j)
   ! karniadakis
   ij=(i+j)
-  
+
   CALL JacobiP(nNodes,a,      0, 0,i,Pa)
   CALL JacobiP(nNodes,b,      0, 0,j,Pb)
   CALL JacobiP(nNodes,c, 2*ij+2, 0,k,Pc)
@@ -306,7 +306,7 @@ DO iAns=1,nAns
   CALL GradJacobiP(nNodes,b,      0, 0,j,dPb)
   CALL GradJacobiP(nNodes,c, 2*ij+2, 0,k,dPc)
   !dphi/da*(1-c)^-1
-  dPhi_da=norm*(dPa*Pb*Pc) 
+  dPhi_da=norm*(dPa*Pb*Pc)
   IF(ij.GT.1) dPhi_da=dPhi_da*((1.-c)**(ij-1))
   !dphi/db*(1-c)^-1
   dPhi_db=norm*Pa*dPb*Pc
@@ -323,7 +323,7 @@ DO iAns=1,nAns
   gradVdM(:,iAns,2)=2.*dPhi_db
   ! t-derivative
   gradVdM(:,iAns,3)=(1.+a)*dPhi_da+(1.+b)*dPhi_db+dPhi_dc
-END DO 
+END DO
 END SUBROUTINE GradVandermondePyra
 
 END MODULE MOD_pyraBasis

@@ -52,7 +52,7 @@ SUBROUTINE PostDeform()
 USE MOD_Globals
 USE MOD_Mesh_Vars   ,ONLY: tElem,Elems,MeshPostDeform,PostDeform_useGL
 USE MOD_Mesh_Vars   ,ONLY: N,nMeshElems
-USE MOD_Basis_Vars  ,ONLY: HexaMap
+USE MOD_Basis_Vars  ,ONLY: HexaMap,PrismMap,PyraMap
 USE MOD_Basis1D     ,ONLY: LegGaussLobNodesAndWeights,BarycentricWeights,InitializeVandermonde
 USE MOD_ChangeBasis ,ONLY: ChangeBasis3D
 !MODULE OUTPUT VARIABLES
@@ -75,6 +75,10 @@ REAL,DIMENSION(0:N)          :: xi_EQ,xi_GL,wBary_EQ,wBary_GL
 REAL,DIMENSION(0:N,0:N)      :: Vdm_EQtoGL, Vdm_GLtoEQ
 REAL                         :: xElem(      3,0:N,0:N,0:N,nMeshElems)
 REAL                         :: xElemDeform(3,0:N,0:N,0:N,nMeshElems)
+REAL                         :: xElem1D(    3,1:NINT((N+1)**2*(N+2)/2.),nMeshElems)
+REAL                         :: xElemDeform1D(    3,1:NINT((N+1)**2*(N+2)/2.),nMeshElems)
+!REAL                         :: xElem1D(    3,1:(N+1)**3,nMeshElems)
+!REAL                         :: xElemDeform1D(    3,1:(N+1)**3,nMeshElems)
 INTEGER                      :: HexaMapN1(8,3)
 !===================================================================================================================================
 IF(MeshPostDeform.EQ.0) RETURN
@@ -100,6 +104,7 @@ CALL InitializeVandermonde(N,N,wBary_EQ,xi_EQ,xi_GL,Vdm_EQtoGL)
 CALL InitializeVandermonde(N,N,wBary_GL,xi_GL,xi_EQ,Vdm_GLtoEQ)
 
 xElem=0.
+xElem1D=0.
 !Copy Equidist. element nodes
 DO iElem=1,nMeshElems
   aElem=>Elems(iElem)%ep
@@ -111,27 +116,32 @@ DO iElem=1,nMeshElems
     END DO !iNode
   ELSE
     DO iNode=1,aElem%nCurvedNodes
-      ijk(:)=HexaMap(iNode,:)
-      xElem(1:3,ijk(1),ijk(2),ijk(3),aElem%ind)= aElem%CurvedNode(iNode)%np%x(:)
+      !ijk(:)=HexaMap(iNode,:)
+      !ijk(:)=PrismMap(iNode,:)
+      ijk(:)=PyraMap(iNode,:)
+      xElem1D(1:3,iNode,aElem%ind)= aElem%CurvedNode(iNode)%np%x(:)
+      !IF(xElem1D(3,iNode,aElem%ind).EQ.1.) print *,xElem1D(1:3,iNode,aElem%ind)
       aElem%CurvedNode(iNode)%np%tmp=-1
     END DO !iNode
   END IF !N=1
 END DO ! iElem
 
 !transform Equidist. to Gauss-Lobatto points
-IF((PostDeform_useGL).AND.(N.GT.2))THEN
-  CALL ChangeBasis3D(3,nMeshElems,N,N,Vdm_EQtoGL,xElem,xElem,.FALSE.)
-END IF !PostDeform_useGL
+!IF((PostDeform_useGL).AND.(N.GT.2))THEN
+  !CALL ChangeBasis3D(3,nMeshElems,N,N,Vdm_EQtoGL,xElem,xElem,.FALSE.)
+!END IF !PostDeform_useGL
 
 !transform (all nodes are marked from -2 to -1)
-nTotal=(N+1)**3*nMeshElems
-CALL PostDeformFunc(nTotal,xElem,xElemDeform)
-xElem = xElemDeform
+!nTotal=(N+1)**3*nMeshElems
+!nTotal=NINT((N+1)**2*(N+2)*0.5)*nMeshElems
+nTotal=NINT((N+1)*(N+2)*(2*N+3)/6.)*nMeshElems
+CALL PostDeformFunc(nTotal,xElem1D,xElemDeform1D)
+xElem1D = xElemDeform1D
 
-IF((PostDeform_useGL).AND.(N.GT.2))THEN
-  !transform back from GL to EQ
-  CALL ChangeBasis3D(3,nMeshElems,N,N,Vdm_GLtoEQ,xElem,xElem,.FALSE.)
-END IF
+!IF((PostDeform_useGL).AND.(N.GT.2))THEN
+  !!transform back from GL to EQ
+  !CALL ChangeBasis3D(3,nMeshElems,N,N,Vdm_GLtoEQ,xElem,xElem,.FALSE.)
+!END IF
 
 ! copy back (all nodes are marked from -1 to 0)
 DO iElem=1,nMeshElems
@@ -147,8 +157,11 @@ DO iElem=1,nMeshElems
   ELSE
     DO iNode=1,aElem%nCurvedNodes
       IF(aElem%CurvedNode(iNode)%np%tmp.EQ.-1)THEN
-        ijk(:)=HexaMap(iNode,:)
-        aElem%CurvedNode(iNode)%np%x(:)= xElem(1:3,ijk(1),ijk(2),ijk(3),aElem%ind)
+        !ijk(:)=HexaMap(iNode,:)
+        !ijk(:)=PrismMap(iNode,:)
+        ijk(:)=PyraMap(iNode,:)
+        !aElem%CurvedNode(iNode)%np%x(:)= xElem(1:3,ijk(1),ijk(2),ijk(3),aElem%ind)
+        aElem%CurvedNode(iNode)%np%x(:)= xElem1D(1:3,iNode,aElem%ind)
         aElem%CurvedNode(iNode)%np%tmp=0
       END IF
     END DO !iNode
@@ -198,6 +211,7 @@ SELECT CASE(MeshPostDeform)
 CASE(1,11,12)
   DO i=1,nTotal
     x(:)=X_in(:,i)
+    IF(x(3).EQ.1) print *, x
     ! 2D box, x,y in [-1,1]^2, to cylinder with radius PostDeform_R0 (with PostDeform_Rtorus>0 to a torus, with zperiodic [0,1])
     ! all points outside [-1,1]^2 will be mapped directly to a circle (p.e. 2,2 => sqrt(0.5)*PostDeform_R0*(2,2) )
     ! inside [-1,1]^2 and outside [-0.5,0.5]^2 there will be a blending from a circle to a square

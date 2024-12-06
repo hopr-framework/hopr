@@ -13,7 +13,7 @@
 ! Copyright (C) 2017 Claus-Dieter Munz <munz@iag.uni-stuttgart.de>
 ! This file is part of HOPR, a software for the generation of high-order meshes.
 !
-! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License 
+! HOPR is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
 ! as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 !
 ! HOPR is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
@@ -32,7 +32,7 @@ USE MOD_Globals
 IMPLICIT NONE
 PRIVATE
 !-----------------------------------------------------------------------------------------------------------------------------------
-! GLOBAL VARIABLES 
+! GLOBAL VARIABLES
 !-----------------------------------------------------------------------------------------------------------------------------------
 ! Private Part ---------------------------------------------------------------------------------------------------------------------
 ! Public Part ----------------------------------------------------------------------------------------------------------------------
@@ -176,13 +176,13 @@ DO i=1, nFaces
   READ(150,'(I6)',ADVANCE='NO') k !first FaceID
   IF (k .LT. 0) THEN
     nPlanars=nPlanars+1
-    faceConnectivity(1,nFaces+1+k)=k   !actual Face ID  
-    READ(150,*) faceConnectivity(2:j,nFaces+1+k) !Neighbor Face IDs of actual Face  
+    faceConnectivity(1,nFaces+1+k)=k   !actual Face ID
+    READ(150,*) faceConnectivity(2:j,nFaces+1+k) !Neighbor Face IDs of actual Face
   ELSEIF (k .EQ. 0) THEN
     CALL abort(__STAMP__,'ERROR: CAD-face connectivity invalid',999,999.)
   ELSE
-    faceConnectivity(1,k)=k    
-    READ(150,*) faceConnectivity(2:j,k)    
+    faceConnectivity(1,k)=k
+    READ(150,*) faceConnectivity(2:j,k)
   END IF
 END DO
 DO i=1,nFaces !all entries have to be filled
@@ -211,7 +211,7 @@ DO WHILE(ASSOCIATED(aElem))
       DO j=1,aSide%nNodes
         aNode=>aSide%node(j)%np
         IF(aNode%tmp .EQ. 0) THEN
-          aNode%tmp=999 
+          aNode%tmp=999
           CALL insertNode(searchMesh,aNode)
           aNode%refCount=aNode%refCount-1
           searchMeshNodes=searchMeshNodes+1
@@ -272,9 +272,9 @@ DO i=1, nTotalNodes
     ToObject=>getNextToObject(searchMesh,.FALSE.)
   END DO
   IF (.NOT. pointFound) THEN
-    IF (useProjections) READ(150,*) 
+    IF (useProjections) READ(150,*)
     DO j = 1, nVects
-      READ(150,*) 
+      READ(150,*)
     END DO
   END IF
 END DO !nTotalNodes
@@ -319,7 +319,7 @@ DO WHILE(ASSOCIATED(aElem))
           END IF
         END DO
         ! mark same Faces
-        IF (sameFaces(face(1),face(2))) CYCLE            
+        IF (sameFaces(face(1),face(2))) CYCLE
         sameFaces(face(1),face(2))=.TRUE.
         sameFaces(face(2),face(1))=.TRUE.
         ! look if already another face is the same Face
@@ -327,12 +327,12 @@ DO WHILE(ASSOCIATED(aElem))
           IF (sameFaces(face(1),i)) THEN
             sameFaces(i,face(2))=.TRUE.
             sameFaces(face(2),i)=.TRUE.
-          END IF       
+          END IF
           IF (sameFaces(face(2),i)) THEN
             sameFaces(i,face(1))=.TRUE.
             sameFaces(face(1),i)=.TRUE.
           END IF
-        END DO       
+        END DO
       END DO
     END IF
     aSide=>aSide%nextElemSide
@@ -355,7 +355,7 @@ END DO
 ! determine for a group of sameFaces the mapping from the actual faceID to the biggest FaceID in the group
 mergedFaces(:)=0
 DO i=1,nFaces !
-  DO j=(nFaces-nPlanars),1,-1 !curved Faces, backwards, so j is the biggest FaceID 
+  DO j=(nFaces-nPlanars),1,-1 !curved Faces, backwards, so j is the biggest FaceID
     IF (sameFaces(i,j)) THEN
       mergedFaces(i)=j
       EXIT
@@ -388,12 +388,12 @@ DO WHILE(ASSOCIATED(aElem))
   DO j=1, aElem%nNodes
     IF (aElem%node(j)%np%tmp .NE. 0) CYCLE
     i=i+1
-    aElem%node(j)%np%tmp=i       
+    aElem%node(j)%np%tmp=i
     aNormal=>aElem%node(j)%np%firstNormal
     DO WHILE (ASSOCIATED(aNormal))
       DO k=1, SIZE(aNormal%FaceID)
         IF (aNormal%FaceID(k) .LT. 0) THEN !planar face
-          aNormal%FaceID(k)=mergedFaces(nFaces+1+aNormal%FaceID(k)) !replace old FaceId with new one 
+          aNormal%FaceID(k)=mergedFaces(nFaces+1+aNormal%FaceID(k)) !replace old FaceId with new one
         ELSE
           aNormal%FaceID(k)=mergedFaces(aNormal%FaceID(k)) !replace old FaceId with new one
         END IF
@@ -417,7 +417,7 @@ DO WHILE(ASSOCIATED(aElem))
   DO j=1, aElem%nNodes
     IF (aElem%node(j)%np%tmp .NE. 0) CYCLE
     i=i+1
-    aElem%node(j)%np%tmp=i      
+    aElem%node(j)%np%tmp=i
     !remove duplicates inside each normal
     aNormal=>aElem%node(j)%np%firstNormal
     DO WHILE (ASSOCIATED(aNormal))
@@ -443,7 +443,7 @@ DO WHILE(ASSOCIATED(aElem))
             DuplicatesInd(l)=aNormal%FaceID(k)
           END IF
         END DO
-        DEALLOCATE(aNormal%FaceID) 
+        DEALLOCATE(aNormal%FaceID)
         ALLOCATE(aNormal%FaceID(SIZE(duplicatesInd)))
         aNormal%FaceID=DuplicatesInd
         DEALLOCATE(duplicatesInd)
@@ -471,7 +471,7 @@ DO WHILE(ASSOCIATED(aElem))
           ALLOCATE(DuplicatesInd(SIZE(aNormal%FaceID)+SIZE(bNormal%FaceID)-Counter))
           DuplicatesInd(1:SIZE(aNormal%FaceID))=aNormal%FaceID(:)
           l=SIZE(aNormal%FaceID)
-          DO k=1, SIZE(bNormal%FaceID) 
+          DO k=1, SIZE(bNormal%FaceID)
             IF (bNormal%FaceID(k) .EQ. 0) THEN
               CYCLE
             ELSE
@@ -479,11 +479,11 @@ DO WHILE(ASSOCIATED(aElem))
               DuplicatesInd(l)=bNormal%FaceID(k)
             END IF
           END DO
-          DEALLOCATE(aNormal%FaceID) 
+          DEALLOCATE(aNormal%FaceID)
           ALLOCATE(aNormal%FaceID(SIZE(duplicatesInd)))
           aNormal%FaceID=DuplicatesInd
           DEALLOCATE(duplicatesInd)
-          
+
           !average normals, remove bNormal and reorder pointers
           aNormal%normal=aNormal%normal+bNormal%normal
           IF (ASSOCIATED(bNormal%nextNormal)) THEN
@@ -506,7 +506,7 @@ DO WHILE(ASSOCIATED(aElem))
   aElem=>aElem%nextElem
 END DO
 
-! If each node of a side has same negative FaceID => CAD face is not curved => Side ist not curved! 
+! If each node of a side has same negative FaceID => CAD face is not curved => Side ist not curved!
 ! => set aSide%curveIndex = 0 => no spline reconstruction => better performance (in work)
 l=0
 aElem=>firstElem
@@ -518,7 +518,7 @@ DO WHILE(ASSOCIATED(aElem))
       aNormal=>aSide%node(1)%np%firstNormal
 outer:DO WHILE(ASSOCIATED(aNormal)) !search neg FaceID in first node, check all normals. If no neg FaceIDs, side is curved!
         DO i=1,SIZE(aNormal%FaceID)
-          IF (aNormal%FaceID(i) .GT. 0) CYCLE !loop till negative FaceID is found in aNormal. 
+          IF (aNormal%FaceID(i) .GT. 0) CYCLE !loop till negative FaceID is found in aNormal.
           DO j=2,aSide%nNodes !neg FaceID found, search in other nodes for that ID
             changeIndex=.FALSE.
             bNormal=>aSide%node(j)%np%firstNormal
@@ -532,7 +532,7 @@ outer:DO WHILE(ASSOCIATED(aNormal)) !search neg FaceID in first node, check all 
             IF (.NOT. changeIndex) EXIT !one node does not have neg FaceID, don't search in other nodes
           END DO
           IF (changeIndex) EXIT outer !all nodes have same neg FaceID, side is not curved => don't continue with first Node
-        END DO 
+        END DO
         aNormal=>aNormal%nextNormal
       END DO outer
       IF (changeIndex) THEN
@@ -588,7 +588,7 @@ aElem=>firstElem
 DO WHILE(ASSOCIATED(aElem))
   DO j=1, aElem%nNodes
     IF (aElem%node(j)%np%tmp .NE. -1) CYCLE
-    aElem%node(j)%np%tmp=1       
+    aElem%node(j)%np%tmp=1
     aNormal=>aElem%node(j)%np%firstNormal
     DO WHILE (ASSOCIATED(aNormal))
         nFaceID=min(5,SIZE(aNormal%FaceID))
@@ -629,7 +629,7 @@ END SUBROUTINE getNewNormal
 
 SUBROUTINE reconstructNormals()
 !===================================================================================================================================
-! create Normals on curved boundaries from the actual mesh, so just approximated normals! 
+! create Normals on curved boundaries from the actual mesh, so just approximated normals!
 !===================================================================================================================================
 ! MODULES
 USE MOD_Mesh_Vars,ONLY:tElem,tSide,tNode,tNormal
@@ -733,7 +733,7 @@ END SUBROUTINE reconstructNormals
 
 SUBROUTINE deleteDuplicateNormals()
 !===================================================================================================================================
-! ? 
+! ?
 !===================================================================================================================================
 ! MODULES
 USE MOD_Mesh_Vars,ONLY:tElem,tSide,tNode,tNormal
@@ -819,7 +819,7 @@ DO WHILE(ASSOCIATED(aElem))
             aNormal=>aNormal%nextNormal
           END DO
           DEALLOCATE(tempFaceIDs)
-        END IF !double Normals 
+        END IF !double Normals
       END DO
     END IF !curveInd > 0
     aSide=>aSide%nextElemSide
@@ -830,7 +830,7 @@ END SUBROUTINE deleteDuplicateNormals
 
 SUBROUTINE buildCurvedElementsFromVolume()
 !===================================================================================================================================
-! set surface curvednode pointers from existing curved volume 
+! set surface curvednode pointers from existing curved volume
 !===================================================================================================================================
 ! MODULES
 USE MOD_Mesh_Vars,ONLY:tElem,tSide,FirstElem,N
@@ -862,7 +862,7 @@ END SUBROUTINE buildCurvedElementsFromVolume
 
 SUBROUTINE buildCurvedElementsFromBoundarySides(nCurvedBoundaryLayers)
 !===================================================================================================================================
-! set surface curvednode pointers from existing curved volume 
+! set surface curvednode pointers from existing curved volume
 !===================================================================================================================================
 ! MODULES
 USE MOD_Mesh_Vars,ONLY:tElem,tSide,FirstElem,N,deleteNode
@@ -1010,8 +1010,8 @@ SUBROUTINE curvedVolToSurf(Elem,onlyBoundarySides)
 ! All other elements remain linear (except for elements adjacent to curved edges).
 !===================================================================================================================================
 ! MODULES
-USE MOD_Mesh_Vars,ONLY:tElem,tSide,tNodePtr
-USE MOD_Mesh_Vars,ONLY:N
+USE MOD_Mesh_Vars ,ONLY:tElem,tSide,tNodePtr
+USE MOD_Mesh_Vars ,ONLY:N
 USE MOD_Basis_Vars,ONLY:MapSideToVol,TriaMapInv,QuadMapInv
 !USE MOD_Basis_Vars,ONLY:TetraMapInv,PyraMapInv,PrismMapInv,HexaMapInv
 ! IMPLICIT VARIABLE HANDLING
@@ -1064,7 +1064,7 @@ END SUBROUTINE curvedVolToSurf
 
 SUBROUTINE referenceSideToFlipped(refSide,Side)
 !===================================================================================================================================
-! set surface curvednode pointers from existing curved volume 
+! set surface curvednode pointers from existing curved volume
 !===================================================================================================================================
 ! MODULES
 USE MOD_Mesh_Vars,ONLY:tSide,tNodePtr,N
@@ -1089,7 +1089,7 @@ SELECT CASE (Side%nNodes)
 CASE(3)
   Side%nCurvedNodes=((N+1)*(N+2))/2
   ALLOCATE(Side%curvedNode(Side%nCurvedNodes))
-  DO q=0,N 
+  DO q=0,N
     DO p=0,N-q
       SELECT CASE(flip)
       CASE(0)
@@ -1100,14 +1100,14 @@ CASE(3)
         Side%curvedNode(TriaMapInv(p,q))%np => refSide(N-q-p,q)%np
       CASE(3)
         Side%curvedNode(TriaMapInv(p,q))%np => refSide(p,N-q-p)%np
-      END SELECT  
+      END SELECT
       Side%curvedNode(TriaMapInv(p,q))%np%refCount=Side%curvedNode(TriaMapInv(p,q))%np%refCount+1
     END DO !p
   END DO !q
 CASE(4)
   Side%nCurvedNodes=((N+1)**2)
   ALLOCATE(Side%curvedNode(Side%nCurvedNodes))
-  DO q=0,N 
+  DO q=0,N
     DO p=0,N
       SELECT CASE(flip)
       CASE(0)
@@ -1177,7 +1177,7 @@ END FUNCTION ElemIsCurved
 
 SUBROUTINE curvedSurfToEdges(aSide)
 !===================================================================================================================================
-! set edge curvednode pointers from existing curved surface 
+! set edge curvednode pointers from existing curved surface
 !===================================================================================================================================
 ! MODULES
 USE MOD_Basis_Vars,ONLY:EdgeToTria,EdgeToQuad
@@ -1219,7 +1219,7 @@ DO iEdge=1,nNodes
       END DO
     END IF
   END IF
-END DO !iEdge 
+END DO !iEdge
 END SUBROUTINE curvedSurfToEdges
 
 
@@ -1386,7 +1386,7 @@ DO WHILE(ASSOCIATED(aElem))
           EXIT
         END IF
       END DO
-      aSide%tmp=exactFunction 
+      aSide%tmp=exactFunction
       DO i=1,aSide%nNodes
         aSide%node(i)%np%tmp=1
       END DO
@@ -1466,12 +1466,12 @@ CASE(2) !cylinder, origin x=0.,y=0., radius=0.5
   xnew(1:2)=(xold(1:2))*R/rloc
   xnew(3)=xold(3)
 CASE(11) !naca0012 profile,zero TE thickness,c=1,
-         ! x=t^2,y=sign(yold)*0.12/0.2*(0.2969*t-0.1260*t**2-0.3516*t**4+0.2843*t**6-0.1036*t**8) 
+         ! x=t^2,y=sign(yold)*0.12/0.2*(0.2969*t-0.1260*t**2-0.3516*t**4+0.2843*t**6-0.1036*t**8)
   c(0:4)=(/0.2969,-0.1260,-0.3516,0.2843,-0.1036/)
   t=MIN(1.,SQRT(MAX(0.,xold(1)))) !start for newton iteration
   d=0.12/0.2
   !find t with minimum distance to xold (xt-x)^2+(yt-y)^2 -> min
-  DO i=1,1000 
+  DO i=1,1000
     tt(1)=t
     DO j=2,8
       tt(j)=tt(j-1)*t
@@ -1490,7 +1490,7 @@ CASE(11) !naca0012 profile,zero TE thickness,c=1,
   xnew(1)=xt
   xnew(2)=yt*SIGN(1.,xold(2))
   xnew(3)=xold(3)
-  IF(i.GE.1000) THEN 
+  IF(i.GE.1000) THEN
     WRITE(UNIT_stdOut,'(A)')'  Warning: Newton iteration not converged in exactSurfaceFunction:'
     WRITE(UNIT_stdOut,'(A,3E21.11)')'    old position',xold
     WRITE(UNIT_stdOut,'(A,3E21.11)')'    new position',xnew
@@ -1503,7 +1503,7 @@ END SUBROUTINE exactSurfaceFunction
 
 SUBROUTINE create3DSplines()
 !===================================================================================================================================
-! Creates Spline Coefficients. 
+! Creates Spline Coefficients.
 !===================================================================================================================================
 ! MODULES
 USE MOD_Mesh_Vars,ONLY:tElem,tSide,tEdge
@@ -1542,7 +1542,7 @@ DO WHILE(ASSOCIATED(aElem))
       aEdge=>aSide%Edge(i)%edp
       IF(ASSOCIATED(aEdge%curvedNode))CYCLE
       ALLOCATE(aEdge%curvedNode(4))
-      CALL getTangentialVectors(aSide,i,v,normalCaseCount) 
+      CALL getTangentialVectors(aSide,i,v,normalCaseCount)
       aEdge%CurvedNode(1)%np=>aEdge%Node(1)%np
       aEdge%CurvedNode(4)%np=>aEdge%Node(2)%np
       CALL getNewNode(aEdge%CurvedNode(2)%np,1)
@@ -1711,7 +1711,7 @@ DO n=1,2
       aNormal(2)%np=>aNormal(2)%np%nextNormal
     END DO
     ERRWRITE(*,'(132("~"))')
-    
+
     prevNodeInd=nodeInd-1
     IF (prevNodeInd .EQ. 0) prevNodeInd=aSide%nNodes
     vTemp(:)=aSide%OrientedNode(prevNodeInd)%np%x(:)-aSide%OrientedNode(nodeInd)%np%x(:) !calculate normal of aSide
@@ -1736,7 +1736,7 @@ DO n=1,2
          vTemp=cross(aNormal(1)%np%normal,aNormal(2)%np%normal)
          vTemp=vTemp/NORM2(vTemp)
          AngleTmp=ABS(SUM(vTemp(:)*approxNormal(:))) !angle to approxnormal not too big
-         IF (AngleTmp .LE. 0.4) THEN 
+         IF (AngleTmp .LE. 0.4) THEN
            AngleTmp=ABS(SUM(vTemp(:)*sideVect(:,n)))/length ! result is cos of angle
            IF (AngleTmp .GT. AngleMin) THEN
              AngleMin=AngleTmp
@@ -1748,19 +1748,19 @@ DO n=1,2
        END DO
        aNormal(1)%np=>aNormal(1)%np%nextNormal
       END DO
-      IF ((AngleMin .GT. AngleLimit) .AND. (ASSOCIATED(foundNormals(1,1)%np))) THEN !if small angle use cross product 
+      IF ((AngleMin .GT. AngleLimit) .AND. (ASSOCIATED(foundNormals(1,1)%np))) THEN !if small angle use cross product
         normalCaseCount(2) = normalCaseCount(2)+1
         vTemp(:)=cross(foundNormals(1,1)%np%normal,foundNormals(1,2)%np%normal)
         vTemp(:)=vTemp(:)/SQRT(SUM(vTemp(:)*vTemp(:)))
         v(:,n)=vTemp(:)*SUM(vTemp(:)*sideVect(:,n))
         tryProjection=.FALSE.
       ELSE !if big angle use projection
-        tryProjection=.TRUE. 
+        tryProjection=.TRUE.
       END IF
     ELSE
       tryProjection=.TRUE.
     END IF
-    
+
     IF (tryProjection) THEN
       normalCaseCount(1) = normalCaseCount(1)+1
       AngleMin=-1. !cos of angle 1=min, 0=max
@@ -1783,7 +1783,7 @@ END SUBROUTINE getTangentialVectors
 
 SUBROUTINE curvedEdgesToSurf(keepExistingCurveds)
 !===================================================================================================================================
-! Blend edges of a side to a curved side 
+! Blend edges of a side to a curved side
 !===================================================================================================================================
 ! MODULES
 USE MOD_Mesh_Vars,ONLY:tElem,tSide,FirstElem
@@ -1842,7 +1842,7 @@ DO WHILE(ASSOCIATED(Elem))
     ! compute the splines between the edges
     IF(Side%nNodes.EQ.3)THEN
       CALL curvedEdgesToTriaSurf(Side)
-    ELSE 
+    ELSE
       CALL curvedEdgesToQuadSurf(Side)
     END IF
 
@@ -1912,7 +1912,7 @@ INTEGER                      :: i,j,nAns,iEdge  ! ?
 REAL,DIMENSION(3)            :: xa,xb,xc,xt,sN  ! ?
 !===================================================================================================================================
 sN=1./REAL(N)
-! allocate Side 
+! allocate Side
 nAns=(N+1)*(N+2)/2
 Side%nCurvedNodes=nAns
 ALLOCATE(Side%CurvedNode(nAns))
@@ -1920,7 +1920,7 @@ ALLOCATE(xpos(nAns))
 DO i=1,nAns
   NULLIFY(xpos(i)%np)
 END DO
-! fill edge points 
+! fill edge points
 DO iEdge=1,Side%nNodes
   Edge=>Side%Edge(iEdge)%edp
   IF(.NOT.ASSOCIATED(Edge%CurvedNode))THEN !create curved nodes for linear edge
@@ -1933,7 +1933,7 @@ DO iEdge=1,Side%nNodes
     END DO
   END IF
 
-  IF(Side%EdgeOrientation(iEdge))THEN !oriented 
+  IF(Side%EdgeOrientation(iEdge))THEN !oriented
     DO i=1,N
       xpos(EdgeToTria(iEdge,i))%np=>Edge%CurvedNode(i)%np
     END DO
@@ -1949,8 +1949,8 @@ DO j=1,N-1
   DO i=1,N-j-1
     CALL getNewNode(xpos(TriaMapInv(i,j))%np)
     xa=(REAL(N-i-j)*xpos(TriaMapInv(i,  0))%np%x +REAL(j)*xpos(TriaMapInv(i,  N-i))%np%x)/REAL(N-i)
-    xb=(REAL(N-i-j)*xpos(TriaMapInv(0,  j))%np%x +REAL(i)*xpos(TriaMapInv(N-j,j  ))%np%x)/REAL(N-j) 
-    xc=(REAL(i)    *xpos(TriaMapInv(i+j,0))%np%x +REAL(j)*xpos(TriaMapInv(0,  i+j))%np%x)/REAL(i+j) 
+    xb=(REAL(N-i-j)*xpos(TriaMapInv(0,  j))%np%x +REAL(i)*xpos(TriaMapInv(N-j,j  ))%np%x)/REAL(N-j)
+    xc=(REAL(i)    *xpos(TriaMapInv(i+j,0))%np%x +REAL(j)*xpos(TriaMapInv(0,  i+j))%np%x)/REAL(i+j)
     xt=(REAL(N-i-j)*xpos(TriaMapInv(0,  0))%np%x +REAL(i)*xpos(TriaMapInv(N,  0  ))%np%x+ &
          REAL(j)*xpos(TriaMapInv(0,N))%np%x)*sN
     xpos(TriaMapInv(i,j))%np%x=0.5*(xa+xb+xc-xt)
@@ -1961,7 +1961,7 @@ DO i=1,nAns
   Side%CurvedNode(i)%np=>xpos(i)%np
   NULLIFY(xpos(i)%np)
 END DO
-DEALLOCATE(xpos) 
+DEALLOCATE(xpos)
 END SUBROUTINE curvedEdgesToTriaSurf
 
 
@@ -1989,7 +1989,7 @@ REAL,DIMENSION(3)            :: xa,xb,xt,sN  ! ?
 !===================================================================================================================================
 sN=1./REAL(N)
 nNodes=aSide%nNodes
-! allocate aSide 
+! allocate aSide
 nAns=(N+1)**2
 aSide%nCurvedNodes=nAns
 ALLOCATE(aSide%CurvedNode(nAns))
@@ -2011,8 +2011,8 @@ DO iEdge=1,nNodes
       aEdge%curvedNode(i)%np%x=REAL(i-1)*sN*(aEdge%Node(2)%np%x-aEdge%Node(1)%np%x)+aEdge%Node(1)%np%x
     END DO
   END IF
-  
-  IF(aSide%EdgeOrientation(iEdge))THEN !oriented 
+
+  IF(aSide%EdgeOrientation(iEdge))THEN !oriented
     DO i=1,N
       xpos(EdgeToQuad(iEdge,i))%np=>aEdge%CurvedNode(i)%np
     END DO
@@ -2041,12 +2041,12 @@ DO i=1,nAns
   aSide%CurvedNode(i)%np=>xpos(i)%np
   NULLIFY(xpos(i)%np)
 END DO
-DEALLOCATE(xpos) 
+DEALLOCATE(xpos)
 END SUBROUTINE curvedEdgesToQuadSurf
 
 SUBROUTINE curvedSurfacesToElem()
 !===================================================================================================================================
-! Blend curved surfaces of an element to a curved volume (TODO: currently only hexas working) 
+! Blend curved surfaces of an element to a curved volume (TODO: currently only hexas working)
 !===================================================================================================================================
 ! MODULES
 USE MOD_Mesh_Vars,ONLY:tElem,FirstElem
@@ -2103,7 +2103,7 @@ TYPE(tNodePtr),POINTER       :: xpos(:,:,:),xSide(:,:)  ! ?
 INTEGER                      :: i,j,k,nAns,p,q,flip  ! ?
 REAL,DIMENSION(3)            :: xFaces,xEdges,xNodes,xi,rxi  ! ?
 !===================================================================================================================================
-! allocate 
+! allocate
 nAns=(N+1)**3
 Elem%nCurvedNodes=nAns
 ALLOCATE(Elem%CurvedNode(nAns))
@@ -2121,9 +2121,9 @@ xpos(0,0,N)%np=>Elem%Node(5)%np
 xpos(N,0,N)%np=>Elem%Node(6)%np
 xpos(N,N,N)%np=>Elem%Node(7)%np
 xpos(0,N,N)%np=>Elem%Node(8)%np
-! fill side points 
+! fill side points
 Side=>Elem%firstSide
-DO WHILE(ASSOCIATED(Side)) 
+DO WHILE(ASSOCIATED(Side))
   flip=getFlip(Side)
 
   DO q=0,N; DO p=0,N
@@ -2139,23 +2139,23 @@ DO WHILE(ASSOCIATED(Side))
       Xside(p,q)%np=>Side%CurvedNode(QuadMapInv(N-q,N-p))%np
     CASE(4)
       Xside(p,q)%np=>Side%CurvedNode(QuadMapInv(p,N-q))%np
-    END SELECT  
+    END SELECT
   END DO; END DO ! p,q
 
   DO q=0,N; DO p=0,N
     SELECT CASE(Side%LocSide)
     CASE(5) !XI_MINUS)
       IF(.NOT.ASSOCIATED(xpos(0,p,q)%np)) &
-      xpos(0,p,q)%np => Xside(q,p)%np 
+      xpos(0,p,q)%np => Xside(q,p)%np
     CASE(3) !XI_PLUS)
       IF(.NOT.ASSOCIATED(xpos(N,p,q)%np)) &
       xpos(N,p,q)%np => Xside(p,q)%np
     CASE(2) !ETA_MINUS)
       IF(.NOT.ASSOCIATED(xpos(p,0,q)%np)) &
-      xpos(p,0,q)%np => Xside(p,q)%np  
+      xpos(p,0,q)%np => Xside(p,q)%np
     CASE(4) !ETA_PLUS)
       IF(.NOT.ASSOCIATED(xpos(p,N,q)%np)) &
-      xpos(p,N,q)%np => Xside(N-p,q)%np 
+      xpos(p,N,q)%np => Xside(N-p,q)%np
     CASE(1) !ZETA_MINUS)
       IF(.NOT.ASSOCIATED(xpos(p,q,0)%np)) &
       xpos(p,q,0)%np => Xside(q,p)%np
@@ -2171,13 +2171,13 @@ END DO
 DO k=1,N-1; DO j=1,N-1; DO i=1,N-1
   CALL getNewNode(xpos(i,j,k)%np,0)
   xi     = REAL((/i,j,k/))/REAL(N)
-  rxi    = 1.-xi 
+  rxi    = 1.-xi
   xFaces = rxi(1)*xpos( 0, j, k)%np%x + &
             xi(1)*xpos( N, j, k)%np%x + &
            rxi(2)*xpos( i, 0, k)%np%x + &
             xi(2)*xpos( i, N, k)%np%x + &
            rxi(3)*xpos( i, j, 0)%np%x + &
-            xi(3)*xpos( i, j, N)%np%x 
+            xi(3)*xpos( i, j, N)%np%x
 
   xEdges = rxi(1)*rxi(2)*xpos( 0, 0, k)%np%x + &
            rxi(1)* xi(2)*xpos( 0, N, k)%np%x + &
@@ -2208,7 +2208,7 @@ DO k=0,N; DO j=0,N; DO i=0,N
   Elem%CurvedNode(HexaMapInv(i,j,k))%np=>xpos(i,j,k)%np
   NULLIFY(xpos(i,j,k)%np)
 END DO; END DO; END DO
-DEALLOCATE(xpos,xside) 
+DEALLOCATE(xpos,xside)
 END SUBROUTINE curvedSurfacesToHexa
 
 
@@ -2220,7 +2220,7 @@ SUBROUTINE SplitToSpline()
 ! 2) for each element side having a curveind>0 => aSide
 !    a) find a split element attached to the first node of the aSide. Until now it is only known that they share a node, we
 !       have to find out if the other corners of the element side are corresponding too...
-!    b) using the connections between the splitElements, we find all splitElements belonging to one side 
+!    b) using the connections between the splitElements, we find all splitElements belonging to one side
 !       .p.e. for quads we have a (bOrd-1)*(bOrd-1) splitelement array (the 'left' side of each element is saved=>localSides)
 !    c) if we can buld up the whole array (reachedcorner=T), we can check, if the other aSide Nodes share corners
 !    d) then the points areinterpolated to the monomial spline basis of aSide by a inverted Vandermonde matrix (sVdMquad).
@@ -2289,8 +2289,8 @@ DO WHILE(ASSOCIATED(aElem))
     END DO
   END IF !found
   aElem=>aElem%nextElem
-END DO 
-! enlarge box 
+END DO
+! enlarge box
 xmin=xmin-SQRT(dxmax)
 xmax=xmax+SQRT(dxmax)
 !build local search mesh of split sides
@@ -2309,14 +2309,14 @@ DO WHILE(ASSOCIATED(aSplitElem))
   END IF
   aSplitElem=>aSplitElem%nextElem
 END DO
-WRITE(*,*)'number of splitElems in searchmesh',nSplitElems 
+WRITE(*,*)'number of splitElems in searchmesh',nSplitElems
 !========================================== Start search of split elements =====================================================
 
 aElem=>firstElem
 DO WHILE(ASSOCIATED(aElem))
   aSide=>aElem%firstSide
   DO WHILE(ASSOCIATED(aSide))
-    IF(aSide%curveIndex.NE.0) THEN 
+    IF(aSide%curveIndex.NE.0) THEN
       aNode=>aSide%OrientedNode(1)%np
       !local element side tolerance
       tol=SQRT(SUM((aSide%OrientedNode(2)%np%x-aSide%OrientedNode(1)%np%x)**2))
@@ -2339,7 +2339,7 @@ DO WHILE(ASSOCIATED(aElem))
           DO k=1,aSplitElem%nNodes
             IF (SAMEPOINT(aSplitSide%Node(2)%np%x,aNode%x,tol)) THEN
               pointFound=.TRUE.
-              EXIT 
+              EXIT
             END IF
             aSplitSide=>aSplitSide%nextElemSide
           END DO
@@ -2354,18 +2354,18 @@ DO WHILE(ASSOCIATED(aElem))
             localSides(1,1)%sp=>aSplitSide
             ! save left lying sides in local sides, bOrd=3 --> 4 sides
             !
-            !  ^ j-dir 
-            !  | 
-            !  | 
+            !  ^ j-dir
+            !  |
+            !  |
             ! (4)---(+)---(3)
-            !    |     |  
+            !    |     |
             ! (+)---(+)---(+)
-            !    |     |  
+            !    |     |
             ! (1)---(+)---(2) --> i-dir
             !
             tria=0
             IF(aSplitElem%nNodes.EQ.3) tria=1
-!              WRITE(*,'(A,6F10.5)')'DEBUG tria',tria 
+!              WRITE(*,'(A,6F10.5)')'DEBUG tria',tria
             !now fill up the whole array
 outer:      DO j=1,bOrd-1
               ! j direction, for j=1 do nothing
@@ -2376,11 +2376,11 @@ outer:      DO j=1,bOrd-1
                 DO l=1,1+tria  ! l=1,1 for quads, l=1,2 for trias
                   aSplitSide=>aSplitSide%Connection
                   IF(.NOT.ASSOCIATED(aSplitSide)) THEN
-                    reachedcorner=.FALSE. 
+                    reachedcorner=.FALSE.
                     EXIT !no corner found, because no connection (end of local domain)
                   END IF
                   aSplitSide=>GoToSide(aSplitSide,-1)
-                END DO 
+                END DO
                 localSides(1,j)%sp=>aSplitSide
               END IF
               DO i=2,bOrd-1-(j-1)*tria
@@ -2390,7 +2390,7 @@ outer:      DO j=1,bOrd-1
                   !go to neighbor element
                   aSplitSide=>aSplitSide%connection
                   IF(.NOT.ASSOCIATED(aSplitSide)) THEN
-                    reachedcorner=.FALSE. 
+                    reachedcorner=.FALSE.
                     EXIT outer !no corner found, because no connection (end of local domain)
                   END IF
                 END DO
@@ -2400,8 +2400,8 @@ outer:      DO j=1,bOrd-1
             END DO outer !j
             IF(.NOT.reachedcorner)THEN
               WRITE(*,*)'DEBUG corner not reached, no mpi -> PROBLEM!'
-            END IF ! corner not reached 
-             
+            END IF ! corner not reached
+
             IF(reachedcorner)THEN
               ! all local Sides are associated, check if localSides belong to aSide
               nodekminus=>localSides(1,bord-1)%sp%node(1)%np
@@ -2422,14 +2422,14 @@ outer:      DO j=1,bOrd-1
                   DO j=1,bOrd
                     NULLIFY(localNodes(i,j)%np)
                   END DO
-                END DO 
+                END DO
                 DO j=1,bOrd-1
                   DO i=1,bOrd-1-(j-1)*tria
                     localNodes(i,j)%np=>localSides(i,j)%sp%Node(2)%np
                   END DO
                   aSplitSide=>GoToSide(localSides(bOrd-1-(j-1)*tria,j)%sp,1)
                   localNodes(bOrd-(j-1)*tria,j)%np=>aSplitSide%Node(2)%np
-                END DO 
+                END DO
                 IF(tria.EQ.0)THEN
                   DO i=1,bOrd-1
                     localNodes(i,bOrd)%np=>localSides(i,bOrd-1)%sp%Node(1)%np
@@ -2506,19 +2506,19 @@ outer:      DO j=1,bOrd-1
     aSide=>aSide%nextElemSide
   END DO
   aElem=>aElem%nextElem
-END DO 
+END DO
 CALL deleteSearchMesh(SearchMesh,.FALSE.)
 CALL deleteSearchMesh(redundantNodes,.TRUE.)
-!delete all split elements and nodes 
+!delete all split elements and nodes
 aSplitElem=>firstSplitElem
-DO WHILE (ASSOCIATED(aSplitElem)) 
+DO WHILE (ASSOCIATED(aSplitElem))
   DO i=1,aSplitElem%nNodes
     aSplitElem%Node(i)%np%refcount=0
   END DO
   aSplitElem=>aSplitElem%nextElem
 END DO
 aSplitElem=>firstSplitElem
-DO WHILE (ASSOCIATED(aSplitElem)) 
+DO WHILE (ASSOCIATED(aSplitElem))
   DO i=1,aSplitElem%nNodes
     aSplitElem%Node(i)%np%refcount=aSplitElem%Node(i)%np%refcount+1
   END DO
@@ -2552,7 +2552,7 @@ DO WHILE (ASSOCIATED(aSplitElem))
   i=i+1
   DEALLOCATE(aSplitElem)
   aSplitElem=>firstSplitElem
-END DO    
+END DO
 DEALLOCATE(localNodes,localSides)
 WRITE(*,'(A,I8)')'nSplitElems deleted',i
 WRITE(*,'(A,I8)')'nNodes of SplitElems deleted',l
@@ -2562,7 +2562,7 @@ END SUBROUTINE SplitToSpline
 
 FUNCTION GoToSide(Side,nJumps)
 !===================================================================================================================================
-! repointer side to the next nJumps 
+! repointer side to the next nJumps
 !===================================================================================================================================
 ! MODULES
 USE MOD_Mesh_Vars,ONLY:tSide
@@ -2592,7 +2592,7 @@ ELSE
     IF(.NOT.ASSOCIATED(GoToSide))GoToSide=>Side%Elem%firstSide
   END DO
 END IF
-END FUNCTION GoToSide 
+END FUNCTION GoToSide
 
 
 SUBROUTINE RebuildMortarGeometry()
@@ -2623,7 +2623,7 @@ WRITE(UNIT_stdOut,*)'REBUILDING CURVED MORTAR INTERFACES...'
 
 ALLOCATE(M_0_1_T(0:N,0:N))
 ALLOCATE(M_0_2_T(0:N,0:N))
-CALL GetMortarVandermonde(N, M_0_1_T, M_0_2_T) 
+CALL GetMortarVandermonde(N, M_0_1_T, M_0_2_T)
 M_0_1_T=TRANSPOSE(M_0_1_T)
 M_0_2_T=TRANSPOSE(M_0_2_T)
 
@@ -2812,9 +2812,9 @@ DO p=1,2
   ELSEIF(ASSOCIATED(Edge%Node(p)%np,smallEdge%Node(3-p)%np))THEN
     XGeo1DTmp=XGeo1Dsmall(:,:,p)
     DO l=0,N
-      XGeo1Dsmall(:,N-l,p)=XGeo1DTmp(:,l) 
+      XGeo1Dsmall(:,N-l,p)=XGeo1DTmp(:,l)
     END DO
-  ELSE 
+  ELSE
     CALL abort(__STAMP__,'Error: Edges of mortar master and slave do not conform!')
   END IF
   CALL UnpackGeo(N,XGeo1DSmall(:,:,p),smallEdge)

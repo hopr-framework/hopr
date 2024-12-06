@@ -105,7 +105,7 @@ USE MOD_Basis_Vars,ONLY:TriaMap,TriaMapInv,VisuTriaMap,VisuTriaMapInv,Vdm_visu_T
 USE MOD_Basis_Vars,ONLY:QuadMap,QuadMapInv,VisuQuadMap,VisuQuadMapInv,Vdm_visu_Quad,D_visu_Quad
 USE MOD_Basis_Vars,ONLY:TetraMap,TetraMapInv !,Vdm_visu_Tetra,D_visu_Tetra
 USE MOD_Basis_Vars,ONLY:PyraMap,PyraMapInv   !,Vdm_visu_Pyra,D_visu_Pyra
-USE MOD_Basis_Vars,ONLY:PrismMap,PrismMapInv !,Vdm_visu_Prism,D_visu_Prism
+USE MOD_Basis_Vars,ONLY:PrismMap,PrismMap2,PrismMapInv,Vdm_visu_Prism,D_visu_Prism,VisuPrismMap,VisuPrismMapInv
 USE MOD_Basis_Vars,ONLY:HexaMap,HexaMapInv,Vdm_visu_Hexa,D_visu_Hexa,VisuHexaMap,VisuHexaMapInv
 USE MOD_Basis_Vars,ONLY:MapSideToVol
 USE MOD_Basis_Vars,ONLY:EdgeToTria,EdgeToQuad
@@ -132,7 +132,8 @@ CALL getBasisMappingTria(N,nNodes,TriaMap,TriaMapInv)
 CALL getBasisMappingQuad(N,nNodes,QuadMap,QuadMapInv)
 CALL getBasisMappingTetra(N,nNodes,TetraMap,TetraMapInv)
 CALL getBasisMappingPyra(N,nNodes,PyraMap,PyraMapInv)
-CALL getBasisMappingPrism(N,nNodes,PrismMap,PrismMapInv)
+CALL getBasisMappingPrism(N,nNodes,PrismMap,PrismMap2,PrismMapInv)
+CALL getBasisMappingPrism(nVisu,nNodes,VisuPrismMap,bMapInv=VisuPrismMapInv)
 
 ! basis mappings used for visualization (often number of visu points != order) + mapping tria->quad(tensorproduct) required
 CALL getBasisMappingQuad(nVisu,nNodes,VisuTriaMap,VisuTriaMapInv)
@@ -144,7 +145,8 @@ CALL getBasisMappingHexa(nVisu,nNodes,VisuHexaMap,VisuHexaMapInv)
 CALL getTriaBasis(N,nVisu+1,Vdm_visu_Tria,D_visu_Tria)
 CALL getQuadBasis(N,nVisu+1,Vdm_visu_Quad,D_visu_Quad)
 !CALL getTetraBasis(N,nVisu+1,Vdm_visu_Tetra,D_visu_Tetra)
-CALL getHexaBasis(N,nVisu+1,Vdm_visu_Hexa,D_visu_Hexa)
+CALL getPrismBasis(N,nVisu+1,Vdm_Visu_Prism,D_Visu_Prism)
+CALL getHexaBasis(N,nVisu+1,Vdm_Visu_Hexa,D_Visu_Hexa)
 
 ! map edges of triangle surface counterclockwise points to BoundaBasisMappingInv(i,j)
 ALLOCATE(EdgeToTria(3,N+1))
@@ -220,7 +222,7 @@ DO q=0,N
 END DO !q
 DO q=0,N
   DO p=0,N-q
-      MapSideToVol(triaMapInv(p,q),4,6)=PyraMapInv(p,q,N)
+      MapSideToVol(triaMapInv(p,q),4,6)=PrismMapInv(p,q,N)
       MapSideToVol(triaMapInv(p,q),5,6)=PrismMapInv(q,p,0)
   END DO !p
 END DO !q
