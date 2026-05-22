@@ -74,10 +74,10 @@ EXECUTE_PROCESS(
   ERROR_QUIET)
 
 FILE(WRITE \"\${buildinfo}\" \"! Define the current commit hash. The default must remain empty, i.e., ''.\n\
-#define GIT_CURRENT_COMMIT '${GIT_COMMIT}'\n\
-#define BUILD_DATE         '${BUILD_DATE}'\n\
-#define BUILD_VERSION_${CMAKE_Fortran_COMPILER_ID}  '${CMAKE_Fortran_COMPILER_VERSION}'\n\
-#define BUILD_VERSION_MPI  'compiled without MPI'\n\
+#define GIT_CURRENT_COMMIT \\\"\${GIT_COMMIT}\\\"\n\
+#define BUILD_DATE         \\\"\${BUILD_DATE}\\\"\n\
+#define BUILD_VERSION_${CMAKE_Fortran_COMPILER_ID}  \\\"${CMAKE_Fortran_COMPILER_VERSION}\\\"\n\
+#define BUILD_VERSION_MPI  \\\"compiled without MPI\\\"\n\
 \")
 ")
 
