@@ -498,8 +498,7 @@ ELSE()
     ADD_COMPILE_DEFINITIONS(PP_CGNS_INT=${LIBS_BUILD_CGNS_INT})
 
     # Set CGNS_Tag
-    # > Current version 4.5.0 has a regression, so stick with 4.4.0
-    SET(CGNS_VERSION "4.4.0")
+    SET(CGNS_VERSION "4.5.2")
     SET(CGNS_TAG     "v${CGNS_VERSION}")
     SET(CGNS_STR     ${CGNS_TAG})
     MARK_AS_ADVANCED(FORCE CGNS_TAG)
@@ -582,10 +581,6 @@ ELSE()
 
   # Set pre-processor flag for CGNS version
   STRING(REPLACE "v" ""  CGNS_VERSION ${CGNS_VERSION})
-  # Warn about version 4.5.0
-  IF("${CGNS_VERSION}" VERSION_EQUAL "4.5.0")
-    MESSAGE(WARNING "CGNS ${CGNS_VERSION} has issues with reading surface meshes. Consider downgrading to v4.4.0")
-  ENDIF()
   MESSAGE(STATUS "Compiling with ${CGNS_BUILD_STATUS} [CGNS] (v${CGNS_VERSION})")
 
   STRING(REPLACE "." ";" VERSION_LIST ${CGNS_VERSION})
