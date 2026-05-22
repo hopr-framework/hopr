@@ -113,6 +113,13 @@ IF(NOT LIBS_BUILD_HDF5)
     ENDIF()
   ENDIF()
 
+  # Check if HDF5 is parallel
+  # > NOTE: As of HDF5 v2.0.0 the library variables have been renamed: HDF5_ENABLE_PARALLEL to configure the HDF5 installation, HDF5_PROVIDES_PARALLEL to query the state of the installation.
+  #         This has been adopted by FindHDF5 as of CMake v4.3.0, for earlier CMake versions we need to account for it manually (cf. https://gitlab.kitware.com/cmake/cmake/-/merge_requests/11573)
+  IF(${CMAKE_VERSION} VERSION_LESS "4.3.0" AND ${HDF5_VERSION} VERSION_GREATER_EQUAL "2.0.0")
+    SET(HDF5_IS_PARALLEL ${HDF5_PROVIDES_PARALLEL})
+  ENDIF()
+
   # If HDF5 Fortran library is not set, get it from the Fortran target
   IF("${HDF5_C_LIBRARY_hdf5_c}" STREQUAL "")
     GET_PROPERTY(HDF5_C_LIBRARY_hdf5_c TARGET hdf5::hdf5 PROPERTY LOCATION)
