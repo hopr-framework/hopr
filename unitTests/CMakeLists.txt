@@ -20,7 +20,7 @@
 #
 function(add_unit_test target)
     # Add executable and libraries
-    ADD_EXECUTABLE(${target} ${ARGN})
+    ADD_EXECUTABLE(       ${target} ${ARGN})
     TARGET_LINK_LIBRARIES(${target} hoprlib ${linkedlibs})
     # Set properties of target
     SET_TARGET_PROPERTIES(${target} PROPERTIES COMPILE_FLAGS ${HOPR_COMPILE_FLAGS})

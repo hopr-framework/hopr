@@ -112,7 +112,13 @@ nZonesGlob = 0
 ! Let's fetz now
 DO iFile=1,nMeshFiles
   ! Check CGNS file (CG_IS_CGNS_F must NOT be performed after CG_OPEN_F (in OpenBase), leads to an error in the read-in of HDF5-based CGNS files)
+  ! NOTE: As of CGNS v4.5.0, we need to set the filetype manually since files are no longer checked upon opening - and thereby have their filetype set automatically -
+  !       if filetype HDF5 is requested (see changes in function cgns_io.c::cgio_open_file() by commit #0360632). The filetype HDF5, in turn, is set to requested when
+  !       writing files if CGNS is compiled with ENABLE_HDF5=ON (see global variable cgns_filetype in function cgnslist.c::cg_open()).
+  !       Therefore, in scenarios like tutorial 2-02, where HOPR reads CGNS-files in a non-HDF5 format like ADF and then writes the corresponding mesh file in HDF5 format,
+  !       we need to re-set the filetype manually before reading further CGNS-files, e.g. for the surface mesh.
   CALL CG_IS_CGNS_F(TRIM(MeshFileName(iFile)), file_type, iError)
+  CALL CG_SET_FILE_TYPE_F(file_type,iError)
   IF (iError .NE. CG_OK) CALL abort(__STAMP__,'ERROR: Given CGNS file is not supported!')
 
   ! Check CGNS file type (ADF/HDF5)
@@ -124,8 +130,6 @@ DO iFile=1,nMeshFiles
   CASE DEFAULT
     CALL abort(__STAMP__,'ERROR: CGNS file type is unknown!')
   END SELECT
-
-  ! CALL CG_SET_FILE_TYPE_F(CG_FILE_ADF2, iError);
 
   ! Open CGNS file
   CALL OpenBase(TRIM(MeshFileName(iFile)),MODE_READ,md,md,CGNSFile,CGNSBase,.TRUE.)
@@ -1134,7 +1138,7 @@ SUBROUTINE ReadCGNSSurfaceMesh(FirstElem_in,FileName)
 ! This subroutine reads the surface data from an unstructured CGNS file and prepares the element list.
 !===================================================================================================================================
 ! MODULES
-USE MOD_Mesh_Vars,ONLY:tElem,tElemPtr,tSide
+USE MOD_Mesh_Vars,ONLY:tElem,tElemPtr,tSide,MeshDim
 USE MOD_Mesh_Vars,ONLY:getNewElem,getNewNode,getNewSide
 ! IMPLICIT VARIABLE HANDLING
 IMPLICIT NONE
@@ -1153,10 +1157,10 @@ PP_CGNS_INT_TYPE             :: nNodesGlob         ! Total number of nodes in th
 PP_CGNS_INT_TYPE             :: nElemsGlob         ! Total number of elements in mesh file
 PP_CGNS_INT_TYPE             :: nZonesGlob         ! Total number of zones in the mesh.
 INTEGER                      :: CGNSFile,CGNSBase  ! CGNS file handles
-INTEGER                      :: md  ! ?
 INTEGER                      :: file_type  ! ?
 REAL(KIND=4)                 :: version  ! ?
-
+INTEGER                      :: precision
+INTEGER                      :: md
 CHARACTER(LEN=32)            :: CGName             ! necessary data for CGNS
 INTEGER                      :: ZoneType  ! ?
 TYPE(tElemPtr),ALLOCATABLE   :: Elems(:)                            ! Pointer array to elements
@@ -1193,12 +1197,29 @@ INTEGER(CGSIZE_T),ALLOCATABLE:: connect_offsets(:)
 CALL ABORT(__STAMP__,'ReadCGNSsurfaceMesh needs compilation with USE_CGNS flag!')
 #else
 WRITE(UNIT_stdOut,*)'Read CGNS Surface File: ',TRIM(FileName)
-! Open CGNS file
-CALL OpenBase(TRIM(FileName),MODE_READ,md,md,CGNSFile,CGNSBase,.TRUE.)
-!CALL CG_OPEN_F(TRIM(MeshFileName(iFile)), CG_MODE_READ, CGNSFile, iError)
-CALL CG_VERSION_F(CGNSFile, version, iError)
-WRITE(UNIT_stdOut,*)'CGNS version:',version
+! Check CGNS file (CG_IS_CGNS_F must NOT be performed after CG_OPEN_F (in OpenBase), leads to an error in the read-in of HDF5-based CGNS files)
+! NOTE: As of CGNS v4.5.0, we need to set the filetype manually, see the note in ReadCGNSMesh above
 CALL CG_IS_CGNS_F(TRIM(FileName), file_type, iError)
+CALL CG_SET_FILE_TYPE_F(file_type,iError)
+IF (iError .NE. CG_OK) CALL abort(__STAMP__,'ERROR: Given CGNS file is not supported!')
+
+! Check CGNS file type (ADF/HDF5)
+SELECT CASE(file_type)
+CASE(CG_FILE_ADF)
+  WRITE(UNIT_stdOut,*)'CGNS file type: ADF'
+CASE(CG_FILE_HDF5)
+  WRITE(UNIT_stdOut,*)'CGNS file type: HDF5'
+CASE DEFAULT
+  CALL abort(__STAMP__,'ERROR: CGNS file type is unknown!')
+END SELECT
+
+! Open CGNS file
+md = MeshDim
+CALL OpenBase(TRIM(FileName),MODE_READ,md,md,CGNSFile,CGNSBase,.TRUE.)
+  ! Output CGNS version and precision
+  CALL CG_VERSION_F(CGNSFile, version, iError)
+  CALL CG_PRECISION_F(CGNSFile,precision,iError)
+  WRITE(UNIT_stdOut,*)'CGNS version:', version, ' CGNS precision:', precision, 'Bit'
 
 ! Get number of bases in CGNS file
 CALL CG_NBASES_F(CGNSfile,nBases,iError)

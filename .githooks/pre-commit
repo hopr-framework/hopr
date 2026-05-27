@@ -150,7 +150,7 @@ if [ -n "$CHANGED" ]; then
     name=$($BN_EXE -- "$file")
     ext="${name##*.}"
     name="${name%.*}"
-    if [ "$ext" = "txt" ] || [ "$ext" = "f90" ] || [ "$ext" = "ini" ]; then
+    if [ "$ext" = "txt" ] || [ "$ext" = "f90" ] || [ "$ext" = "ini" ] || [ "$ext" = "md" ]; then
       # -P, --perl-regexp         PATTERNS are Perl regular expressions
       NbrOfLinesWithTabs=$(grep -P '\t' $file | wc -l)
       if [ "${NbrOfLinesWithTabs}" -gt 0 ]; then

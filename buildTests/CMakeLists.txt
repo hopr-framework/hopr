@@ -83,10 +83,15 @@ FOREACH(TUTORIAL ${TUTORIALS})
 ENDFOREACH()
 
 # Perform build tests when the last test has been added
-ADD_CUSTOM_TARGET( all_build_tests ALL
-                   DEPENDS ${BUILD_TEST_TARGETS})
+ADD_CUSTOM_TARGET(all_build_tests ALL
+                  DEPENDS ${BUILD_TEST_TARGETS})
 
-ADD_DEPENDENCIES(all_tests hopr)
+IF(TARGET all_tests)
+  ADD_DEPENDENCIES( all_tests hopr)
+ELSE()
+  ADD_CUSTOM_TARGET(all_tests ALL
+                    DEPENDS ${BUILD_TEST_TARGETS})
+ENDIF()
 
 ADD_CUSTOM_COMMAND(TARGET all_build_tests
                    COMMENT "Run build tests"

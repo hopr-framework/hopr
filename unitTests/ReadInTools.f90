@@ -21,9 +21,6 @@ PROGRAM ReadInToolsUnitTest
 ! MODULES
 USE MOD_Globals
 USE MOD_ReadInTools
-#if USE_MPI
-USE MOD_MPI,         ONLY: InitMPI
-#endif /*USE_MPI*/
 IMPLICIT NONE
 !----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES
@@ -71,9 +68,6 @@ REAL    :: realArrayOpt_multsci_A(2)
 !character(len=255) :: strArrayOpt_mult(2)
 !character(len=255) :: strArrayOpt_mult_A(2)
 !==================================================================================================================================
-#if USE_MPI
-CALL InitMPI()
-#endif /*USE_MPI*/
 ! Check for command line arguments to generate the reference solution
 nArgs=COMMAND_ARGUMENT_COUNT()
 IF (nArgs.GT.0) CALL abort(__STAMP__,'ERROR - Unknown command line argument.')
@@ -196,11 +190,5 @@ END DO
 !DO i=1,2
   !IF (strArrayOpt_mult(i).NE.strArrayOpt_mult_A(i)) CALL Abort(__STAMP__,"strArrayOpt_mult failed")
 !END DO
-
-#if USE_MPI
-! we also have to finalize MPI itself here
-CALL MPI_FINALIZE(iError)
-IF(iError.NE.0) CALL abort(__STAMP__,'MPI finalize error')
-#endif
 
 END PROGRAM ReadInToolsUnitTest

@@ -225,7 +225,7 @@ name: tab:femelem_info_def
 |                                  |                                                                                                                          |
 |               -                  |                                                             -                                                            |
 | *offsetIndEDGE/lastIndEDGE*:     | Each element has a range of edges in the **EdgeInfo** array.                                                             |
-| *offsetIndVERTEX/lastIndVERTEX*: | Each element has a range of edges in the **VertexInfo** array.                                                           |
+| *offsetIndVERTEX/lastIndVERTEX*: | Each element has a range of vertices in the **VertexInfo** array.                                                        |
 ```
 
 The range and the size are always defined as: *Range=[offset+1,last], Size=last-offset*
@@ -538,7 +538,7 @@ Section {ref}`userguide/meshformat:Element High Order Nodes`. It is important to
 corner node ordering for pyramids and hexahedra. Note that the nodes are multiply stored because of the parallel I/O, and
 therefore the GlobalNodeID is needed for a unique node indexing.
 
-The **NodeCoords**and **GlobalNodeIDs** array for the example mesh {numref}`fig:exmesh` with 4 elements is given in table {numref}`tab:NodeCoordsGlobalNodeIDs`.
+The **NodeCoords** and **GlobalNodeIDs** array for the example mesh {numref}`fig:exmesh` with 4 elements is given in table {numref}`tab:NodeCoordsGlobalNodeIDs`.
 The node ordering is explained in Section {ref}`userguide/meshformat:Element High Order Nodes`.
 
 ```{table} **NodeCoords** and **GlobalNodeIDs** array for the example mesh.

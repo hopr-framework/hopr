@@ -161,37 +161,3 @@ not allowed to just incorporate the corresponding number of the step within the 
     
     ! X. Update mortar operators and neighbour connectivity for the sliding mesh
     CALL PrepareSM()
-    
-    ! 3. Prolong the solution to the face integration points for flux computation
-    ! --------------------------------------------------------------
-    ! General idea: The slave sends its surface data to the master
-    ! where the flux is computed and sent back to the slaves.
-    ! Steps:
-    ! (these steps are done for all slave MPI sides and then for all remaining sides):
-    ! 3.1)  Prolong solution to faces and store in U_master/slave. 
-    !       Use them to build mortar data (split into 2/4 smaller sides).
-    ![3.2)] The information which element is a DG or FV subcells element is stored 
-    !       in FV_Elems per element.
-    ![3.3)] The reconstruction of slopes over element interfaces requires, 
-    !       besides U_slave and FV_Elems_slave, some more information that 
-    !       has to be transmitted from the slave to the master MPI side.
-    ! 3.4)  Finish all started MPI communications (after step 2. due to latency hiding)
-    
-    #if USE_MPI
-    ! Step 3 for all slave MPI sides
-    ! 3.1) Prolong solution to faces and store in U_master/slave.
-    !      Use them to build mortar data (split into 2/4 smaller sides).
-    CALL StartReceiveMPIData(U_slave,DataSizeSide,1,nSides,MPIRequest_U(:,SEND),SendID=2) ! Receive MINE / U_slave: slave -> master
-    CALL StartReceiveSM_MPIData(PP_nVar,U_MorRot,MPIRequestSM_U,SendID=2) ! Receive MINE / U_slave: slave -> master
-    CALL ProlongToFaceCons(PP_N,U,U_master,U_slave,L_Minus,L_Plus,doMPISides=.TRUE.)
-    CALL U_MortarCons(U_master,U_slave,doMPISides=.TRUE.)
-    CALL U_MortarConsSM(U_master,U_slave,U_MorStat,U_MorRot,doMPISides=.TRUE.)
-    CALL StartSendMPIData(   U_slave,DataSizeSide,1,nSides,MPIRequest_U(:,RECV),SendID=2) ! SEND YOUR / U_slave: slave -> master
-    CALL StartSendSM_MPIData(   PP_nVar,U_MorRot,MPIRequestSM_U,SendID=2) ! SEND YOUR / U_slave: slave -> master
-    #if FV_ENABLED
-    ! 3.2) The information which element is a DG or FV subcells element is stored
-    !      in FV_Elems per element.
-    CALL FV_Elems_Mortar(FV_Elems_master,FV_Elems_slave,doMPISides=.TRUE.)
-    CALL StartExchange_FV_Elems(FV_Elems_slave,1,nSides,MPIRequest_FV_Elems(:,SEND),MPIRequest_FV_Elems(:,RECV),SendID=2)
-    #endif /* FV_ENABLED */
-

@@ -17,20 +17,16 @@ jobs:
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     runs-on: ubuntu-latest
 
-    # Use centos8
+    # Use Rocky Linux 8.10
     container:
-      image: centos:8
+      image: rockylinux/rockylinux:8.10
       options: --privileged
 
     steps:
     - name: Install GIT
       shell: bash
       run: |
-        cd /etc/yum.repos.d/
-        sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
-        sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
-        yum -y install https://packages.endpointdev.com/rhel/8/main/x86_64/endpoint-repo.noarch.rpm
-        yum -y install git
+        dnf -y install git
         git --version
 
     - name: Checkout repository including the .git directory
@@ -43,17 +39,16 @@ jobs:
       run: |
         git config --global --add safe.directory '*'
         git status
-        curl -L -O https://github.com/Kitware/CMake/releases/download/v3.16.4/cmake-3.16.4-Linux-x86_64.sh
-        chmod +x cmake-3.16.4-Linux-x86_64.sh
-        ./cmake-3.16.4-Linux-x86_64.sh --skip-license --prefix=/usr/local
-        curl -L -O https://www.mirrorservice.org/sites/dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/p/p7zip-16.02-20.el8.x86_64.rpm
-        curl -L -O https://www.mirrorservice.org/sites/dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/p/p7zip-plugins-16.02-20.el8.x86_64.rpm
-        rpm -U --quiet p7zip-16.02-20.el8.x86_64.rpm
-        rpm -U --quiet p7zip-plugins-16.02-20.el8.x86_64.rpm
-        yum install -y epel-release
-        yum install -y 'dnf-command(config-manager)'
-        yum config-manager --set-enabled powertools
-        yum install -y make libasan gcc-gfortran gcc-c++ unzip openblas-devel lapack-devel zlib-devel tree fuse-sshfs fuse-libs file
+        curl -L -O https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1-linux-x86_64.sh
+        chmod +x cmake-3.22.1-linux-x86_64.sh
+        ./cmake-3.22.1-linux-x86_64.sh --skip-license --prefix=/usr/local
+        curl -L -O https://www.mirrorservice.org/sites/dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/p/p7zip-16.02-31.el8.x86_64.rpm
+        curl -L -O https://www.mirrorservice.org/sites/dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/p/p7zip-plugins-16.02-31.el8.x86_64.rpm
+        rpm -U --quiet p7zip-16.02-31.el8.x86_64.rpm
+        rpm -U --quiet p7zip-plugins-16.02-31.el8.x86_64.rpm
+        dnf install -y epel-release
+        dnf config-manager --set-enabled powertools
+        dnf install -y make gcc-gfortran gcc-c++ unzip openblas-devel lapack-devel zlib-devel tree fuse-sshfs fuse-libs file
         groupadd fuse
         user="$(whoami)"
         usermod -a -G fuse "$user"
@@ -65,7 +60,7 @@ jobs:
       shell: bash
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -G Ninja -B build -DHOPR_INSTRUCTION=-mtune=generic -DCMAKE_BUILD_TYPE=Release -DLIBS_USE_MPI=OFF -DCMAKE_INSTALL_PREFIX=/usr
+      run: cmake -G Ninja -B build -DHOPR_INSTRUCTION=-mtune=generic -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
 
     - name: Build
       shell: bash

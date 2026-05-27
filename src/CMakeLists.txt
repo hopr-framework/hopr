@@ -18,13 +18,20 @@ ENDMACRO()
 # HOPR sources & targets
 # =========================================================================
 FUNCTION(add_exec target)
-  ADD_EXECUTABLE(${target} ${ARGN})
+  ADD_EXECUTABLE(       ${target} ${ARGN})
   TARGET_LINK_LIBRARIES(${target} hoprlib stacksizelib ${linkedlibs})
-  SET_TARGET_PROPERTIES(${target} PROPERTIES COMPILE_FLAGS ${HOPR_COMPILE_FLAGS})
-  SET_TARGET_PROPERTIES(${target} PROPERTIES LINKER_LANGUAGE Fortran)
+  SET_TARGET_PROPERTIES(${target} PROPERTIES COMPILE_FLAGS ${HOPR_COMPILE_FLAGS}
+                                             COMPILE_OPTIONS "-fPIC"
+                                             CMAKE_POSITION_INDEPENDENT_CODE ON
+                                             LINKER_LANGUAGE Fortran)
   INSTALL(PROGRAMS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${target} DESTINATION bin)
   STRING(TOUPPER ${target} TARGETUP)
   ADD_CUSTOM_COMMAND(TARGET ${target} POST_BUILD COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --cyan "SUCCESS: ${TARGETUP} BUILD COMPLETE!")
+  # Strip executable library when building in release mode, except on macOS
+  # IF(NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
+  # IF(NOT CMAKE_HOST_APPLE)
+  #   ADD_CUSTOM_COMMAND(TARGET ${target} POST_BUILD COMMAND $<$<CONFIG:release>:${CMAKE_STRIP}> ARGS --strip-unneeded $<TARGET_FILE:${target}>)
+  # ENDIF()
 ENDFUNCTION()
 
 # include hopr.h
@@ -48,18 +55,24 @@ FILE(GLOB_RECURSE hoprC   ./src/sfc/*.c
 
 # define libs
 ADD_LIBRARY(          hoprlibF90 OBJECT ${hoprF90})
-SET_TARGET_PROPERTIES(hoprlibF90 PROPERTIES COMPILE_FLAGS ${HOPR_COMPILE_FLAGS})
-ADD_LIBRARY(          hoprlibC OBJECT ${hoprC})
-SET_TARGET_PROPERTIES(hoprlibC PROPERTIES LINKER_LANGUAGE C)
-SET_TARGET_PROPERTIES(hoprlibC PROPERTIES COMPILE_FLAGS "-fPIC")
-ADD_LIBRARY(          hoprlib STATIC $<TARGET_OBJECTS:hoprlibF90> $<TARGET_OBJECTS:hoprlibC>)
+SET_TARGET_PROPERTIES(hoprlibF90 PROPERTIES COMPILE_FLAGS ${HOPR_COMPILE_FLAGS}
+                                            COMPILE_OPTIONS "-fPIC"
+                                            CMAKE_POSITION_INDEPENDENT_CODE ON)
+ADD_LIBRARY(          hoprlibC   OBJECT ${hoprC})
+SET_TARGET_PROPERTIES(hoprlibC   PROPERTIES LINKER_LANGUAGE C
+                                            COMPILE_OPTIONS "-fPIC"
+                                            CMAKE_POSITION_INDEPENDENT_CODE ON)
+ADD_LIBRARY(          hoprlib    STATIC $<TARGET_OBJECTS:hoprlibF90> $<TARGET_OBJECTS:hoprlibC>)
+# Make sure that the script is executed even though cmake is not explicitly executed after the commit is changed in git
+ADD_DEPENDENCIES(hoprlibF90 UpdateBuildInfo)
 IF(SELFBUILTEXTERNALS)
   ADD_DEPENDENCIES(hoprlibF90 ${SELFBUILTEXTERNALS})
 ENDIF()
 
 ADD_LIBRARY(stacksizelib STATIC ./src/stacksize.c)
-SET_TARGET_PROPERTIES(stacksizelib PROPERTIES LINKER_LANGUAGE C)
-SET_TARGET_PROPERTIES(stacksizelib PROPERTIES COMPILE_FLAGS "-fPIC")
+SET_TARGET_PROPERTIES(stacksizelib PROPERTIES LINKER_LANGUAGE C
+                                              COMPILE_OPTIONS "-fPIC"
+                                              CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 ADD_EXEC(        hopr ./src/hopr.f90)
 ADD_DEPENDENCIES(hopr hoprlib stacksizelib)
@@ -75,7 +88,6 @@ ENDIF()
 # =========================================================================
 # Ctags
 # =========================================================================
-MARK_AS_ADVANCED(FORCE CTAGS_PATH)
 FIND_PROGRAM(CTAGS_PATH ctags-exuberant)
 IF(CTAGS_PATH)
   SET(EXCLUDES "")
@@ -84,21 +96,13 @@ IF(CTAGS_PATH)
   MESSAGE(STATUS "Found ctags: ${CTAGS_PATH}")
   ADD_DEPENDENCIES(hopr tags)
 ENDIF(CTAGS_PATH)
+MARK_AS_ADVANCED(FORCE CTAGS_PATH)
 
 # =========================================================================
 # Unit test at end of compilation
 # =========================================================================
 # Check is unit tests can be activated
-IF(BUILD_TYPE_LC MATCHES "sanitize" AND LIBS_USE_MPI)
-  SET(ACTIVATE_UNIT_TEST OFF)
-  # Check if unit tests were previously activated
-  IF(HOPR_UNITTESTS)
-    MESSAGE(WARNING "Unit tests automatically disabled (HOPR_UNITTESTS=OFF) with\n CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}\n LIBS_USE_MPI = ${LIBS_USE_MPI}\nas the tests will always fail due to memory errors returned from the MPI library.")
-    SET(HOPR_UNITTESTS OFF)
-  ENDIF()
-ELSE()
-  SET(ACTIVATE_UNIT_TEST ON)
-ENDIF()
+SET(ACTIVATE_UNIT_TEST ON)
 
 # Enable unit testing only when ACTIVATE_UNIT_TEST=ON
 CMAKE_DEPENDENT_OPTION(HOPR_UNITTESTS "Enable unit tests after build" ON "ACTIVATE_UNIT_TEST" OFF)

@@ -20,9 +20,6 @@ PROGRAM ReadInToolsUnitTest
 ! MODULES
 USE MOD_Globals
 USE MOD_ReadInTools
-#if USE_MPI
-USE MOD_MPI,         ONLY: InitMPI
-#endif /*USE_MPI*/
 IMPLICIT NONE
 !----------------------------------------------------------------------------------------------------------------------------------
 ! LOCAL VARIABLES
@@ -32,9 +29,6 @@ REAL,DIMENSION(nDim,nDim) :: A,AInv
 LOGICAL                   :: debug
 !==================================================================================================================================
 debug=.TRUE.
-#if USE_MPI
-CALL InitMPI()
-#endif /*USE_MPI*/
 ! Check for command line arguments to generate the reference solution
 nArgs=COMMAND_ARGUMENT_COUNT()
 IF (nArgs.GT.0) CALL abort(__STAMP__,'ERROR - Unknown command line argument.')
@@ -87,11 +81,5 @@ END IF ! debug
 IF(ANY(ISNAN(MATMUL(A,AInv))))THEN
   CALL abort(__STAMP__,'MATMUL(A,AInv) has NaNs')
 END IF
-
-#if USE_MPI
-! we also have to finalize MPI itself here
-CALL MPI_FINALIZE(iError)
-IF(iError.NE.0) CALL abort(__STAMP__,'MPI finalize error')
-#endif
 
 END PROGRAM ReadInToolsUnitTest

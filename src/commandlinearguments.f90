@@ -89,7 +89,7 @@ SELECT CASE(doPrintVersion)
     WRITE(UNIT_stdOut,'(A)')"hopr version "&
         //TRIM(int2strf(MajorVersion))//"."//TRIM(int2strf(MinorVersion))//"."//TRIM(int2strf(PatchVersion))&
         //" ("//TRIM(GIT_CURRENT_COMMIT)//", "//TRIM(BUILD_DATE)       //")"                                &
-        //" ["//TRIM(BUILD_VERSION_GCC) //", "//TRIM(BUILD_VERSION_MPI)//"]"
+        //" ["//TRIM(BUILD_VERSION_GNU) //", "//TRIM(BUILD_VERSION_MPI)//"]"
     STOP 0
 END SELECT
 
