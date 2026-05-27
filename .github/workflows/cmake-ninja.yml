@@ -30,7 +30,7 @@ jobs:
         git --version
 
     - name: Checkout repository including the .git directory
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         fetch-depth: 0
 
@@ -117,7 +117,7 @@ jobs:
         mv ${BINARYNAME} md5sum.txt artifacts/.
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: hopr-binary-v1.5.0
         path: artifacts
