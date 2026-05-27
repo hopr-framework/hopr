@@ -187,10 +187,11 @@ ELSE
     NBlock = GETINT('NBlock',TRIM(DefStr))          ! initial polynomial degree of block structured mesh
     nskip  = GETINT('nskip','1')                    ! skip every nskip point (=1, nothing is skipped)
     !nSkip=1 ! TODO: integrate into reader or remove
-    nMeshFiles       = GETINT('nMeshFiles','1')     ! Number of mesh files: each mesh file = one zone
-    BugFix_ANSA_CGNS = GETLOGICAL('BugFix_ANSA_CGNS','.FALSE.')
-  CASE(5)       ! GMSH file
-    meshIsAlreadyCurved = .TRUE.
+    nMeshFiles=GETINT('nMeshFiles','1') ! Number of mesh files: each mesh file = one zone
+    ANSA_CGNS_BugFix  = GETLOGICAL('ANSA_CGNS_BugFix' ,'.TRUE.')
+    ANSA_CGNS_SplitBC = GETLOGICAL('ANSA_CGNS_SplitBC','.FALSE.')
+  CASE(5)   ! GMSH file
+    meshIsAlreadyCurved=.TRUE.
   END SELECT
   ALLOCATE(MeshFileName(nMeshFiles))
   DO i=1,nMeshFiles
