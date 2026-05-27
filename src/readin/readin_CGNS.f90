@@ -993,8 +993,8 @@ DO iBC=1,nCGNSBC !Loop over all BCs
         IF(((BCElems(k,1).NE.irmaxorg(k)).AND.(BCElems(k,1).NE.1)).OR. &
            ((BCElems(k,2).NE.irmaxorg(k)).AND.(BCElems(k,2).NE.1))) THEN
           WRITE(UNIT_StdOut,*)'WARNING: Block face has multiple boundary faces, BoundaryName: ',TRIM(FamilyName)
-          IF (ANY(MOD(BCElems(k,:)-1,4).NE.0)) THEN
-            WRITE(UNIT_StdOut,*) 'Boundary is off by',PACK(MOD(BCElems(k,:)-1,4),MOD(BCElems(k,:)-1,4).NE.0),'elements'
+          IF (ANY(MOD(BCElems(k,:)-1,N).NE.0)) THEN
+            WRITE(UNIT_StdOut,*) 'Boundary is off by',PACK(MOD(BCElems(k,:)-1,N),MOD(BCElems(k,:)-1,N).NE.0),'elements'
             CALL ABORT(__STAMP__,'Split boundary! Please adjust PID to match with agglomerated elems')
           END IF
         END IF
